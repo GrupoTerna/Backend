@@ -1,0 +1,1212 @@
+Ejecuciones
+Se muestra(n) 22 ejecuciones en los últimos 7 días
+Mostrar en tiempo real:
+
+Estado: "Fallida"
+Implementación
+Función
+Tipo
+Hora de inicio
+Duración
+Estado
+Encabezado	runGuerra	Basada en el tiempo	20 nov 2026, 4:00:00 p.m.	250.495 s	
+Fallida
+Registros de Cloud
+20 nov 2026, 4:00:04 p.m.	Información	=== Actualización Guerra INICIO | UTC 21:0 | Ventana ligera (4-5am): false ===
+20 nov 2026, 4:00:07 p.m.	Información	=== runGuerra (horaria) INICIO ===
+20 nov 2026, 4:00:08 p.m.	Información	[RUNGUERRA] ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/8 POR EMPEZAR: Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados.
+20 nov 2026, 4:00:08 p.m.	Información	[RUNGUERRA] Ejecutando paso 1/8: Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados
+20 nov 2026, 4:00:08 p.m.	Información	[Captura] INICIO (hora, edad maxima del checkpoint 240 s)
+20 nov 2026, 4:00:09 p.m.	Información	[API] Progreso de clanes en Drive tiene 60 min — más viejo que el máximo permitido (4 min). Se descarta, no se reutiliza (se pedirá fresco a la API).
+20 nov 2026, 4:00:09 p.m.	Información	[API] Iniciando _fetchAllClanData para 4 clanes...
+20 nov 2026, 4:00:09 p.m.	Información	[API] Consultando clan: #GCRG8L00
+20 nov 2026, 4:00:10 p.m.	Información	[API][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-20 16:00:10 | sectionIndex=2 periodIndex=18 periodType=warDay | Temporada(bot)=n/d Semana=3 Dia=V | DiaGuerra=n/d | participantes=153 sum(decksUsedToday)=69 sum(decksUsed)=265 sum(fame)=42950
+20 nov 2026, 4:00:10 p.m.	Información	[API] OK clan #GCRG8L00 | miembros: 45
+20 nov 2026, 4:00:10 p.m.	Información	[API] Consultando clan: #GYCU9YRG
+20 nov 2026, 4:00:12 p.m.	Información	[API][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-20 16:00:12 | sectionIndex=2 periodIndex=18 periodType=warDay | Temporada(bot)=n/d Semana=3 Dia=V | DiaGuerra=n/d | participantes=198 sum(decksUsedToday)=85 sum(decksUsed)=275 sum(fame)=43375
+20 nov 2026, 4:00:12 p.m.	Información	[API] OK clan #GYCU9YRG | miembros: 49
+20 nov 2026, 4:00:12 p.m.	Información	[API] Consultando clan: #GQQPPJGR
+20 nov 2026, 4:00:13 p.m.	Información	[API] HTTP 404 para /clans/%23GQQPPJGR/currentriverrace | Respuesta: {"reason":"notFound"}
+20 nov 2026, 4:00:13 p.m.	Información	[API][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-20 16:00:13 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+20 nov 2026, 4:00:13 p.m.	Información	[API] OK clan #GQQPPJGR | miembros: 1
+20 nov 2026, 4:00:13 p.m.	Información	[API] Clan #GQQPPJGR SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 1 miembros): no se cuenta como falla de la API.
+20 nov 2026, 4:00:13 p.m.	Información	[API] Consultando clan: #GG99LCJY
+20 nov 2026, 4:00:15 p.m.	Información	[API] HTTP 404 para /clans/%23GG99LCJY/currentriverrace | Respuesta: {"reason":"notFound"}
+20 nov 2026, 4:00:15 p.m.	Información	[API][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-20 16:00:15 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+20 nov 2026, 4:00:15 p.m.	Información	[API] OK clan #GG99LCJY | miembros: 6
+20 nov 2026, 4:00:15 p.m.	Información	[API] Clan #GG99LCJY SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 6 miembros): no se cuenta como falla de la API.
+20 nov 2026, 4:00:15 p.m.	Información	[API][PERIODO] RESUMEN periodIndex por clan: #GCRG8L00=18, #GYCU9YRG=18, #GQQPPJGR=sin dato, #GG99LCJY=sin dato -> los clanes con dato coinciden. | SIN currentriverrace: #GQQPPJGR, #GG99LCJY (404 o fuera de la carrera; no se escribe nada para ellos); sin guerra abierta (404, §PF379): #GQQPPJGR, #GG99LCJY.
+20 nov 2026, 4:00:24 p.m.	Información	[Archivo] T-27  S-03 P.I-18-V 20-11-2026 16.00 - Grupo乂Terna™ - clans.json: 15 clave(s) [location:4, memberList:45] → 15 clave(s) [location:4, memberList:45]
+20 nov 2026, 4:00:24 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-18): T-27  S-03 P.I-18-V 20-11-2026 16.00 - Grupo乂Terna™ - clans.json
+20 nov 2026, 4:00:27 p.m.	Información	[Archivo] T-27  S-03 P.I-18-V 20-11-2026 04.55 - Grupo乂Terna™ - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:9] → 7 clave(s) [clan:8, clans:5, periodLogs:9]
+20 nov 2026, 4:00:27 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-18): T-27  S-03 P.I-18-V 20-11-2026 04.55 - Grupo乂Terna™ - currentriverrace.json
+20 nov 2026, 4:00:31 p.m.	Información	[Archivo] T-27  S-03 P.I-18-V 20-11-2026 16.00 - GrupoXTerna™2 - clans.json: 15 clave(s) [location:4, memberList:49] → 15 clave(s) [location:4, memberList:49]
+20 nov 2026, 4:00:31 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-18): T-27  S-03 P.I-18-V 20-11-2026 16.00 - GrupoXTerna™2 - clans.json
+20 nov 2026, 4:00:34 p.m.	Información	[Archivo] T-27  S-03 P.I-18-V 20-11-2026 04.45 - GrupoXTerna™2 - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:9] → 7 clave(s) [clan:8, clans:5, periodLogs:9]
+20 nov 2026, 4:00:34 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-18): T-27  S-03 P.I-18-V 20-11-2026 04.45 - GrupoXTerna™2 - currentriverrace.json
+20 nov 2026, 4:00:38 p.m.	Información	[Archivo] T-27  S-03 P.I-18-V 20-11-2026 16.00 - GrupoXTerna™3 - clans.json: 15 clave(s) [location:4, memberList:1] → 15 clave(s) [location:4, memberList:1]
+20 nov 2026, 4:00:38 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-18): T-27  S-03 P.I-18-V 20-11-2026 16.00 - GrupoXTerna™3 - clans.json
+20 nov 2026, 4:00:41 p.m.	Información	[Archivo] T-27  S-03 P.I-18-V 20-11-2026 16.00 - Mini乂Ternas™ - clans.json: 15 clave(s) [location:4, memberList:6] → 15 clave(s) [location:4, memberList:6]
+20 nov 2026, 4:00:41 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-18): T-27  S-03 P.I-18-V 20-11-2026 16.00 - Mini乂Ternas™ - clans.json
+20 nov 2026, 4:00:45 p.m.	Información	[Log] Entrada registrada en Log_ScriptTerna.json: _guardarJsonClanesDesdeCaptura_()
+20 nov 2026, 4:00:45 p.m.	Información	[Captura][JSON] 6 archivo(s) escrito(s) en 25.3 s
+20 nov 2026, 4:00:47 p.m.	Información	[Captura] FIN (hora, 39 s)
+20 nov 2026, 4:00:47 p.m.	Información	[RUNGUERRA] Paso 1/8: terminado tras 39 s en su última llamada; la tanda lleva 40 s de 150 s.
+20 nov 2026, 4:00:48 p.m.	Información	[RUNGUERRA] Ejecutando paso 2/8: Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)
+20 nov 2026, 4:00:49 p.m.	Información	[Guerra] Actualizando... PeriodIndex actual: 18
+20 nov 2026, 4:00:53 p.m.	Información	[Guerra] _restaurarGuerraDesdeCSVSiVacia: hoja ya tiene 1925 fila(s) y ya cubre todas las de la temporada actual (27) presentes en Backup_Guerra.csv, se omite la restauración.
+20 nov 2026, 4:00:53 p.m.	Información	[Guerra][t] tras _restaurarGuerraDesdeCSVSiVacia: 3932 ms
+20 nov 2026, 4:00:54 p.m.	Información	[Guerra][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-20 16:00:54 | sectionIndex=2 periodIndex=18 periodType=warDay | Temporada(bot)=27 Semana=3 Dia=V | DiaGuerra=20/11/2026
+20 nov 2026, 4:00:54 p.m.	Información	[Guerra][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-20 16:00:54 | sectionIndex=2 periodIndex=18 periodType=warDay | Temporada(bot)=27 Semana=3 Dia=V | DiaGuerra=20/11/2026
+20 nov 2026, 4:00:54 p.m.	Información	ALERTA BARCOS: Dipper (#V90CQQVC8) │ GrupoXTerna™2 │ Día(s): V:2 │ Total semana:2
+20 nov 2026, 4:00:54 p.m.	Información	ALERTA BARCOS: Linares (#UL0QC2PC2) │ GrupoXTerna™2 │ Día(s): V:4 │ Total semana:4
+20 nov 2026, 4:00:54 p.m.	Información	[Guerra][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida (antes se escribia con periodIndex 0 / training).
+20 nov 2026, 4:00:54 p.m.	Información	[Guerra][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-20 16:00:54 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+20 nov 2026, 4:00:54 p.m.	Información	[Guerra][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida (antes se escribia con periodIndex 0 / training).
+20 nov 2026, 4:00:54 p.m.	Información	[Guerra][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-20 16:00:54 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+20 nov 2026, 4:00:54 p.m.	Información	[Guerra][t] tras loop de participantes: 4862 ms
+20 nov 2026, 4:00:57 p.m.	Información	[Guerra][t] tras escrituras (existentes+nuevas): 7699 ms
+20 nov 2026, 4:00:59 p.m.	Información	[Guerra][t] tras _aplicarFmtCondicionalGuerra + _ocultarFilasTagsOcultos: 9699 ms
+20 nov 2026, 4:01:00 p.m.	Información	[Guerra][t] tras _purgarTemporadasAnterioresGuerra: 10562 ms
+20 nov 2026, 4:01:01 p.m.	Información	[Guerra][t] tras _limpiarLinksAccidentalesGuerraIncremental (completo: true): 11509 ms
+20 nov 2026, 4:01:06 p.m.	Información	[Guerra] updateGuerraSheet completado. Nuevas filas: 0 | tiempo total tras restauración: 17164 ms
+20 nov 2026, 4:01:06 p.m.	Información	[RUNGUERRA] Paso 2/8: terminado tras 18 s en su última llamada; la tanda lleva 59 s de 150 s.
+20 nov 2026, 4:01:07 p.m.	Información	[RUNGUERRA] Ejecutando paso 3/8: Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día
+20 nov 2026, 4:01:09 p.m.	Información	[GuerraLogs] Actualizando... PeriodIndex actual: 18
+20 nov 2026, 4:01:12 p.m.	Información	[GuerraLogs][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+20 nov 2026, 4:01:12 p.m.	Información	[GuerraLogs][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+20 nov 2026, 4:01:14 p.m.	Información	[GuerraLogs] completado. Nuevas filas creadas: 0
+20 nov 2026, 4:01:14 p.m.	Información	[RUNGUERRA] Paso 3/8: terminado tras 7 s en su última llamada; la tanda lleva 67 s de 150 s.
+20 nov 2026, 4:01:15 p.m.	Información	[RUNGUERRA] Ejecutando paso 4/8: Hoja Control: actualizar → hoja Control al día
+20 nov 2026, 4:01:17 p.m.	Información	[Control] Actualizando...
+20 nov 2026, 4:01:24 p.m.	Información	[TorneosMed] hoja Guerra: 1925 fila(s) leídas en 719ms
+20 nov 2026, 4:01:26 p.m.	Información	[TorneosMed] Guerra_Logs: 980 fila(s) leídas y procesadas en 1359ms
+20 nov 2026, 4:01:26 p.m.	Información	[TorneosMed] procesar: 1925 fila(s), 1019 de día de guerra; bucle 1 = 1804ms (cruce de meta: 1019 llamada(s), 1795ms); bucle 2 = 3ms
+20 nov 2026, 4:01:26 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 1811ms
+20 nov 2026, 4:01:29 p.m.	Información	[TorneosMed] hoja Guerra: 1925 fila(s) leídas en 806ms
+20 nov 2026, 4:01:30 p.m.	Información	[TorneosMed] Guerra_Logs: 980 fila(s) leídas y procesadas en 1023ms
+20 nov 2026, 4:01:30 p.m.	Información	[TorneosMed] procesar: 1925 fila(s), 1019 de día de guerra; bucle 1 = 1051ms (cruce de meta: 1019 llamada(s), 1043ms); bucle 2 = 5ms
+20 nov 2026, 4:01:30 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 1110ms
+20 nov 2026, 4:01:36 p.m.	Información	[Control] Formato pesado (bordes/anchos/condicional/visibilidad) SALTADO -- sin cambios de jugadores/temporada/semana desde la última reconstrucción (respaldo forzado cada 6h).
+20 nov 2026, 4:01:41 p.m.	Información	[Control] Actualizado. Jugadores: 102 · filas (una por jugador y clan): 104
+20 nov 2026, 4:01:41 p.m.	Información	[RUNGUERRA] Paso 4/8: terminado tras 26 s en su última llamada; la tanda lleva 94 s de 150 s.
+20 nov 2026, 4:01:43 p.m.	Información	[RUNGUERRA] Ejecutando paso 5/8: Hoja Pendientes: actualizar → hoja Pendientes al día
+20 nov 2026, 4:01:44 p.m.	Información	[Pendientes] Sin guerra abierta (HTTP 404, no es falla de la API; se omiten sus miembros): #GQQPPJGR, #GG99LCJY.
+20 nov 2026, 4:01:44 p.m.	Información	[Pendientes] Calculando pendientes...
+20 nov 2026, 4:01:50 p.m.	Información	[Pendientes] Actualizado. Jugadores con pendientes: 62
+20 nov 2026, 4:01:50 p.m.	Información	[RUNGUERRA] Paso 5/8: terminado tras 7 s en su última llamada; la tanda lleva 103 s de 150 s.
+20 nov 2026, 4:01:51 p.m.	Información	[RUNGUERRA] Ejecutando paso 6/8: Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía
+20 nov 2026, 4:01:52 p.m.	Información	[RUNGUERRA] Paso 6/8: terminado tras 1 s en su última llamada; la tanda lleva 105 s de 150 s.
+20 nov 2026, 4:01:53 p.m.	Información	[RUNGUERRA] Ejecutando paso 7/8: Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día
+20 nov 2026, 4:01:54 p.m.	Información	[Guerra] _syncGuerraCSV: leyendo la hoja (1925 fila(s) de dato).
+20 nov 2026, 4:02:15 p.m.	Información	[Guerra] _syncGuerraCSV: hoja leída en 21.5 s; leyendo Backup_Guerra.csv de Drive.
+20 nov 2026, 4:02:16 p.m.	Información	[Guerra] _syncGuerraCSV: CSV leído con 41288 fila(s) y 5601319 caracteres; hoja con 1925 fila(s); referencia 5839639 bytes.
+20 nov 2026, 4:02:16 p.m.	Información	[Guerra] _syncGuerraCSV: tiempos hasta aquí: leer hoja 21.5 s (getLastRow 0.2 s; getDisplayValues 0.8 s; columnas de fecha 20.6 s); leer CSV 0 s; tamaño de referencia 0.3 s; relectura directa 0 s; armar filas 0.5 s; total 22.3 s.
+20 nov 2026, 4:02:20 p.m.	Información	[Archivo] Backup_Guerra.csv: 41288 fila(s) → 41288 fila(s)
+20 nov 2026, 4:02:21 p.m.	Información	[Guerra] Backup_Guerra.csv fusionado (41288 filas totales; 0 nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores). Clan_Tag conservado del CSV (la hoja lo traía vacío): 404 fila(s).
+20 nov 2026, 4:02:21 p.m.	Información	[runGuerra] Respaldo CSV de Guerra terminado en 28 s.
+20 nov 2026, 4:02:21 p.m.	Información	[RUNGUERRA] Paso 7/8: terminado tras 28 s en su última llamada; la tanda lleva 134 s de 150 s.
+20 nov 2026, 4:02:22 p.m.	Información	[RUNGUERRA] Ejecutando paso 8/8: Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados
+20 nov 2026, 4:02:33 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 1 leída directo de Backup_Guerra.csv (208 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:34 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 2 leída directo de Backup_Guerra.csv (172 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:34 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 3 leída directo de Backup_Guerra.csv (176 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:34 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 4 leída directo de Backup_Guerra.csv (192 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:34 p.m.	Información	[Valores diarios] T4 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:34 p.m.	Información	[Valores diarios] T4 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:34 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 5 leída directo de Backup_Guerra.csv (56 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:34 p.m.	Información	[Valores diarios] T5 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T5 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T5 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 6 leída directo de Backup_Guerra.csv (24 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T6 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T6 S1 dia V: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T6 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T6 S2 dia V: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T6 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T6 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 7 leída directo de Backup_Guerra.csv (320 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T7 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Valores diarios] T7 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+20 nov 2026, 4:02:35 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 8 leída directo de Backup_Guerra.csv (64 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:36 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 9 leída directo de Backup_Guerra.csv (196 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:36 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 10 leída directo de Backup_Guerra.csv (384 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:36 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 11 leída directo de Backup_Guerra.csv (276 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:37 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 12 leída directo de Backup_Guerra.csv (304 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:37 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 13 leída directo de Backup_Guerra.csv (596 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:37 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 14 leída directo de Backup_Guerra.csv (588 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:37 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 15 leída directo de Backup_Guerra.csv (672 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:38 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 16 leída directo de Backup_Guerra.csv (896 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:38 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 17 leída directo de Backup_Guerra.csv (772 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:38 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 18 leída directo de Backup_Guerra.csv (636 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:38 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 19 leída directo de Backup_Guerra.csv (1016 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 20 leída directo de Backup_Guerra.csv (776 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 21 leída directo de Backup_Guerra.csv (1008 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 22 leída directo de Backup_Guerra.csv (7681 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 23 leída directo de Backup_Guerra.csv (3631 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 24 leída directo de Backup_Guerra.csv (8172 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 25 leída directo de Backup_Guerra.csv (5335 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 26 leída directo de Backup_Guerra.csv (5212 fila(s) — hoja Guerra no tocada).
+20 nov 2026, 4:02:41 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 2ms
+20 nov 2026, 4:02:41 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 3ms
+20 nov 2026, 4:03:24 p.m.	Información	20/11 16:03:24 [Dashboard] build=B3 total=62474ms | ctx=945 | guerraHoy+pendientes=1016 | directorio=1327 | temporadasCSV=295 | valoresDiarios=15536 | control2Vigente=2065 | control2Historico=3686 | ingresos.nuevos=2047 | ingresos.guerra=3 | ingresos.rivales=331 | ingresos.control2=738 | ingresos=34485 || detalle: dir.lectura=1166ms/1x | c2.guerraData=218ms/27x | c2.minG=1684ms/27x | c2.bucleJugadores=1460ms/27x
+20 nov 2026, 4:03:24 p.m.	Depurar	20/11 16:03:24 [Dashboard] build=B3 total=62474ms | ctx=945 | guerraHoy+pendientes=1016 | directorio=1327 | temporadasCSV=295 | valoresDiarios=15536 | control2Vigente=2065 | control2Historico=3686 | ingresos.nuevos=2047 | ingresos.guerra=3 | ingresos.rivales=331 | ingresos.control2=738 | ingresos=34485 || detalle: dir.lectura=1166ms/1x | c2.guerraData=218ms/27x | c2.minG=1684ms/27x | c2.bucleJugadores=1460ms/27x
+20 nov 2026, 4:03:25 p.m.	Información	20/11 16:03:25 [WebGuerraEnVivo] datos del dashboard calculados en 62908ms
+20 nov 2026, 4:03:25 p.m.	Depurar	20/11 16:03:25 [WebGuerraEnVivo] datos del dashboard calculados en 62908ms
+20 nov 2026, 4:03:25 p.m.	Información	20/11 16:03:25 [WebGuerraEnVivo] caché guardada: JSON 2433568 car. -> gzip+base64 303308 car. en 4 trozo(s), 7200 s.
+20 nov 2026, 4:03:25 p.m.	Depurar	20/11 16:03:25 [WebGuerraEnVivo] caché guardada: JSON 2433568 car. -> gzip+base64 303308 car. en 4 trozo(s), 7200 s.
+20 nov 2026, 4:03:37 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra.json: 17 clave(s) [ctx:12, guerraPorClan:2, diasSemanaGuerra:4] → 17 clave(s) [ctx:12, guerraPorClan:2, diasSemanaGuerra:4]
+20 nov 2026, 4:03:37 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_ctx.json: 2 clave(s) [ctx:12] → 2 clave(s) [ctx:12]
+20 nov 2026, 4:03:37 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_top.json: 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1] → 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1]
+20 nov 2026, 4:03:38 p.m.	Información	20/11 16:03:38 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2411 KB; guerra_top.json 37 KB) en 12049ms
+20 nov 2026, 4:03:38 p.m.	Depurar	20/11 16:03:38 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2411 KB; guerra_top.json 37 KB) en 12049ms
+20 nov 2026, 4:03:45 p.m.	Información	[Archivo] GrupoTerna/Web@data/roster.json: 2 clave(s) [clanes:4] → 2 clave(s) [clanes:4]
+20 nov 2026, 4:03:45 p.m.	Información	20/11 16:03:45 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (39 KB) en 7636ms
+20 nov 2026, 4:03:45 p.m.	Depurar	20/11 16:03:45 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (39 KB) en 7636ms
+20 nov 2026, 4:04:04 p.m.	Información	[Archivo] GrupoTerna/Web@data/home.json: 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4] → 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4]
+20 nov 2026, 4:04:05 p.m.	Información	20/11 16:04:05 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 19107ms
+20 nov 2026, 4:04:05 p.m.	Depurar	20/11 16:04:05 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 19107ms
+20 nov 2026, 4:04:05 p.m.	Información	20/11 16:04:05 [TorneosEstatico] se calculó hace menos de 90 min; se omite en este ciclo
+20 nov 2026, 4:04:05 p.m.	Depurar	20/11 16:04:05 [TorneosEstatico] se calculó hace menos de 90 min; se omite en este ciclo
+20 nov 2026, 4:04:06 p.m.	Información	20/11 16:04:06 [WebGuerraEnVivo] caché CALENTADA por el bot en 103652ms, TTL 7200 s
+20 nov 2026, 4:04:06 p.m.	Depurar	20/11 16:04:06 [WebGuerraEnVivo] caché CALENTADA por el bot en 103652ms, TTL 7200 s
+20 nov 2026, 4:04:06 p.m.	Información	[runGuerra] Calentamiento del caché terminado en 104 s.
+20 nov 2026, 4:04:06 p.m.	Información	[RUNGUERRA] Paso 8/8: terminado tras 104 s en su última llamada; la tanda lleva 239 s de 150 s.
+20 nov 2026, 4:04:09 p.m.	Información	[CSV] Revisión posterior: Backup_Guerra.csv pesa 5839645 bytes (se escribieron 5601325 caracteres). Sin cambios.
+20 nov 2026, 4:04:10 p.m.	Información	=== runGuerra (horaria) FIN ===
+20 nov 2026, 4:04:10 p.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	_continuarRunSyncCSV	Basada en el tiempo	20 nov 2026, 7:47:08 a.m.	184.608 s	
+Fallida
+Registros de Cloud
+20 nov 2026, 7:47:17 a.m.	Información	[CSV] CONTINÚA desde el paso 13/14
+20 nov 2026, 7:47:17 a.m.	Información	[RUNSYNCCSV] ESTADO al empezar: pasos cerrados 12/14; paso 13/14 EN CURSO: Respaldo de hojas derivadas: guardar de una en una → CSV de cada hoja derivada en Drive (puede necesitar varias tandas) (la tanda anterior lo dejó incompleto; esta es la tanda 2 de este paso). Progreso guardado al cierre de la tanda anterior: hoja 4/15 (Control).
+20 nov 2026, 7:47:17 a.m.	Información	[RUNSYNCCSV] Ejecutando paso 13/14: Respaldo de hojas derivadas: guardar de una en una → CSV de cada hoja derivada en Drive (puede necesitar varias tandas)
+20 nov 2026, 7:49:03 a.m.	Información	[Archivo] Backup_Players.csv: 114 fila(s) → 108 fila(s) [BAJA 6]
+20 nov 2026, 7:49:03 a.m.	Información	[Backup] Backup_Players.csv sincronizado (108 filas de dato).
+20 nov 2026, 7:49:03 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 5/15 (Players) en 103 s.
+20 nov 2026, 7:49:03 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja 5/15 (Players). Se reintenta el mismo paso en la próxima continuación.
+20 nov 2026, 7:49:03 a.m.	Información	[RUNSYNCCSV] Paso 13/14 incompleto tras la llamada 1 de esta tanda (hoja 5/15 (Players)). La tanda lleva 107 s de 150 s: se vuelve a llamar al mismo paso.
+20 nov 2026, 7:49:17 a.m.	Información	[Archivo] Backup_T_Control.csv: 22 fila(s) → 22 fila(s)
+20 nov 2026, 7:49:18 a.m.	Información	[Backup] Backup_T_Control.csv sincronizado (22 filas de dato).
+20 nov 2026, 7:49:18 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 6/15 (T_Control) en 14 s.
+20 nov 2026, 7:49:44 a.m.	Información	[Archivo] Backup_Administradores.csv: 34 fila(s) → 34 fila(s)
+20 nov 2026, 7:49:44 a.m.	Información	[Backup] Backup_Administradores.csv sincronizado (34 filas de dato).
+20 nov 2026, 7:49:44 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 7/15 (Administradores) en 26 s.
+20 nov 2026, 7:49:45 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja 7/15 (Administradores). Se reintenta el mismo paso en la próxima continuación.
+20 nov 2026, 7:49:45 a.m.	Información	[RUNSYNCCSV] Paso 13/14 incompleto tras la llamada 2 de esta tanda (hoja 7/15 (Administradores)). La tanda lleva 148 s de 150 s: se vuelve a llamar al mismo paso.
+20 nov 2026, 7:49:55 a.m.	Información	[Archivo] Backup_Calendario.csv: 18 fila(s) → 18 fila(s)
+20 nov 2026, 7:49:55 a.m.	Información	[Backup] Backup_Calendario.csv sincronizado (18 filas de dato).
+20 nov 2026, 7:49:55 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 8/15 (Calendario) en 9 s.
+20 nov 2026, 7:49:58 a.m.	Información	[Archivo] Backup_Conflictos.csv: 3 fila(s) → 3 fila(s)
+20 nov 2026, 7:49:59 a.m.	Información	[Backup] Backup_Conflictos.csv sincronizado (3 filas de dato).
+20 nov 2026, 7:49:59 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 9/15 (Conflictos) en 3 s.
+20 nov 2026, 7:50:01 a.m.	Información	[Archivo] Backup_T_Resoluciones.csv: 0 fila(s) → 0 fila(s)
+20 nov 2026, 7:50:02 a.m.	Información	[Backup] Backup_T_Resoluciones.csv sincronizado (0 filas de dato).
+20 nov 2026, 7:50:02 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 10/15 (T_Resoluciones) en 3 s.
+20 nov 2026, 7:50:02 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja 10/15 (T_Resoluciones). Se reintenta el mismo paso en la próxima continuación.
+20 nov 2026, 7:50:02 a.m.	Información	[RUNSYNCCSV] No se vuelve a llamar al paso 13/14 en esta tanda: la tanda ya usó 165 s de los 150 s de su presupuesto.
+20 nov 2026, 7:50:02 a.m.	Información	[RUNSYNCCSV] Paso 13/14: incompleto tras 17 s en su última llamada; la tanda lleva 165 s de 150 s.
+20 nov 2026, 7:50:02 a.m.	Información	[RUNSYNCCSV] Paso 13/14 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+20 nov 2026, 7:50:02 a.m.	Información	[RUNSYNCCSV]   Avance del paso 13/14 (tanda 2 de este paso): AVANZÓ. Tanda anterior: hoja 4/15 (Control). Ahora: hoja 10/15 (T_Resoluciones).
+20 nov 2026, 7:50:04 a.m.	Información	[CSV] Revisión posterior: Backup_Players.csv pesa 16557 bytes (se escribieron 15686 caracteres). Sin cambios.
+20 nov 2026, 7:50:04 a.m.	Información	[CSV] Revisión posterior: Backup_T_Control.csv pesa 1529 bytes (se escribieron 1400 caracteres). Sin cambios.
+20 nov 2026, 7:50:04 a.m.	Información	[CSV] Revisión posterior: Backup_Administradores.csv pesa 22433 bytes (se escribieron 21104 caracteres). Sin cambios.
+20 nov 2026, 7:50:05 a.m.	Información	[CSV] Revisión posterior: Backup_Calendario.csv pesa 745 bytes (se escribieron 723 caracteres). Sin cambios.
+20 nov 2026, 7:50:07 a.m.	Información	[CSV] Revisión posterior: Backup_Conflictos.csv pesa 263 bytes (se escribieron 262 caracteres). Sin cambios.
+20 nov 2026, 7:50:10 a.m.	Información	[CSV] Revisión posterior: Backup_T_Resoluciones.csv pesa 101 bytes (se escribieron 101 caracteres). Sin cambios.
+20 nov 2026, 7:50:13 a.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	runSyncCSV	Basada en el tiempo	20 nov 2026, 7:37:02 a.m.	217.481 s	
+Fallida
+Registros de Cloud
+20 nov 2026, 7:37:07 a.m.	Información	[CSV] Iniciando sincronización...
+20 nov 2026, 7:37:07 a.m.	Información	[RUNSYNCCSV] ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/14 POR EMPEZAR: Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día.
+20 nov 2026, 7:37:07 a.m.	Información	[RUNSYNCCSV] Ejecutando paso 1/14: Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día
+20 nov 2026, 7:37:27 a.m.	Información	[Archivo] Backup_Directorio.csv: 115 fila(s) → 108 fila(s) [BAJA 7]
+20 nov 2026, 7:37:27 a.m.	Información	[Backup] Backup_Directorio.csv sincronizado (108 registros, 60 columnas formato DC, Cat_disp/Clanes_Admin tomadas de Administradores).
+20 nov 2026, 7:37:34 a.m.	Información	[Archivo] Backup_Clan.csv: 4 fila(s) → 4 fila(s)
+20 nov 2026, 7:37:34 a.m.	Información	[Backup] Backup_Clan.csv sincronizado.
+20 nov 2026, 7:37:34 a.m.	Información	[RUNSYNCCSV] Paso 1/14: terminado tras 27 s en su última llamada; la tanda lleva 27 s de 150 s.
+20 nov 2026, 7:37:35 a.m.	Información	[RUNSYNCCSV] Ejecutando paso 2/14: Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)
+20 nov 2026, 7:37:35 a.m.	Información	[Backup][t] syncAcumulativosCSV: empieza el trabajo 1/7 (Inactivos); a la ejecución le quedan 332 s.
+20 nov 2026, 7:38:49 a.m.	Información	[Archivo] Backup_Inactivos.csv: 1467 fila(s) → 1484 fila(s)
+20 nov 2026, 7:38:49 a.m.	Información	[Backup] Backup_Inactivos.csv sincronizado (1484 registros, 60 columnas armadas sin expandir la hoja Inactivos, 29 cols reales).
+20 nov 2026, 7:38:49 a.m.	Información	[Backup][t] syncAcumulativosCSV: trabajo 1/7 (Inactivos): 73629 ms
+20 nov 2026, 7:38:49 a.m.	Información	[Backup] syncAcumulativosCSV: presupuesto interno agotado tras el trabajo 1/7 (Inactivos). Se reintenta el mismo paso en la próxima continuación.
+20 nov 2026, 7:38:49 a.m.	Información	[Backup]   respaldo CSV de acumulativos: acumulado 1 de 7 trabajos (14 %); en tandas anteriores: 0; faltan 6.
+20 nov 2026, 7:38:49 a.m.	Información	[Backup]   respaldo CSV de acumulativos: en esta tanda: 1 trabajos.
+20 nov 2026, 7:38:49 a.m.	Información	[RUNSYNCCSV] Paso 2/14 incompleto tras la llamada 1 de esta tanda (respaldo CSV de acumulativos: 1 de 7 trabajos). La tanda lleva 102 s de 150 s: se vuelve a llamar al mismo paso.
+20 nov 2026, 7:38:49 a.m.	Información	[Backup][t] syncAcumulativosCSV: empieza el trabajo 2/7 (Comentarios); a la ejecución le quedan 258 s.
+20 nov 2026, 7:39:01 a.m.	Información	[Archivo] Backup_Comentarios.csv: 108 fila(s) → 108 fila(s)
+20 nov 2026, 7:39:01 a.m.	Información	[Backup] Backup_Comentarios.csv sincronizado (108 registros).
+20 nov 2026, 7:39:01 a.m.	Información	[Backup][t] syncAcumulativosCSV: trabajo 2/7 (Comentarios): 11864 ms
+20 nov 2026, 7:39:01 a.m.	Información	[Backup][t] syncAcumulativosCSV: empieza el trabajo 3/7 (Calendario_2); a la ejecución le quedan 246 s.
+20 nov 2026, 7:39:05 a.m.	Información	[Archivo] Backup_Calendario_2.csv: 6 fila(s) → 6 fila(s)
+20 nov 2026, 7:39:05 a.m.	Información	[Backup] Backup_Calendario_2.csv sincronizado (6 registros).
+20 nov 2026, 7:39:05 a.m.	Información	[Backup][t] syncAcumulativosCSV: trabajo 3/7 (Calendario_2): 3537 ms
+20 nov 2026, 7:39:05 a.m.	Información	[Backup][t] syncAcumulativosCSV: empieza el trabajo 4/7 (Guerra_Logs); a la ejecución le quedan 242 s.
+20 nov 2026, 7:40:30 a.m.	Información	[Archivo] Backup_Guerra_Logs.csv: 970 fila(s) → 980 fila(s)
+20 nov 2026, 7:40:30 a.m.	Información	[Backup] Backup_Guerra_Logs.csv sincronizado (980 registros).
+20 nov 2026, 7:40:30 a.m.	Información	[Backup][t] syncAcumulativosCSV: trabajo 4/7 (Guerra_Logs): 85445 ms
+20 nov 2026, 7:40:30 a.m.	Información	[Backup] syncAcumulativosCSV: presupuesto interno agotado tras el trabajo 4/7 (Guerra_Logs). Se reintenta el mismo paso en la próxima continuación.
+20 nov 2026, 7:40:30 a.m.	Información	[Backup]   respaldo CSV de acumulativos: acumulado 4 de 7 trabajos (57 %); en tandas anteriores: 1; faltan 3.
+20 nov 2026, 7:40:30 a.m.	Información	[Backup]   respaldo CSV de acumulativos: en esta tanda: 3 trabajos.
+20 nov 2026, 7:40:31 a.m.	Información	[RUNSYNCCSV] No se vuelve a llamar al paso 2/14 en esta tanda: la tanda ya usó 204 s de los 150 s de su presupuesto.
+20 nov 2026, 7:40:31 a.m.	Información	[RUNSYNCCSV] Paso 2/14: incompleto tras 101 s en su última llamada; la tanda lleva 204 s de 150 s.
+20 nov 2026, 7:40:31 a.m.	Información	[RUNSYNCCSV] Paso 2/14 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+20 nov 2026, 7:40:31 a.m.	Información	[RUNSYNCCSV]   Avance del paso 2/14 (tanda 1 de este paso): al cierre: respaldo CSV de acumulativos: 4 de 7 trabajos. (Sin tanda anterior comparable de este paso.)
+20 nov 2026, 7:40:32 a.m.	Información	[CSV] Revisión posterior: Backup_Directorio.csv pesa 480834 bytes (se escribieron 477409 caracteres). Sin cambios.
+20 nov 2026, 7:40:33 a.m.	Información	[CSV] Revisión posterior: Backup_Clan.csv pesa 3268 bytes (se escribieron 3130 caracteres). Sin cambios.
+20 nov 2026, 7:40:33 a.m.	Información	[CSV] Revisión posterior: Backup_Inactivos.csv pesa 242939 bytes (se escribieron 233894 caracteres). Sin cambios.
+20 nov 2026, 7:40:33 a.m.	Información	[CSV] Revisión posterior: Backup_Comentarios.csv pesa 26271 bytes (se escribieron 23298 caracteres). Sin cambios.
+20 nov 2026, 7:40:33 a.m.	Información	[CSV] Revisión posterior: Backup_Calendario_2.csv pesa 914 bytes (se escribieron 906 caracteres). Sin cambios.
+20 nov 2026, 7:40:38 a.m.	Información	[CSV] Revisión posterior: Backup_Guerra_Logs.csv pesa 136700 bytes (se escribieron 130151 caracteres). Sin cambios.
+20 nov 2026, 7:40:39 a.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	runGuerra	Basada en el tiempo	20 nov 2026, 12:30:00 a.m.	117.608 s	
+Fallida
+Registros de Cloud
+20 nov 2026, 12:31:57 a.m.	Error	Lo sentimos, se produjo un error en el servidor. Aguarde un momento e inténtelo de nuevo.
+Encabezado	_continuarRunGuerraRapido	Basada en el tiempo	19 nov 2026, 4:05:27 p.m.	39.354 s	
+Fallida
+Registros de Cloud
+19 nov 2026, 4:05:45 p.m.	Información	=== runGuerraRapido CONTINÚA desde el paso 5/11 [programada, sin API] ===
+19 nov 2026, 4:06:06 p.m.	Error	Lo sentimos, se produjo un error en el servidor. Aguarde un momento e inténtelo de nuevo.
+Encabezado	_continuarRunGuerraCadena	Basada en el tiempo	19 nov 2026, 8:27:04 a.m.	189.206 s	
+Fallida
+Registros de Cloud
+19 nov 2026, 8:27:09 a.m.	Información	=== runGuerra (horaria) CONTINÚA desde el paso 3/8 ===
+19 nov 2026, 8:27:09 a.m.	Información	[RUNGUERRA] ESTADO al empezar: pasos cerrados 2/8; paso 3/8 POR EMPEZAR: Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día (la tanda anterior cerró el paso 2 y se quedó sin tiempo).
+19 nov 2026, 8:27:09 a.m.	Información	[RUNGUERRA] Reanudando en el paso 3: cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.
+19 nov 2026, 8:27:09 a.m.	Información	[Captura] INICIO (tandas, edad maxima del checkpoint 2700 s)
+19 nov 2026, 8:27:10 a.m.	Información	[API] Progreso anterior de clanes recuperado de Drive (4 clan(es)), no se vuelven a pedir a la API.
+19 nov 2026, 8:27:11 a.m.	Información	[Captura] FIN (tandas, 2 s)
+19 nov 2026, 8:27:11 a.m.	Información	[RUNGUERRA] Ejecutando paso 3/8: Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día
+19 nov 2026, 8:27:12 a.m.	Información	[GuerraLogs] Actualizando... PeriodIndex actual: 17
+19 nov 2026, 8:27:15 a.m.	Información	[GuerraLogs][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+19 nov 2026, 8:27:15 a.m.	Información	[GuerraLogs][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+19 nov 2026, 8:27:17 a.m.	Información	[GuerraLogs] completado. Nuevas filas creadas: 0
+19 nov 2026, 8:27:17 a.m.	Información	[RUNGUERRA] Paso 3/8: terminado tras 6 s en su última llamada; la tanda lleva 9 s de 150 s.
+19 nov 2026, 8:27:18 a.m.	Información	[RUNGUERRA] Ejecutando paso 4/8: Hoja Control: actualizar → hoja Control al día
+19 nov 2026, 8:27:19 a.m.	Información	[Control] Actualizando...
+19 nov 2026, 8:27:27 a.m.	Información	[TorneosMed] hoja Guerra: 1809 fila(s) leídas en 1560ms
+19 nov 2026, 8:27:28 a.m.	Información	[TorneosMed] Guerra_Logs: 970 fila(s) leídas y procesadas en 1059ms
+19 nov 2026, 8:27:28 a.m.	Información	[TorneosMed] procesar: 1809 fila(s), 903 de día de guerra; bucle 1 = 1616ms (cruce de meta: 903 llamada(s), 1610ms); bucle 2 = 2ms
+19 nov 2026, 8:27:28 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 1621ms
+19 nov 2026, 8:27:30 a.m.	Información	[TorneosMed] hoja Guerra: 1809 fila(s) leídas en 851ms
+19 nov 2026, 8:27:32 a.m.	Información	[TorneosMed] Guerra_Logs: 970 fila(s) leídas y procesadas en 1355ms
+19 nov 2026, 8:27:32 a.m.	Información	[TorneosMed] procesar: 1809 fila(s), 903 de día de guerra; bucle 1 = 1373ms (cruce de meta: 903 llamada(s), 1365ms); bucle 2 = 2ms
+19 nov 2026, 8:27:32 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 1377ms
+19 nov 2026, 8:27:36 a.m.	Información	[Control] Formato pesado (bordes/anchos/condicional/visibilidad) SALTADO -- sin cambios de jugadores/temporada/semana desde la última reconstrucción (respaldo forzado cada 6h).
+19 nov 2026, 8:27:36 a.m.	Información	[Control] _limpiarLinksAccidentalesEnHoja() SALTADO (throttle 60 min, faltan 2 min para la próxima).
+19 nov 2026, 8:27:36 a.m.	Información	[Control] Actualizado. Jugadores: 99 · filas (una por jugador y clan): 101
+19 nov 2026, 8:27:36 a.m.	Información	[RUNGUERRA] Paso 4/8: terminado tras 17 s en su última llamada; la tanda lleva 27 s de 150 s.
+19 nov 2026, 8:27:37 a.m.	Información	[RUNGUERRA] Ejecutando paso 5/8: Hoja Pendientes: actualizar → hoja Pendientes al día
+19 nov 2026, 8:27:37 a.m.	Información	[Pendientes] Sin guerra abierta (HTTP 404, no es falla de la API; se omiten sus miembros): #GQQPPJGR, #GG99LCJY.
+19 nov 2026, 8:27:39 a.m.	Información	[Pendientes] Calculando pendientes...
+19 nov 2026, 8:27:46 a.m.	Información	[Pendientes] Actualizado. Jugadores con pendientes: 80
+19 nov 2026, 8:27:46 a.m.	Información	[RUNGUERRA] Paso 5/8: terminado tras 9 s en su última llamada; la tanda lleva 37 s de 150 s.
+19 nov 2026, 8:27:47 a.m.	Información	[RUNGUERRA] Ejecutando paso 6/8: Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía
+19 nov 2026, 8:27:47 a.m.	Información	[RUNGUERRA] Paso 6/8: terminado tras 1 s en su última llamada; la tanda lleva 39 s de 150 s.
+19 nov 2026, 8:27:48 a.m.	Información	[RUNGUERRA] Ejecutando paso 7/8: Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día
+19 nov 2026, 8:27:49 a.m.	Información	[Guerra] _syncGuerraCSV: leyendo la hoja (1809 fila(s) de dato).
+19 nov 2026, 8:27:57 a.m.	Información	[Guerra] _syncGuerraCSV: hoja leída en 8.8 s; leyendo Backup_Guerra.csv de Drive.
+19 nov 2026, 8:27:59 a.m.	Información	[Guerra] _syncGuerraCSV: CSV leído con 41172 fila(s) y 5584724 caracteres; hoja con 1809 fila(s); referencia 5822319 bytes.
+19 nov 2026, 8:27:59 a.m.	Información	[Guerra] _syncGuerraCSV: tiempos hasta aquí: leer hoja 8.8 s (getLastRow 1 s; getDisplayValues 0.7 s; columnas de fecha 7.1 s); leer CSV 0.7 s; tamaño de referencia 0.8 s; relectura directa 0 s; armar filas 0.4 s; total 10.7 s.
+19 nov 2026, 8:28:03 a.m.	Información	[Archivo] Backup_Guerra.csv: 41172 fila(s) → 41172 fila(s)
+19 nov 2026, 8:28:04 a.m.	Información	[Guerra] Backup_Guerra.csv fusionado (41172 filas totales; 0 nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores). Clan_Tag conservado del CSV (la hoja lo traía vacío): 404 fila(s).
+19 nov 2026, 8:28:04 a.m.	Información	[runGuerra] Respaldo CSV de Guerra terminado en 16 s.
+19 nov 2026, 8:28:04 a.m.	Información	[RUNGUERRA] Paso 7/8: terminado tras 16 s en su última llamada; la tanda lleva 55 s de 150 s.
+19 nov 2026, 8:28:05 a.m.	Información	[RUNGUERRA] Ejecutando paso 8/8: Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados
+19 nov 2026, 8:28:17 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 1 leída directo de Backup_Guerra.csv (208 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:18 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 2 leída directo de Backup_Guerra.csv (172 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:18 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 3 leída directo de Backup_Guerra.csv (176 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:18 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 4 leída directo de Backup_Guerra.csv (192 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T4 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T4 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:18 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 5 leída directo de Backup_Guerra.csv (56 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T5 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T5 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T5 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:18 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 6 leída directo de Backup_Guerra.csv (24 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T6 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T6 S1 dia V: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T6 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:18 a.m.	Información	[Valores diarios] T6 S2 dia V: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:19 a.m.	Información	[Valores diarios] T6 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:19 a.m.	Información	[Valores diarios] T6 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:19 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 7 leída directo de Backup_Guerra.csv (320 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:19 a.m.	Información	[Valores diarios] T7 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:19 a.m.	Información	[Valores diarios] T7 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 8:28:19 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 8 leída directo de Backup_Guerra.csv (64 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:19 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 9 leída directo de Backup_Guerra.csv (196 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:19 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 10 leída directo de Backup_Guerra.csv (384 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:19 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 11 leída directo de Backup_Guerra.csv (276 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:20 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 12 leída directo de Backup_Guerra.csv (304 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:20 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 13 leída directo de Backup_Guerra.csv (596 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:20 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 14 leída directo de Backup_Guerra.csv (588 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:20 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 15 leída directo de Backup_Guerra.csv (672 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:21 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 16 leída directo de Backup_Guerra.csv (896 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:21 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 17 leída directo de Backup_Guerra.csv (772 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:21 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 18 leída directo de Backup_Guerra.csv (636 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:21 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 19 leída directo de Backup_Guerra.csv (1016 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:21 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 20 leída directo de Backup_Guerra.csv (776 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:22 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 21 leída directo de Backup_Guerra.csv (1008 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:22 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 22 leída directo de Backup_Guerra.csv (7681 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:22 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 23 leída directo de Backup_Guerra.csv (3631 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:22 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 24 leída directo de Backup_Guerra.csv (8172 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:23 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 25 leída directo de Backup_Guerra.csv (5335 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:23 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 26 leída directo de Backup_Guerra.csv (5212 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 8:28:24 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 5ms
+19 nov 2026, 8:28:24 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 3ms
+19 nov 2026, 8:29:23 a.m.	Información	19/11 08:29:23 [Dashboard] build=B3 total=78114ms | ctx=749 | guerraHoy+pendientes=2359 | directorio=2098 | temporadasCSV=297 | valoresDiarios=13785 | control2Vigente=2301 | control2Historico=3227 | ingresos.nuevos=2357 | ingresos.guerra=6 | ingresos.rivales=371 | ingresos.control2=1783 | ingresos=48781 || detalle: dir.lectura=1882ms/1x | c2.guerraData=295ms/27x | c2.minG=1800ms/27x | c2.bucleJugadores=1269ms/27x
+19 nov 2026, 8:29:23 a.m.	Depurar	19/11 08:29:23 [Dashboard] build=B3 total=78114ms | ctx=749 | guerraHoy+pendientes=2359 | directorio=2098 | temporadasCSV=297 | valoresDiarios=13785 | control2Vigente=2301 | control2Historico=3227 | ingresos.nuevos=2357 | ingresos.guerra=6 | ingresos.rivales=371 | ingresos.control2=1783 | ingresos=48781 || detalle: dir.lectura=1882ms/1x | c2.guerraData=295ms/27x | c2.minG=1800ms/27x | c2.bucleJugadores=1269ms/27x
+19 nov 2026, 8:29:23 a.m.	Información	19/11 08:29:23 [WebGuerraEnVivo] datos del dashboard calculados en 78469ms
+19 nov 2026, 8:29:23 a.m.	Depurar	19/11 08:29:23 [WebGuerraEnVivo] datos del dashboard calculados en 78469ms
+19 nov 2026, 8:29:24 a.m.	Información	19/11 08:29:24 [WebGuerraEnVivo] caché guardada: JSON 2425530 car. -> gzip+base64 300876 car. en 4 trozo(s), 7200 s.
+19 nov 2026, 8:29:24 a.m.	Depurar	19/11 08:29:24 [WebGuerraEnVivo] caché guardada: JSON 2425530 car. -> gzip+base64 300876 car. en 4 trozo(s), 7200 s.
+19 nov 2026, 8:29:37 a.m.	Información	[Archivo] GrupoTerna/Web@data/guerra.json: 17 clave(s) [ctx:12, guerraPorClan:2, diasSemanaGuerra:4] → 17 clave(s) [ctx:12, guerraPorClan:2, diasSemanaGuerra:4]
+19 nov 2026, 8:29:38 a.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_ctx.json: 2 clave(s) [ctx:12] → 2 clave(s) [ctx:12]
+19 nov 2026, 8:29:38 a.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_top.json: 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1] → 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1]
+19 nov 2026, 8:29:38 a.m.	Información	19/11 08:29:38 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2403 KB; guerra_top.json 31 KB) en 13759ms
+19 nov 2026, 8:29:38 a.m.	Depurar	19/11 08:29:38 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2403 KB; guerra_top.json 31 KB) en 13759ms
+19 nov 2026, 8:29:45 a.m.	Información	[Archivo] GrupoTerna/Web@data/roster.json: 2 clave(s) [clanes:4] → 2 clave(s) [clanes:4]
+19 nov 2026, 8:29:45 a.m.	Información	19/11 08:29:45 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (38 KB) en 7471ms
+19 nov 2026, 8:29:45 a.m.	Depurar	19/11 08:29:45 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (38 KB) en 7471ms
+19 nov 2026, 8:30:08 a.m.	Información	[Archivo] GrupoTerna/Web@data/home.json: 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4] → 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4]
+19 nov 2026, 8:30:09 a.m.	Información	19/11 08:30:09 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 23007ms
+19 nov 2026, 8:30:09 a.m.	Depurar	19/11 08:30:09 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 23007ms
+19 nov 2026, 8:30:09 a.m.	Información	19/11 08:30:09 [TorneosEstatico] se calculó hace menos de 90 min; se omite en este ciclo
+19 nov 2026, 8:30:09 a.m.	Depurar	19/11 08:30:09 [TorneosEstatico] se calculó hace menos de 90 min; se omite en este ciclo
+19 nov 2026, 8:30:09 a.m.	Información	19/11 08:30:09 [WebGuerraEnVivo] caché CALENTADA por el bot en 124324ms, TTL 7200 s
+19 nov 2026, 8:30:09 a.m.	Depurar	19/11 08:30:09 [WebGuerraEnVivo] caché CALENTADA por el bot en 124324ms, TTL 7200 s
+19 nov 2026, 8:30:09 a.m.	Información	[runGuerra] Calentamiento del caché terminado en 125 s.
+19 nov 2026, 8:30:09 a.m.	Información	[RUNGUERRA] Paso 8/8: terminado tras 125 s en su última llamada; la tanda lleva 181 s de 150 s.
+19 nov 2026, 8:30:11 a.m.	Información	[CSV] Revisión posterior: Backup_Guerra.csv pesa 5822333 bytes (se escribieron 5584738 caracteres). Sin cambios.
+19 nov 2026, 8:30:13 a.m.	Información	=== runGuerra (horaria) FIN ===
+19 nov 2026, 8:30:13 a.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	_continuarRunSyncCSV	Basada en el tiempo	19 nov 2026, 6:12:40 a.m.	186.016 s	
+Fallida
+Registros de Cloud
+19 nov 2026, 6:12:45 a.m.	Información	[CSV] CONTINÚA desde el paso 12/14
+19 nov 2026, 6:12:45 a.m.	Información	[RUNSYNCCSV] ESTADO al empezar: pasos cerrados 11/14; paso 12/14 POR EMPEZAR: Respaldo de Extra: guardar EXTRA → copia en Drive (la tanda anterior cerró el paso 11 y se quedó sin tiempo).
+19 nov 2026, 6:12:45 a.m.	Información	[RUNSYNCCSV] Reanudando en el paso 12: cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.
+19 nov 2026, 6:12:45 a.m.	Información	[Captura] INICIO (tandas, edad maxima del checkpoint 2700 s)
+19 nov 2026, 6:12:45 a.m.	Información	[API] Progreso de clanes en Drive tiene 69 min — más viejo que el máximo permitido (45 min). Se descarta, no se reutiliza (se pedirá fresco a la API).
+19 nov 2026, 6:12:45 a.m.	Información	[API] Iniciando _fetchAllClanData para 4 clanes...
+19 nov 2026, 6:12:45 a.m.	Información	[API] Consultando clan: #GCRG8L00
+19 nov 2026, 6:12:48 a.m.	Información	[API][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-19 06:12:48 | sectionIndex=2 periodIndex=17 periodType=warDay | Temporada(bot)=n/d Semana=3 Dia=J | DiaGuerra=n/d | participantes=153 sum(decksUsedToday)=10 sum(decksUsed)=10 sum(fame)=1300
+19 nov 2026, 6:12:48 a.m.	Información	[API] OK clan #GCRG8L00 | miembros: 50
+19 nov 2026, 6:12:48 a.m.	Información	[API] Consultando clan: #GYCU9YRG
+19 nov 2026, 6:12:49 a.m.	Información	[API][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-19 06:12:49 | sectionIndex=2 periodIndex=17 periodType=warDay | Temporada(bot)=n/d Semana=3 Dia=J | DiaGuerra=n/d | participantes=174 sum(decksUsedToday)=12 sum(decksUsed)=12 sum(fame)=2100
+19 nov 2026, 6:12:49 a.m.	Información	[API] OK clan #GYCU9YRG | miembros: 42
+19 nov 2026, 6:12:49 a.m.	Información	[API] Consultando clan: #GQQPPJGR
+19 nov 2026, 6:12:51 a.m.	Información	[API] HTTP 404 para /clans/%23GQQPPJGR/currentriverrace | Respuesta: {"reason":"notFound"}
+19 nov 2026, 6:12:51 a.m.	Información	[API][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-19 06:12:51 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+19 nov 2026, 6:12:51 a.m.	Información	[API] OK clan #GQQPPJGR | miembros: 1
+19 nov 2026, 6:12:51 a.m.	Información	[API] Clan #GQQPPJGR SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 1 miembros): no se cuenta como falla de la API.
+19 nov 2026, 6:12:51 a.m.	Información	[API] Consultando clan: #GG99LCJY
+19 nov 2026, 6:12:52 a.m.	Información	[API] HTTP 404 para /clans/%23GG99LCJY/currentriverrace | Respuesta: {"reason":"notFound"}
+19 nov 2026, 6:12:52 a.m.	Información	[API][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-19 06:12:52 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+19 nov 2026, 6:12:52 a.m.	Información	[API] OK clan #GG99LCJY | miembros: 6
+19 nov 2026, 6:12:52 a.m.	Información	[API] Clan #GG99LCJY SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 6 miembros): no se cuenta como falla de la API.
+19 nov 2026, 6:12:52 a.m.	Información	[API][PERIODO] RESUMEN periodIndex por clan: #GCRG8L00=17, #GYCU9YRG=17, #GQQPPJGR=sin dato, #GG99LCJY=sin dato -> los clanes con dato coinciden. | SIN currentriverrace: #GQQPPJGR, #GG99LCJY (404 o fuera de la carrera; no se escribe nada para ellos); sin guerra abierta (404, §PF379): #GQQPPJGR, #GG99LCJY.
+19 nov 2026, 6:12:57 a.m.	Información	[Archivo] T-27  S-03 P.I-17-J 19-11-2026 06.12 - Grupo乂Terna™ - clans.json: 15 clave(s) [location:4, memberList:50] → 15 clave(s) [location:4, memberList:50]
+19 nov 2026, 6:12:57 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-17): T-27  S-03 P.I-17-J 19-11-2026 06.12 - Grupo乂Terna™ - clans.json
+19 nov 2026, 6:12:59 a.m.	Información	[Archivo] T-27  S-03 P.I-17-J 19-11-2026 04.54 - Grupo乂Terna™ - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:8] → 7 clave(s) [clan:8, clans:5, periodLogs:8]
+19 nov 2026, 6:12:59 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-17): T-27  S-03 P.I-17-J 19-11-2026 04.54 - Grupo乂Terna™ - currentriverrace.json
+19 nov 2026, 6:13:02 a.m.	Información	[Archivo] T-27  S-03 P.I-17-J 19-11-2026 06.12 - GrupoXTerna™2 - clans.json: 15 clave(s) [location:4, memberList:42] → 15 clave(s) [location:4, memberList:42]
+19 nov 2026, 6:13:02 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-17): T-27  S-03 P.I-17-J 19-11-2026 06.12 - GrupoXTerna™2 - clans.json
+19 nov 2026, 6:13:04 a.m.	Información	[Archivo] T-27  S-03 P.I-17-J 19-11-2026 04.44 - GrupoXTerna™2 - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:8] → 7 clave(s) [clan:8, clans:5, periodLogs:8]
+19 nov 2026, 6:13:04 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-17): T-27  S-03 P.I-17-J 19-11-2026 04.44 - GrupoXTerna™2 - currentriverrace.json
+19 nov 2026, 6:13:06 a.m.	Información	[Archivo] T-27  S-03 P.I-17-J 19-11-2026 06.13 - GrupoXTerna™3 - clans.json: 15 clave(s) [location:4, memberList:1] → 15 clave(s) [location:4, memberList:1]
+19 nov 2026, 6:13:06 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-17): T-27  S-03 P.I-17-J 19-11-2026 06.13 - GrupoXTerna™3 - clans.json
+19 nov 2026, 6:13:08 a.m.	Información	[Archivo] T-27  S-03 P.I-17-J 19-11-2026 06.13 - Mini乂Ternas™ - clans.json: 15 clave(s) [location:4, memberList:6] → 15 clave(s) [location:4, memberList:6]
+19 nov 2026, 6:13:08 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-17): T-27  S-03 P.I-17-J 19-11-2026 06.13 - Mini乂Ternas™ - clans.json
+19 nov 2026, 6:13:11 a.m.	Información	[Log] Entrada registrada en Log_ScriptTerna.json: _guardarJsonClanesDesdeCaptura_()
+19 nov 2026, 6:13:11 a.m.	Información	[Captura][JSON] 6 archivo(s) escrito(s) en 16.3 s
+19 nov 2026, 6:13:13 a.m.	Información	[Captura] FIN (tandas, 28 s)
+19 nov 2026, 6:13:13 a.m.	Información	[RUNSYNCCSV] Ejecutando paso 12/14: Respaldo de Extra: guardar EXTRA → copia en Drive
+19 nov 2026, 6:13:14 a.m.	Información	[ALERTA PROTECCIÓN] SKIP sobreescritura de Backup_Extra.csv (Hoja tiene 19 filas de dato, CSV tiene 23). No se guardó.
+19 nov 2026, 6:13:14 a.m.	Información	[RUNSYNCCSV] Paso 12/14: terminado tras 1 s en su última llamada; la tanda lleva 30 s de 150 s.
+19 nov 2026, 6:13:15 a.m.	Información	[RUNSYNCCSV] Ejecutando paso 13/14: Respaldo de hojas derivadas: guardar de una en una → CSV de cada hoja derivada en Drive (puede necesitar varias tandas)
+19 nov 2026, 6:13:42 a.m.	Información	[Archivo] Backup_Nuevos.csv: 37 fila(s) → 33 fila(s) [BAJA 4]
+19 nov 2026, 6:13:42 a.m.	Información	[Backup] Backup_Nuevos.csv sincronizado (33 filas de dato).
+19 nov 2026, 6:13:43 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 1/15 (Nuevos) en 27 s.
+19 nov 2026, 6:13:43 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja 1/15 (Nuevos). Se reintenta el mismo paso en la próxima continuación.
+19 nov 2026, 6:13:43 a.m.	Información	[RUNSYNCCSV] Paso 13/14 incompleto tras la llamada 1 de esta tanda (hoja 1/15 (Nuevos)). La tanda lleva 58 s de 150 s: se vuelve a llamar al mismo paso.
+19 nov 2026, 6:13:47 a.m.	Información	[Archivo] Backup_Mensajes.csv: 11 fila(s) → 14 fila(s)
+19 nov 2026, 6:13:47 a.m.	Información	[Backup] Backup_Mensajes.csv sincronizado (14 filas de dato).
+19 nov 2026, 6:13:47 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 2/15 (Mensajes) en 4 s.
+19 nov 2026, 6:13:54 a.m.	Información	[Archivo] Backup_Pendientes.csv: 1 fila(s) → 92 fila(s)
+19 nov 2026, 6:13:54 a.m.	Información	[Backup] Backup_Pendientes.csv sincronizado (92 filas de dato).
+19 nov 2026, 6:13:54 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 3/15 (Pendientes) en 7 s.
+19 nov 2026, 6:15:10 a.m.	Información	[Archivo] Backup_Control.csv: 109 fila(s) → 103 fila(s) [BAJA 6]
+19 nov 2026, 6:15:11 a.m.	Información	[Backup] Backup_Control.csv sincronizado (103 filas de dato).
+19 nov 2026, 6:15:11 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 4/15 (Control) en 77 s.
+19 nov 2026, 6:15:11 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja 4/15 (Control). Se reintenta el mismo paso en la próxima continuación.
+19 nov 2026, 6:15:11 a.m.	Información	[RUNSYNCCSV] Paso 13/14 incompleto tras la llamada 2 de esta tanda (hoja 4/15 (Control)). La tanda lleva 146 s de 150 s: se vuelve a llamar al mismo paso.
+19 nov 2026, 6:15:36 a.m.	Información	[Archivo] Backup_Players.csv: 122 fila(s) → 114 fila(s) [BAJA 8]
+19 nov 2026, 6:15:36 a.m.	Información	[Backup] Backup_Players.csv sincronizado (114 filas de dato).
+19 nov 2026, 6:15:36 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: hoja 5/15 (Players) en 25 s.
+19 nov 2026, 6:15:37 a.m.	Información	[Backup] respaldarHojasDerivadasCSV: presupuesto interno agotado tras la hoja 5/15 (Players). Se reintenta el mismo paso en la próxima continuación.
+19 nov 2026, 6:15:37 a.m.	Información	[RUNSYNCCSV] No se vuelve a llamar al paso 13/14 en esta tanda: la tanda ya usó 172 s de los 150 s de su presupuesto.
+19 nov 2026, 6:15:37 a.m.	Información	[RUNSYNCCSV] Paso 13/14: incompleto tras 26 s en su última llamada; la tanda lleva 172 s de 150 s.
+19 nov 2026, 6:15:37 a.m.	Información	[RUNSYNCCSV] Paso 13/14 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+19 nov 2026, 6:15:37 a.m.	Información	[RUNSYNCCSV]   Avance del paso 13/14 (tanda 1 de este paso): al cierre: hoja 5/15 (Players). (Sin tanda anterior comparable de este paso.)
+19 nov 2026, 6:15:38 a.m.	Información	[CSV] Revisión posterior: Backup_Nuevos.csv pesa 40244 bytes (se escribieron 39690 caracteres). Sin cambios.
+19 nov 2026, 6:15:38 a.m.	Información	[CSV] Revisión posterior: Backup_Mensajes.csv pesa 15478 bytes (se escribieron 13937 caracteres). Sin cambios.
+19 nov 2026, 6:15:38 a.m.	Información	[CSV] Revisión posterior: Backup_Pendientes.csv pesa 10496 bytes (se escribieron 9949 caracteres). Sin cambios.
+19 nov 2026, 6:15:38 a.m.	Información	[CSV] Revisión posterior: Backup_Control.csv pesa 31951 bytes (se escribieron 31174 caracteres). Sin cambios.
+19 nov 2026, 6:15:45 a.m.	Información	[CSV] Revisión posterior: Backup_Players.csv pesa 17387 bytes (se escribieron 16481 caracteres). Sin cambios.
+19 nov 2026, 6:15:46 a.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	runGuerra	Basada en el tiempo	19 nov 2026, 3:03:44 a.m.	256.259 s	
+Fallida
+Registros de Cloud
+19 nov 2026, 3:03:49 a.m.	Información	=== Actualización Guerra INICIO | UTC 8:3 | Ventana ligera (4-5am): false ===
+19 nov 2026, 3:03:50 a.m.	Información	=== runGuerra (horaria) INICIO ===
+19 nov 2026, 3:03:51 a.m.	Información	[RUNGUERRA] ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/8 POR EMPEZAR: Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados.
+19 nov 2026, 3:03:51 a.m.	Información	[RUNGUERRA] Ejecutando paso 1/8: Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados
+19 nov 2026, 3:03:51 a.m.	Información	[Captura] INICIO (hora, edad maxima del checkpoint 240 s)
+19 nov 2026, 3:03:52 a.m.	Información	[API] Progreso de clanes en Drive tiene 55 min — más viejo que el máximo permitido (4 min). Se descarta, no se reutiliza (se pedirá fresco a la API).
+19 nov 2026, 3:03:52 a.m.	Información	[API] Iniciando _fetchAllClanData para 4 clanes...
+19 nov 2026, 3:03:52 a.m.	Información	[API] Consultando clan: #GCRG8L00
+19 nov 2026, 3:03:53 a.m.	Información	[API][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-19 03:03:53 | sectionIndex=2 periodIndex=16 periodType=training | Temporada(bot)=n/d Semana=3 Dia=X | DiaGuerra=n/d | participantes=153 sum(decksUsedToday)=33 sum(decksUsed)=0 sum(fame)=0
+19 nov 2026, 3:03:53 a.m.	Información	[API] OK clan #GCRG8L00 | miembros: 50
+19 nov 2026, 3:03:53 a.m.	Información	[API] Consultando clan: #GYCU9YRG
+19 nov 2026, 3:03:55 a.m.	Información	[API][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-19 03:03:55 | sectionIndex=2 periodIndex=16 periodType=training | Temporada(bot)=n/d Semana=3 Dia=X | DiaGuerra=n/d | participantes=174 sum(decksUsedToday)=36 sum(decksUsed)=0 sum(fame)=0
+19 nov 2026, 3:03:55 a.m.	Información	[API] OK clan #GYCU9YRG | miembros: 42
+19 nov 2026, 3:03:55 a.m.	Información	[API] Consultando clan: #GQQPPJGR
+19 nov 2026, 3:03:56 a.m.	Información	[API] HTTP 404 para /clans/%23GQQPPJGR/currentriverrace | Respuesta: {"reason":"notFound"}
+19 nov 2026, 3:03:56 a.m.	Información	[API][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-19 03:03:56 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+19 nov 2026, 3:03:56 a.m.	Información	[API] OK clan #GQQPPJGR | miembros: 1
+19 nov 2026, 3:03:56 a.m.	Información	[API] Clan #GQQPPJGR SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 1 miembros): no se cuenta como falla de la API.
+19 nov 2026, 3:03:56 a.m.	Información	[API] Consultando clan: #GG99LCJY
+19 nov 2026, 3:03:57 a.m.	Información	[API] HTTP 404 para /clans/%23GG99LCJY/currentriverrace | Respuesta: {"reason":"notFound"}
+19 nov 2026, 3:03:57 a.m.	Información	[API][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-19 03:03:57 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+19 nov 2026, 3:03:57 a.m.	Información	[API] OK clan #GG99LCJY | miembros: 6
+19 nov 2026, 3:03:57 a.m.	Información	[API] Clan #GG99LCJY SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 6 miembros): no se cuenta como falla de la API.
+19 nov 2026, 3:03:58 a.m.	Información	[API][PERIODO] RESUMEN periodIndex por clan: #GCRG8L00=16, #GYCU9YRG=16, #GQQPPJGR=sin dato, #GG99LCJY=sin dato -> los clanes con dato coinciden. | SIN currentriverrace: #GQQPPJGR, #GG99LCJY (404 o fuera de la carrera; no se escribe nada para ellos); sin guerra abierta (404, §PF379): #GQQPPJGR, #GG99LCJY.
+19 nov 2026, 3:04:03 a.m.	Información	[Archivo] T-27  S-03 P.I-16-X 19-11-2026 03.04 - Grupo乂Terna™ - clans.json: 15 clave(s) [location:4, memberList:50] → 15 clave(s) [location:4, memberList:50]
+19 nov 2026, 3:04:03 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-16): T-27  S-03 P.I-16-X 19-11-2026 03.04 - Grupo乂Terna™ - clans.json
+19 nov 2026, 3:04:05 a.m.	Información	[Archivo] T-27  S-03 P.I-16-X 18-11-2026 04.54 - Grupo乂Terna™ - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:8] → 7 clave(s) [clan:8, clans:5, periodLogs:8]
+19 nov 2026, 3:04:05 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-16): T-27  S-03 P.I-16-X 18-11-2026 04.54 - Grupo乂Terna™ - currentriverrace.json
+19 nov 2026, 3:04:07 a.m.	Información	[Archivo] T-27  S-03 P.I-16-X 19-11-2026 03.04 - GrupoXTerna™2 - clans.json: 15 clave(s) [location:4, memberList:42] → 15 clave(s) [location:4, memberList:42]
+19 nov 2026, 3:04:07 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-16): T-27  S-03 P.I-16-X 19-11-2026 03.04 - GrupoXTerna™2 - clans.json
+19 nov 2026, 3:04:09 a.m.	Información	[Archivo] T-27  S-03 P.I-16-X 18-11-2026 04.43 - GrupoXTerna™2 - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:8] → 7 clave(s) [clan:8, clans:5, periodLogs:8]
+19 nov 2026, 3:04:09 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-16): T-27  S-03 P.I-16-X 18-11-2026 04.43 - GrupoXTerna™2 - currentriverrace.json
+19 nov 2026, 3:04:12 a.m.	Información	[Archivo] T-27  S-03 P.I-16-X 19-11-2026 03.04 - GrupoXTerna™3 - clans.json: 15 clave(s) [location:4, memberList:1] → 15 clave(s) [location:4, memberList:1]
+19 nov 2026, 3:04:12 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-16): T-27  S-03 P.I-16-X 19-11-2026 03.04 - GrupoXTerna™3 - clans.json
+19 nov 2026, 3:04:14 a.m.	Información	[Archivo] T-27  S-03 P.I-16-X 19-11-2026 03.04 - Mini乂Ternas™ - clans.json: 15 clave(s) [location:4, memberList:6] → 15 clave(s) [location:4, memberList:6]
+19 nov 2026, 3:04:14 a.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-03 P.I-16): T-27  S-03 P.I-16-X 19-11-2026 03.04 - Mini乂Ternas™ - clans.json
+19 nov 2026, 3:04:17 a.m.	Información	[Log] Entrada registrada en Log_ScriptTerna.json: _guardarJsonClanesDesdeCaptura_()
+19 nov 2026, 3:04:17 a.m.	Información	[Captura][JSON] 6 archivo(s) escrito(s) en 17.2 s
+19 nov 2026, 3:04:19 a.m.	Información	[Captura] FIN (hora, 29 s)
+19 nov 2026, 3:04:19 a.m.	Información	[RUNGUERRA] Paso 1/8: terminado tras 29 s en su última llamada; la tanda lleva 29 s de 150 s.
+19 nov 2026, 3:04:20 a.m.	Información	[RUNGUERRA] Ejecutando paso 2/8: Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)
+19 nov 2026, 3:04:21 a.m.	Información	[Guerra] Actualizando... PeriodIndex actual: 16
+19 nov 2026, 3:04:24 a.m.	Información	[Guerra] _restaurarGuerraDesdeCSVSiVacia: hoja ya tiene 1717 fila(s) y ya cubre todas las de la temporada actual (27) presentes en Backup_Guerra.csv, se omite la restauración.
+19 nov 2026, 3:04:24 a.m.	Información	[Guerra][t] tras _restaurarGuerraDesdeCSVSiVacia: 3181 ms
+19 nov 2026, 3:04:25 a.m.	Información	[Guerra][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-19 03:04:25 | sectionIndex=2 periodIndex=16 periodType=training | Temporada(bot)=27 Semana=3 Dia=X | DiaGuerra=18/11/2026
+19 nov 2026, 3:04:25 a.m.	Información	[Guerra][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-19 03:04:25 | sectionIndex=2 periodIndex=16 periodType=training | Temporada(bot)=27 Semana=3 Dia=X | DiaGuerra=18/11/2026
+19 nov 2026, 3:04:25 a.m.	Información	[Guerra][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida (antes se escribia con periodIndex 0 / training).
+19 nov 2026, 3:04:25 a.m.	Información	[Guerra][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-19 03:04:25 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+19 nov 2026, 3:04:25 a.m.	Información	[Guerra][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida (antes se escribia con periodIndex 0 / training).
+19 nov 2026, 3:04:25 a.m.	Información	[Guerra][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-19 03:04:25 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+19 nov 2026, 3:04:25 a.m.	Información	[Guerra][t] tras loop de participantes: 4287 ms
+19 nov 2026, 3:04:30 a.m.	Información	[Guerra][t] tras escrituras (existentes+nuevas): 9611 ms
+19 nov 2026, 3:04:34 a.m.	Información	[Guerra][t] tras _aplicarFmtCondicionalGuerra + _ocultarFilasTagsOcultos: 13419 ms
+19 nov 2026, 3:04:35 a.m.	Información	[Guerra][t] tras _purgarTemporadasAnterioresGuerra: 14467 ms
+19 nov 2026, 3:04:36 a.m.	Información	[Guerra][t] tras _limpiarLinksAccidentalesGuerraIncremental (completo: true): 15019 ms
+19 nov 2026, 3:04:40 a.m.	Información	[Guerra] updateGuerraSheet completado. Nuevas filas: 0 | tiempo total tras restauración: 19472 ms
+19 nov 2026, 3:04:40 a.m.	Información	[RUNGUERRA] Paso 2/8: terminado tras 20 s en su última llamada; la tanda lleva 50 s de 150 s.
+19 nov 2026, 3:04:41 a.m.	Información	[RUNGUERRA] Ejecutando paso 3/8: Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día
+19 nov 2026, 3:04:42 a.m.	Información	[GuerraLogs] Actualizando... PeriodIndex actual: 16
+19 nov 2026, 3:04:45 a.m.	Información	[GuerraLogs][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+19 nov 2026, 3:04:45 a.m.	Información	[GuerraLogs][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+19 nov 2026, 3:04:45 a.m.	Información	[GuerraLogs] completado. Nuevas filas creadas: 0
+19 nov 2026, 3:04:45 a.m.	Información	[RUNGUERRA] Paso 3/8: terminado tras 4 s en su última llamada; la tanda lleva 55 s de 150 s.
+19 nov 2026, 3:04:46 a.m.	Información	[RUNGUERRA] Ejecutando paso 4/8: Hoja Control: actualizar → hoja Control al día
+19 nov 2026, 3:04:47 a.m.	Información	[Control] Actualizando...
+19 nov 2026, 3:04:55 a.m.	Información	[TorneosMed] hoja Guerra: 1717 fila(s) leídas en 1993ms
+19 nov 2026, 3:04:57 a.m.	Información	[TorneosMed] Guerra_Logs: 960 fila(s) leídas y procesadas en 1577ms
+19 nov 2026, 3:04:57 a.m.	Información	[TorneosMed] procesar: 1717 fila(s), 811 de día de guerra; bucle 1 = 2330ms (cruce de meta: 811 llamada(s), 2322ms); bucle 2 = 1ms
+19 nov 2026, 3:04:57 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 2334ms
+19 nov 2026, 3:05:00 a.m.	Información	[TorneosMed] hoja Guerra: 1717 fila(s) leídas en 1292ms
+19 nov 2026, 3:05:03 a.m.	Información	[TorneosMed] Guerra_Logs: 960 fila(s) leídas y procesadas en 2330ms
+19 nov 2026, 3:05:03 a.m.	Información	[TorneosMed] procesar: 1717 fila(s), 811 de día de guerra; bucle 1 = 2343ms (cruce de meta: 811 llamada(s), 2336ms); bucle 2 = 1ms
+19 nov 2026, 3:05:03 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 2345ms
+19 nov 2026, 3:05:12 a.m.	Información	[Control] Formato pesado (bordes/anchos/condicional/visibilidad) SALTADO -- sin cambios de jugadores/temporada/semana desde la última reconstrucción (respaldo forzado cada 6h).
+19 nov 2026, 3:05:12 a.m.	Información	[Control] _limpiarLinksAccidentalesEnHoja() SALTADO (throttle 60 min, faltan 5 min para la próxima).
+19 nov 2026, 3:05:12 a.m.	Información	[Control] Actualizado. Jugadores: 99 · filas (una por jugador y clan): 101
+19 nov 2026, 3:05:12 a.m.	Información	[RUNGUERRA] Paso 4/8: terminado tras 26 s en su última llamada; la tanda lleva 81 s de 150 s.
+19 nov 2026, 3:05:13 a.m.	Información	[RUNGUERRA] Ejecutando paso 5/8: Hoja Pendientes: actualizar → hoja Pendientes al día
+19 nov 2026, 3:05:16 a.m.	Información	[Pendientes] No es día de guerra, hoja limpia.
+19 nov 2026, 3:05:17 a.m.	Información	[RUNGUERRA] Paso 5/8: terminado tras 4 s en su última llamada; la tanda lleva 86 s de 150 s.
+19 nov 2026, 3:05:17 a.m.	Información	[RUNGUERRA] Ejecutando paso 6/8: Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía
+19 nov 2026, 3:05:18 a.m.	Información	[RUNGUERRA] Paso 6/8: terminado tras 1 s en su última llamada; la tanda lleva 88 s de 150 s.
+19 nov 2026, 3:05:19 a.m.	Información	[RUNGUERRA] Ejecutando paso 7/8: Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día
+19 nov 2026, 3:05:19 a.m.	Información	[Guerra] _syncGuerraCSV: leyendo la hoja (1717 fila(s) de dato).
+19 nov 2026, 3:05:42 a.m.	Información	[Guerra] _syncGuerraCSV: hoja leída en 22.9 s; leyendo Backup_Guerra.csv de Drive.
+19 nov 2026, 3:05:43 a.m.	Información	[Guerra] _syncGuerraCSV: CSV leído con 41080 fila(s) y 5571824 caracteres; hoja con 1717 fila(s); referencia 5808874 bytes.
+19 nov 2026, 3:05:43 a.m.	Información	[Guerra] _syncGuerraCSV: tiempos hasta aquí: leer hoja 22.9 s (getLastRow 0.1 s; getDisplayValues 0.8 s; columnas de fecha 21.9 s); leer CSV 0 s; tamaño de referencia 0.1 s; relectura directa 0 s; armar filas 0.7 s; total 23.7 s.
+19 nov 2026, 3:05:46 a.m.	Información	[Archivo] Backup_Guerra.csv: 41080 fila(s) → 41080 fila(s)
+19 nov 2026, 3:05:47 a.m.	Información	[Guerra] Backup_Guerra.csv fusionado (41080 filas totales; 0 nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores). Clan_Tag conservado del CSV (la hoja lo traía vacío): 404 fila(s).
+19 nov 2026, 3:05:47 a.m.	Información	[runGuerra] Respaldo CSV de Guerra terminado en 28 s.
+19 nov 2026, 3:05:47 a.m.	Información	[RUNGUERRA] Paso 7/8: terminado tras 28 s en su última llamada; la tanda lleva 117 s de 150 s.
+19 nov 2026, 3:05:48 a.m.	Información	[RUNGUERRA] Ejecutando paso 8/8: Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados
+19 nov 2026, 3:05:57 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 1 leída directo de Backup_Guerra.csv (208 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:57 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 2 leída directo de Backup_Guerra.csv (172 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:58 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 3 leída directo de Backup_Guerra.csv (176 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:58 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 4 leída directo de Backup_Guerra.csv (192 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T4 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T4 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 5 leída directo de Backup_Guerra.csv (56 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T5 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T5 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T5 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 6 leída directo de Backup_Guerra.csv (24 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T6 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T6 S1 dia V: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T6 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T6 S2 dia V: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T6 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T6 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 7 leída directo de Backup_Guerra.csv (320 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T7 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Valores diarios] T7 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 3:05:58 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 8 leída directo de Backup_Guerra.csv (64 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:58 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 9 leída directo de Backup_Guerra.csv (196 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:58 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 10 leída directo de Backup_Guerra.csv (384 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 11 leída directo de Backup_Guerra.csv (276 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 12 leída directo de Backup_Guerra.csv (304 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 13 leída directo de Backup_Guerra.csv (596 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 14 leída directo de Backup_Guerra.csv (588 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 15 leída directo de Backup_Guerra.csv (672 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 16 leída directo de Backup_Guerra.csv (896 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 17 leída directo de Backup_Guerra.csv (772 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 18 leída directo de Backup_Guerra.csv (636 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 19 leída directo de Backup_Guerra.csv (1016 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:05:59 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 20 leída directo de Backup_Guerra.csv (776 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:06:00 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 21 leída directo de Backup_Guerra.csv (1008 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:06:00 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 22 leída directo de Backup_Guerra.csv (7681 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:06:00 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 23 leída directo de Backup_Guerra.csv (3631 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:06:00 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 24 leída directo de Backup_Guerra.csv (8172 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:06:00 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 25 leída directo de Backup_Guerra.csv (5335 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:06:00 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 26 leída directo de Backup_Guerra.csv (5212 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 3:06:02 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 2ms
+19 nov 2026, 3:06:02 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 2ms
+19 nov 2026, 3:06:43 a.m.	Información	19/11 03:06:43 [Dashboard] build=B3 total=54779ms | ctx=643 | guerraHoy+pendientes=1751 | directorio=3426 | temporadasCSV=635 | valoresDiarios=7133 | control2Vigente=4467 | control2Historico=1380 | ingresos.nuevos=3541 | ingresos.guerra=8 | ingresos.rivales=629 | ingresos.control2=1748 | ingresos=29418 || detalle: dir.lectura=3173ms/1x | c2.guerraData=433ms/27x | c2.minG=3302ms/27x | c2.bucleJugadores=1305ms/27x
+19 nov 2026, 3:06:43 a.m.	Depurar	19/11 03:06:43 [Dashboard] build=B3 total=54779ms | ctx=643 | guerraHoy+pendientes=1751 | directorio=3426 | temporadasCSV=635 | valoresDiarios=7133 | control2Vigente=4467 | control2Historico=1380 | ingresos.nuevos=3541 | ingresos.guerra=8 | ingresos.rivales=629 | ingresos.control2=1748 | ingresos=29418 || detalle: dir.lectura=3173ms/1x | c2.guerraData=433ms/27x | c2.minG=3302ms/27x | c2.bucleJugadores=1305ms/27x
+19 nov 2026, 3:06:43 a.m.	Información	19/11 03:06:43 [WebGuerraEnVivo] datos del dashboard calculados en 55105ms
+19 nov 2026, 3:06:43 a.m.	Depurar	19/11 03:06:43 [WebGuerraEnVivo] datos del dashboard calculados en 55105ms
+19 nov 2026, 3:06:44 a.m.	Información	19/11 03:06:44 [WebGuerraEnVivo] caché guardada: JSON 2383871 car. -> gzip+base64 294668 car. en 4 trozo(s), 7200 s.
+19 nov 2026, 3:06:44 a.m.	Depurar	19/11 03:06:44 [WebGuerraEnVivo] caché guardada: JSON 2383871 car. -> gzip+base64 294668 car. en 4 trozo(s), 7200 s.
+19 nov 2026, 3:07:08 a.m.	Información	[Archivo] GrupoTerna/Web@data/guerra.json: 17 clave(s) [ctx:12, guerraPorClan:2, diasSemanaGuerra:4] → 17 clave(s) [ctx:12, guerraPorClan:2, diasSemanaGuerra:4]
+19 nov 2026, 3:07:08 a.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_ctx.json: 2 clave(s) [ctx:12] → 2 clave(s) [ctx:12]
+19 nov 2026, 3:07:08 a.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_top.json: 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1] → 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1]
+19 nov 2026, 3:07:08 a.m.	Información	19/11 03:07:08 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2363 KB; guerra_top.json 40 KB) en 24101ms
+19 nov 2026, 3:07:08 a.m.	Depurar	19/11 03:07:08 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2363 KB; guerra_top.json 40 KB) en 24101ms
+19 nov 2026, 3:07:17 a.m.	Información	[Archivo] GrupoTerna/Web@data/roster.json: 2 clave(s) [clanes:4] → 2 clave(s) [clanes:4]
+19 nov 2026, 3:07:18 a.m.	Información	19/11 03:07:18 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (38 KB) en 9377ms
+19 nov 2026, 3:07:18 a.m.	Depurar	19/11 03:07:18 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (38 KB) en 9377ms
+19 nov 2026, 3:07:54 a.m.	Información	[Archivo] GrupoTerna/Web@data/home.json: 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4] → 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4]
+19 nov 2026, 3:07:54 a.m.	Información	19/11 03:07:54 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 36352ms
+19 nov 2026, 3:07:54 a.m.	Depurar	19/11 03:07:54 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 36352ms
+19 nov 2026, 3:07:55 a.m.	Información	19/11 03:07:55 [TorneosEstatico] OMITIDO: quedan 114 s de la ejecución y se piden 150 s; se reintenta en el siguiente ciclo
+19 nov 2026, 3:07:55 a.m.	Depurar	19/11 03:07:55 [TorneosEstatico] OMITIDO: quedan 114 s de la ejecución y se piden 150 s; se reintenta en el siguiente ciclo
+19 nov 2026, 3:07:55 a.m.	Información	19/11 03:07:55 [WebGuerraEnVivo] caché CALENTADA por el bot en 126888ms, TTL 7200 s
+19 nov 2026, 3:07:55 a.m.	Depurar	19/11 03:07:55 [WebGuerraEnVivo] caché CALENTADA por el bot en 126888ms, TTL 7200 s
+19 nov 2026, 3:07:55 a.m.	Información	[runGuerra] Calentamiento del caché terminado en 127 s.
+19 nov 2026, 3:07:55 a.m.	Información	[RUNGUERRA] Paso 8/8: terminado tras 127 s en su última llamada; la tanda lleva 245 s de 150 s.
+19 nov 2026, 3:07:57 a.m.	Información	[CSV] Revisión posterior: Backup_Guerra.csv pesa 5808874 bytes (se escribieron 5571824 caracteres). Sin cambios.
+19 nov 2026, 3:07:58 a.m.	Información	=== runGuerra (horaria) FIN ===
+19 nov 2026, 3:08:00 a.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	_continuarRunGuerraCadena	Basada en el tiempo	19 nov 2026, 12:13:24 a.m.	35.055 s	
+Fallida
+Registros de Cloud
+19 nov 2026, 12:13:30 a.m.	Información	=== runGuerra (horaria) CONTINÚA desde el paso 8/8 ===
+19 nov 2026, 12:13:30 a.m.	Información	[RUNGUERRA] ESTADO al empezar: pasos cerrados 7/8; paso 8/8 POR EMPEZAR: Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados (la tanda anterior cerró el paso 7 y se quedó sin tiempo).
+19 nov 2026, 12:13:30 a.m.	Información	[RUNGUERRA] Reanudando en el paso 8: cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.
+19 nov 2026, 12:13:30 a.m.	Información	[Captura] INICIO (tandas, edad maxima del checkpoint 2700 s)
+19 nov 2026, 12:13:31 a.m.	Información	[API] Progreso anterior de clanes recuperado de Drive (4 clan(es)), no se vuelven a pedir a la API.
+19 nov 2026, 12:13:32 a.m.	Información	[Captura] FIN (tandas, 2 s)
+19 nov 2026, 12:13:32 a.m.	Información	[RUNGUERRA] Ejecutando paso 8/8: Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados
+19 nov 2026, 12:13:44 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 1 leída directo de Backup_Guerra.csv (208 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:45 a.m.	Información	[TorneosMed] Guerra_Logs: 960 fila(s) leídas y procesadas en 1014ms
+19 nov 2026, 12:13:46 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 2 leída directo de Backup_Guerra.csv (172 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:46 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 3 leída directo de Backup_Guerra.csv (176 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:46 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 4 leída directo de Backup_Guerra.csv (192 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:46 a.m.	Información	[Valores diarios] T4 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:46 a.m.	Información	[Valores diarios] T4 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:46 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 5 leída directo de Backup_Guerra.csv (56 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:46 a.m.	Información	[Valores diarios] T5 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:46 a.m.	Información	[Valores diarios] T5 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:46 a.m.	Información	[Valores diarios] T5 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:46 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 6 leída directo de Backup_Guerra.csv (24 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:46 a.m.	Información	[Valores diarios] T6 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:46 a.m.	Información	[Valores diarios] T6 S1 dia V: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:47 a.m.	Información	[Valores diarios] T6 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:47 a.m.	Información	[Valores diarios] T6 S2 dia V: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:47 a.m.	Información	[Valores diarios] T6 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:47 a.m.	Información	[Valores diarios] T6 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:47 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 7 leída directo de Backup_Guerra.csv (320 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:47 a.m.	Información	[Valores diarios] T7 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:47 a.m.	Información	[Valores diarios] T7 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+19 nov 2026, 12:13:47 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 8 leída directo de Backup_Guerra.csv (64 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:47 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 9 leída directo de Backup_Guerra.csv (196 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:47 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 10 leída directo de Backup_Guerra.csv (384 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:47 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 11 leída directo de Backup_Guerra.csv (276 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:48 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 12 leída directo de Backup_Guerra.csv (304 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:48 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 13 leída directo de Backup_Guerra.csv (596 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:48 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 14 leída directo de Backup_Guerra.csv (588 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:48 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 15 leída directo de Backup_Guerra.csv (672 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:48 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 16 leída directo de Backup_Guerra.csv (896 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:49 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 17 leída directo de Backup_Guerra.csv (772 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:49 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 18 leída directo de Backup_Guerra.csv (636 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:49 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 19 leída directo de Backup_Guerra.csv (1016 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:49 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 20 leída directo de Backup_Guerra.csv (776 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:49 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 21 leída directo de Backup_Guerra.csv (1008 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:49 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 22 leída directo de Backup_Guerra.csv (7681 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:50 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 23 leída directo de Backup_Guerra.csv (3631 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:50 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 24 leída directo de Backup_Guerra.csv (8172 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:50 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 25 leída directo de Backup_Guerra.csv (5335 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:50 a.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 26 leída directo de Backup_Guerra.csv (5212 fila(s) — hoja Guerra no tocada).
+19 nov 2026, 12:13:51 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 5ms
+19 nov 2026, 12:13:52 a.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 3ms
+19 nov 2026, 12:13:59 a.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	runGuerra	Basada en el tiempo	18 nov 2026, 11:18:44 p.m.	480.338 s	
+Fallida
+Registros de Cloud
+18 nov 2026, 11:26:44 p.m.	Error	Lo sentimos, se produjo un error en el servidor. Aguarde un momento e inténtelo de nuevo.
+Encabezado	_continuarGenerarIndiceClanesExternos	Basada en el tiempo	18 nov 2026, 6:22:14 p.m.	281.46 s	
+Fallida
+Registros de Cloud
+18 nov 2026, 6:26:54 p.m.	Información	[IndiceClanes] INCOMPLETO: los 1277 jugadores ya están leídos; faltan 4658 de 7085 archivos de clan (en esta corrida: 193 creados, 15 actualizados, 4 sin cambios). La siguiente corrida continúa donde se quedó (ver el registro de continuación).
+18 nov 2026, 6:26:55 p.m.	Información	[IndiceClanes] Corrida programada: el índice quedó incompleto; continúa en 60 s (corrida 6 de 12 como máximo).
+18 nov 2026, 6:26:55 p.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	_continuarRunUpdate	Basada en el tiempo	18 nov 2026, 12:51:05 p.m.	201.759 s	
+Fallida
+Registros de Cloud
+18 nov 2026, 12:51:11 p.m.	Información	=== Actualización periódica CONTINÚA desde el paso 35/43 [programada, sin /clans ni /currentriverrace] ===
+18 nov 2026, 12:51:12 p.m.	Información	[RUNUPDATE] ESTADO al empezar: pasos cerrados 34/43; paso 35/43 EN CURSO: Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas) (la tanda anterior lo dejó incompleto; esta es la tanda 2 de este paso). Progreso guardado al cierre de la tanda anterior: enlaces accidentales en nombres: 29 de 33 hojas.
+18 nov 2026, 12:51:12 p.m.	Información	[RUNUPDATE] Reanudando en el paso 35 (version programada): se reconstruye el cache de clanes desde el checkpoint de Drive, SIN API.
+18 nov 2026, 12:51:13 p.m.	Información	[API][SinAPI] Clanes cargados del checkpoint de Drive (captura de hace 42 min, 18/11 12:09:17 Lima) SIN llamar a la API | periodIndex: #GCRG8L00=16, #GYCU9YRG=16, #GQQPPJGR=sin dato, #GG99LCJY=sin dato
+18 nov 2026, 12:51:13 p.m.	Información	[RUNUPDATE] Ejecutando paso 35/43: Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas)
+18 nov 2026, 12:51:58 p.m.	Información	[LinksNombres] Terminado. Total de enlaces accidentales quitados: 0.
+18 nov 2026, 12:51:58 p.m.	Información	[RUNUPDATE] Paso 35/43: terminado tras 45 s en su última llamada; la tanda lleva 46 s de 150 s.
+18 nov 2026, 12:51:59 p.m.	Información	[RUNUPDATE] Paso 35/43 COMPLETO tras 2 tandas.
+18 nov 2026, 12:52:00 p.m.	Información	[RUNUPDATE] Ejecutando paso 36/43: Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día
+18 nov 2026, 12:52:47 p.m.	Información	[Archivo] Backup_Directorio.csv: 122 fila(s) → 110 fila(s) [BAJA 12]
+18 nov 2026, 12:52:47 p.m.	Información	[Backup] Backup_Directorio.csv sincronizado (110 registros, 60 columnas formato DC, Cat_disp/Clanes_Admin tomadas de Administradores).
+18 nov 2026, 12:52:57 p.m.	Información	[Archivo] Backup_Clan.csv: 4 fila(s) → 4 fila(s)
+18 nov 2026, 12:52:57 p.m.	Información	[Backup] Backup_Clan.csv sincronizado.
+18 nov 2026, 12:52:57 p.m.	Información	[RUNUPDATE] Paso 36/43: terminado tras 57 s en su última llamada; la tanda lleva 105 s de 150 s.
+18 nov 2026, 12:52:58 p.m.	Información	[RUNUPDATE] Ejecutando paso 37/43: Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)
+18 nov 2026, 12:52:59 p.m.	Información	[Backup][t] syncAcumulativosCSV: empieza el trabajo 1/7 (Inactivos); a la ejecución le quedan 253 s.
+18 nov 2026, 12:54:16 p.m.	Información	[Archivo] Backup_Inactivos.csv: 1447 fila(s) → 1460 fila(s)
+18 nov 2026, 12:54:16 p.m.	Información	[Backup] Backup_Inactivos.csv sincronizado (1460 registros, 60 columnas armadas sin expandir la hoja Inactivos, 29 cols reales).
+18 nov 2026, 12:54:16 p.m.	Información	[Backup][t] syncAcumulativosCSV: trabajo 1/7 (Inactivos): 77464 ms
+18 nov 2026, 12:54:16 p.m.	Información	[Backup] syncAcumulativosCSV: presupuesto interno agotado tras el trabajo 1/7 (Inactivos). Se reintenta el mismo paso en la próxima continuación.
+18 nov 2026, 12:54:16 p.m.	Información	[Backup]   respaldo CSV de acumulativos: acumulado 1 de 7 trabajos (14 %); en tandas anteriores: 0; faltan 6.
+18 nov 2026, 12:54:17 p.m.	Información	[Backup]   respaldo CSV de acumulativos: en esta tanda: 1 trabajos.
+18 nov 2026, 12:54:17 p.m.	Información	[RUNUPDATE] No se vuelve a llamar al paso 37/43 en esta tanda: la tanda ya usó 185 s de los 150 s de su presupuesto.
+18 nov 2026, 12:54:17 p.m.	Información	[RUNUPDATE] Paso 37/43: incompleto tras 78 s en su última llamada; la tanda lleva 185 s de 150 s.
+18 nov 2026, 12:54:17 p.m.	Información	[RUNUPDATE] Paso 37/43 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+18 nov 2026, 12:54:17 p.m.	Información	[RUNUPDATE]   Avance del paso 37/43 (tanda 1 de este paso): al cierre: respaldo CSV de acumulativos: 1 de 7 trabajos. (Sin tanda anterior comparable de este paso.)
+18 nov 2026, 12:54:18 p.m.	Información	[CSV] Revisión posterior: Backup_Directorio.csv pesa 511656 bytes (se escribieron 508185 caracteres). Sin cambios.
+18 nov 2026, 12:54:18 p.m.	Información	[CSV] Revisión posterior: Backup_Clan.csv pesa 3268 bytes (se escribieron 3130 caracteres). Sin cambios.
+18 nov 2026, 12:54:24 p.m.	Información	[CSV] Revisión posterior: Backup_Inactivos.csv pesa 237207 bytes (se escribieron 228303 caracteres). Sin cambios.
+18 nov 2026, 12:54:27 p.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	_continuarRunUpdate	Basada en el tiempo	18 nov 2026, 12:47:43 p.m.	190.425 s	
+Fallida
+Registros de Cloud
+18 nov 2026, 12:47:48 p.m.	Información	=== Actualización periódica CONTINÚA desde el paso 30/43 [programada, sin /clans ni /currentriverrace] ===
+18 nov 2026, 12:47:49 p.m.	Información	[RUNUPDATE] ESTADO al empezar: pasos cerrados 29/43; paso 30/43 POR EMPEZAR: Administradores: sincronizar → lista de administradores al día (la tanda anterior cerró el paso 29 y se quedó sin tiempo).
+18 nov 2026, 12:47:49 p.m.	Información	[RUNUPDATE] Reanudando en el paso 30 (version programada): se reconstruye el cache de clanes desde el checkpoint de Drive, SIN API.
+18 nov 2026, 12:47:50 p.m.	Información	[API][SinAPI] Clanes cargados del checkpoint de Drive (captura de hace 39 min, 18/11 12:09:17 Lima) SIN llamar a la API | periodIndex: #GCRG8L00=16, #GYCU9YRG=16, #GQQPPJGR=sin dato, #GG99LCJY=sin dato
+18 nov 2026, 12:47:50 p.m.	Información	[RUNUPDATE] Ejecutando paso 30/43: Administradores: sincronizar → lista de administradores al día
+18 nov 2026, 12:47:57 p.m.	Información	[Administradores] Sincronizados 34 registros (9 celulares admin).
+18 nov 2026, 12:47:58 p.m.	Información	[RUNUPDATE] Paso 30/43: terminado tras 9 s en su última llamada; la tanda lleva 10 s de 150 s.
+18 nov 2026, 12:47:59 p.m.	Información	[RUNUPDATE] Ejecutando paso 31/43: Desplegable Cat_disp: actualizar → desplegable al día
+18 nov 2026, 12:48:00 p.m.	Información	[Administradores] Cat_disp autocompletado con 15 categorías.
+18 nov 2026, 12:48:01 p.m.	Información	[Administradores] Funciones autocompletado (donde estaba vacío) con las funciones disponibles.
+18 nov 2026, 12:48:01 p.m.	Información	[RUNUPDATE] Paso 31/43: terminado tras 2 s en su última llamada; la tanda lleva 13 s de 150 s.
+18 nov 2026, 12:48:02 p.m.	Información	[RUNUPDATE] Ejecutando paso 32/43: Hoja Índice: actualizar → hoja Índice al día
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] --- INICIO reconciliación. Hojas reales detectadas: 33 | Filas leídas de la hoja Índice: 37
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 2 | Nombre="Directorio" | ID leído="1523557318" | Visibilidad="Sí" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (1523557318)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 3 | Nombre="Nuevos" | ID leído="27913545" | Visibilidad="Sí" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (27913545)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 4 | Nombre="Mensajes" | ID leído="795802921" | Visibilidad="Sí" | Tipo="Secundario" | Edición="Editable" | Match: ID directo (795802921)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 5 | Nombre="Pendientes" | ID leído="972194529" | Visibilidad="Sí" | Tipo="Secundario" | Edición="Editable" | Match: ID directo (972194529)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 6 | Nombre="Control" | ID leído="2015220763" | Visibilidad="Sí" | Tipo="Secundario" | Edición="Solo Lectura" | Match: ID directo (2015220763)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 7 | Nombre="Players" | ID leído="11835213" | Visibilidad="Sí" | Tipo="Secundario" | Edición="Solo Lectura" | Match: ID directo (11835213)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 8 | Nombre="T_Control" | ID leído="246761077" | Visibilidad="Sí" | Tipo="Secundario" | Edición="Solo Lectura" | Match: ID directo (246761077)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 9 | Nombre="Administradores" | ID leído="204930431" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (204930431)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 10 | Nombre="Calendario" | ID leído="1534976658" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (1534976658)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 11 | Nombre="Conflictos" | ID leído="1681715189" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (1681715189)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 12 | Nombre="CR_Lista" | ID leído="83494123" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (83494123)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 13 | Nombre="Historial_A/D" | ID leído="1192943944" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (1192943944)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 14 | Nombre="Índice" | ID leído="1561298819" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (1561298819)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 15 | Nombre="S_Lista" | ID leído="2088203134" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (2088203134)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 16 | Nombre="T_Lista" | ID leído="557167652" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (557167652)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 17 | Nombre="T_Resoluciones" | ID leído="1147578260" | Visibilidad="No" | Tipo="Raíz" | Edición="Editable" | Match: ID directo (1147578260)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 18 | Nombre="Clan" | ID leído="1058415905" | Visibilidad="No" | Tipo="Raíz" | Edición="Solo Lectura" | Match: ID directo (1058415905)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 19 | Nombre="Extra" | ID leído="1504843538" | Visibilidad="No" | Tipo="Raíz" | Edición="Solo Lectura" | Match: ID directo (1504843538)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 20 | Nombre="Vetados" | ID leído="421335144" | Visibilidad="No" | Tipo="Secundario" | Edición="Editable" | Match: ID directo (421335144)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 21 | Nombre="Battlelogs" | ID leído="1583547865" | Visibilidad="No" | Tipo="Secundario" | Edición="Solo Lectura" | Match: ID directo (1583547865)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 22 | Nombre="Control_2" | ID leído="1126989706" | Visibilidad="No" | Tipo="Secundario" | Edición="Solo Lectura" | Match: ID directo (1126989706)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 23 | Nombre="Inactivos" | ID leído="1380419392" | Visibilidad="No" | Tipo="Secundario" | Edición="Solo Lectura" | Match: ID directo (1380419392)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 24 | Nombre="Links" | ID leído="1192566886" | Visibilidad="No" | Tipo="Secundario" | Edición="Solo Lectura" | Match: ID directo (1192566886)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 25 | Nombre="Multicuentas" | ID leído="186075950" | Visibilidad="No" | Tipo="Secundario" | Edición="Solo Lectura" | Match: ID directo (186075950)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 26 | Nombre="Comentarios" | ID leído="1584969334" | Visibilidad="No" | Tipo="Respaldo" | Edición="Editable" | Match: ID directo (1584969334)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 27 | Nombre="Alertas_HistorialGuerra" | ID leído="802404772" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: ID directo (802404772)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 28 | Nombre="Calendario_2" | ID leído="877119946" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: ID directo (877119946)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 29 | Nombre="Grupo_Verificado" | ID leído="799258161" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: ID directo (799258161)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 30 | Nombre="Guerra" | ID leído="1212925757" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: ID directo (1212925757)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 31 | Nombre="Guerra_Logs" | ID leído="1565483515" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: ID directo (1565483515)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 32 | Nombre="Historial_I/S" | ID leído="295403137" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: ID directo (295403137)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 33 | Nombre="S_Asistencia" | ID leído="1689258527" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: ID directo (1689258527)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 34 | Nombre="T_Asistencia" | ID leído="668003405" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: ID directo (668003405)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 35 | Nombre="Menú" | ID leído="420154690" | Visibilidad="No" | Tipo="Raíz" | Edición="Solo Lectura" | Match: SIN MATCH (huérfana, Vigente pasa a No; si hay una hoja real con este nombre, se re-creará más abajo con valores por DEFECTO)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 36 | Nombre="T_Requisitos" | ID leído="1569950227" | Visibilidad="No" | Tipo="Raíz" | Edición="Solo Lectura" | Match: SIN MATCH (huérfana, Vigente pasa a No; si hay una hoja real con este nombre, se re-creará más abajo con valores por DEFECTO)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 37 | Nombre="Hoja 21" | ID leído="642025959" | Visibilidad="No" | Tipo="Secundario" | Edición="Solo Lectura" | Match: SIN MATCH (huérfana, Vigente pasa a No; si hay una hoja real con este nombre, se re-creará más abajo con valores por DEFECTO)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Fila 38 | Nombre="Cards" | ID leído="233372942" | Visibilidad="No" | Tipo="Respaldo" | Edición="Solo Lectura" | Match: SIN MATCH (huérfana, Vigente pasa a No; si hay una hoja real con este nombre, se re-creará más abajo con valores por DEFECTO)
+18 nov 2026, 12:48:03 p.m.	Información	[Índice][DIAG] Todas las hojas reales se reconectaron correctamente con su fila restaurada (ninguna quedó con valores por defecto).
+18 nov 2026, 12:48:04 p.m.	Información	[Índice] Actualizado con 37 hojas.
+18 nov 2026, 12:48:04 p.m.	Información	[RUNUPDATE] Paso 32/43: terminado tras 2 s en su última llamada; la tanda lleva 15 s de 150 s.
+18 nov 2026, 12:48:05 p.m.	Información	[RUNUPDATE] Ejecutando paso 33/43: Hojas: reordenar y ocultar según el Índice → hojas con el orden y la visibilidad del Índice
+18 nov 2026, 12:48:43 p.m.	Información	[Índice] Pestañas reordenadas/ocultadas (33 hojas vigentes).
+18 nov 2026, 12:48:43 p.m.	Información	[RUNUPDATE] Paso 33/43: terminado tras 39 s en su última llamada; la tanda lleva 55 s de 150 s.
+18 nov 2026, 12:48:44 p.m.	Información	[RUNUPDATE] Ejecutando paso 34/43: Vistas derivadas (Inactivos, Vetados, Multicuentas, Historial, Ascensos): actualizar → vistas al día
+18 nov 2026, 12:48:44 p.m.	Información	[Vistas] Actualizando vistas...
+18 nov 2026, 12:49:00 p.m.	Información	[Inactivos] Protección anti-borrado: se conservaron 1460 fila(s) huérfana(s) (tags que no aparecen en los datos actuales).
+18 nov 2026, 12:49:12 p.m.	Información	[Vetados] Protección anti-borrado: se conservaron 35 fila(s) huérfana(s) (tags que no aparecen en el Directorio actual): #RRUQV90GY, #20YLCRPYYU, #ULVCVQ900, #UVJCYJJQC, #JG9Q02RJ0, #P00CPGPQR, #VCQ8GJUP8, #VG8CVVPUU, #20YCVJLULJ, #V9YL99QQC, #VLYG0J9YC, #LJGY2U8GC, #2VRUJ99UQ, #VPPJVJYCL, #RGCL8LGJC, #JR9J0JCQ9, #VQ8JCJ92R, #20298YYG8R, #VJCGY9R22, #CRYJGRPUY, #JCYLVGQ8C, #UQL0P2R9C, #VJ8QRCY8V, #V8RC2VGCG, #J8UJ002J0, #VPCPRVJLL, #VRY0C9YU0, #V0LVJ9988, #U0GVQQP99, #UYLQQRP0P, #U99RGGQQG, #V220QRLVU, #JJL8C0P09, #GJGPU8PLC, #V0VY2QC2P.
+18 nov 2026, 12:49:43 p.m.	Información	[Ascensos] Sin cambios de rango detectados en esta corrida.
+18 nov 2026, 12:49:45 p.m.	Información	[Ascensos] Hoja reordenada globalmente por Clan > Fecha (84 fila(s) totales).
+18 nov 2026, 12:49:45 p.m.	Información	[RUNUPDATE] Paso 34/43: terminado tras 61 s en su última llamada; la tanda lleva 117 s de 150 s.
+18 nov 2026, 12:49:46 p.m.	Información	[RUNUPDATE] Ejecutando paso 35/43: Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas)
+18 nov 2026, 12:50:51 p.m.	Información	[LinksNombres] Presupuesto interno agotado tras la hoja 29/33 ("Guerra"). Se reintenta el mismo paso en la próxima continuación.
+18 nov 2026, 12:50:51 p.m.	Información	[LinksNombres]   enlaces accidentales en nombres: acumulado 29 de 33 hojas (88 %); en tandas anteriores: 0; faltan 4.
+18 nov 2026, 12:50:51 p.m.	Información	[LinksNombres]   enlaces accidentales en nombres: en esta tanda: 29 hojas.
+18 nov 2026, 12:50:51 p.m.	Información	[RUNUPDATE] No se vuelve a llamar al paso 35/43 en esta tanda: la tanda ya usó 182 s de los 150 s de su presupuesto.
+18 nov 2026, 12:50:51 p.m.	Información	[RUNUPDATE] Paso 35/43: incompleto tras 65 s en su última llamada; la tanda lleva 182 s de 150 s.
+18 nov 2026, 12:50:51 p.m.	Información	[RUNUPDATE] Paso 35/43 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+18 nov 2026, 12:50:51 p.m.	Información	[RUNUPDATE]   Avance del paso 35/43 (tanda 1 de este paso): al cierre: enlaces accidentales en nombres: 29 de 33 hojas. (Sin tanda anterior comparable de este paso.)
+18 nov 2026, 12:50:53 p.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	_continuarRunUpdate	Basada en el tiempo	18 nov 2026, 11:15:09 a.m.	216.636 s	
+Fallida
+Registros de Cloud
+18 nov 2026, 11:15:17 a.m.	Información	=== Actualización periódica CONTINÚA desde el paso 35/43 [manual, roster fresco] ===
+18 nov 2026, 11:15:18 a.m.	Información	[RUNUPDATE] ESTADO al empezar: pasos cerrados 34/43; paso 35/43 POR EMPEZAR: Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas) (la tanda anterior cerró el paso 34 y se quedó sin tiempo).
+18 nov 2026, 11:15:18 a.m.	Información	[RUNUPDATE] Reanudando en el paso 35: cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.
+18 nov 2026, 11:15:18 a.m.	Información	[Captura] INICIO (tandas, edad maxima del checkpoint 2700 s)
+18 nov 2026, 11:15:20 a.m.	Información	[API] Progreso anterior de clanes recuperado de Drive (4 clan(es)), no se vuelven a pedir a la API.
+18 nov 2026, 11:15:21 a.m.	Información	[Captura] FIN (tandas, 3 s)
+18 nov 2026, 11:15:21 a.m.	Información	[RUNUPDATE] Ejecutando paso 35/43: Nombres: quitar enlaces accidentales, hoja por hoja → ninguna hoja con enlaces accidentales (puede necesitar varias tandas)
+18 nov 2026, 11:16:49 a.m.	Información	[LinksNombres] Presupuesto interno agotado tras la hoja 20/33 ("Battlelogs"). Se reintenta el mismo paso en la próxima continuación.
+18 nov 2026, 11:16:49 a.m.	Información	[LinksNombres]   enlaces accidentales en nombres: acumulado 20 de 33 hojas (61 %); en tandas anteriores: 0; faltan 13.
+18 nov 2026, 11:16:49 a.m.	Información	[LinksNombres]   enlaces accidentales en nombres: en esta tanda: 20 hojas.
+18 nov 2026, 11:16:49 a.m.	Información	[RUNUPDATE] Paso 35/43 incompleto tras la llamada 1 de esta tanda (enlaces accidentales en nombres: 20 de 33 hojas). La tanda lleva 93 s de 150 s: se vuelve a llamar al mismo paso.
+18 nov 2026, 11:18:44 a.m.	Información	[LinksNombres] Presupuesto interno agotado tras la hoja 22/33 ("Inactivos"). Se reintenta el mismo paso en la próxima continuación.
+18 nov 2026, 11:18:44 a.m.	Información	[LinksNombres]   enlaces accidentales en nombres: acumulado 22 de 33 hojas (67 %); en tandas anteriores: 20; faltan 11.
+18 nov 2026, 11:18:44 a.m.	Información	[LinksNombres]   enlaces accidentales en nombres: en esta tanda: 2 hojas.
+18 nov 2026, 11:18:44 a.m.	Información	[RUNUPDATE] No se vuelve a llamar al paso 35/43 en esta tanda: la tanda ya usó 207 s de los 150 s de su presupuesto.
+18 nov 2026, 11:18:44 a.m.	Información	[RUNUPDATE] Paso 35/43: incompleto tras 114 s en su última llamada; la tanda lleva 207 s de 150 s.
+18 nov 2026, 11:18:44 a.m.	Información	[RUNUPDATE] Paso 35/43 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+18 nov 2026, 11:18:44 a.m.	Información	[RUNUPDATE]   Avance del paso 35/43 (tanda 1 de este paso): al cierre: enlaces accidentales en nombres: 22 de 33 hojas. (Sin tanda anterior comparable de este paso.)
+18 nov 2026, 11:18:46 a.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	runGuerra	Basada en el tiempo	16 nov 2026, 8:48:44 p.m.	3.417 s	
+Fallida
+Registros de Cloud
+16 nov 2026, 8:48:47 p.m.	Error	Lo sentimos, se produjo un error en el servidor. Aguarde un momento e inténtelo de nuevo.
+Encabezado	runPendientesYMensajesProgramado	Basada en el tiempo	16 nov 2026, 10:58:44 a.m.	480.462 s	
+Fallida
+Registros de Cloud
+16 nov 2026, 11:06:45 a.m.	Error	Lo sentimos, se produjo un error en el servidor. Aguarde un momento e inténtelo de nuevo.
+Encabezado	runPendientesYMensajesProgramado	Basada en el tiempo	15 nov 2026, 8:43:44 p.m.	480.511 s	
+Fallida
+Registros de Cloud
+15 nov 2026, 8:51:45 p.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error DEADLINE_EXCEEDED.
+Encabezado	runGuerra	Basada en el tiempo	15 nov 2026, 1:03:44 p.m.	198.488 s	
+Fallida
+Registros de Cloud
+15 nov 2026, 1:03:50 p.m.	Información	=== Actualización Guerra INICIO | UTC 18:3 | Ventana ligera (4-5am): false ===
+15 nov 2026, 1:03:51 p.m.	Información	=== runGuerra (horaria) INICIO ===
+15 nov 2026, 1:03:52 p.m.	Información	[RUNGUERRA] ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/8 POR EMPEZAR: Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados.
+15 nov 2026, 1:03:52 p.m.	Información	[RUNGUERRA] Ejecutando paso 1/8: Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados
+15 nov 2026, 1:03:52 p.m.	Información	[Captura] INICIO (hora, edad maxima del checkpoint 240 s)
+15 nov 2026, 1:03:52 p.m.	Información	[API] Progreso de clanes en Drive tiene 10 min — más viejo que el máximo permitido (4 min). Se descarta, no se reutiliza (se pedirá fresco a la API).
+15 nov 2026, 1:03:52 p.m.	Información	[API] Iniciando _fetchAllClanData para 4 clanes...
+15 nov 2026, 1:03:52 p.m.	Información	[API] Consultando clan: #GCRG8L00
+15 nov 2026, 1:03:54 p.m.	Información	[API][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-15 13:03:54 | sectionIndex=1 periodIndex=13 periodType=warDay | Temporada(bot)=n/d Semana=2 Dia=D | DiaGuerra=n/d | participantes=134 sum(decksUsedToday)=83 sum(decksUsed)=648 sum(fame)=103450
+15 nov 2026, 1:03:54 p.m.	Información	[API] OK clan #GCRG8L00 | miembros: 50
+15 nov 2026, 1:03:54 p.m.	Información	[API] Consultando clan: #GYCU9YRG
+15 nov 2026, 1:03:55 p.m.	Información	[API][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-15 13:03:55 | sectionIndex=1 periodIndex=13 periodType=warDay | Temporada(bot)=n/d Semana=2 Dia=D | DiaGuerra=n/d | participantes=133 sum(decksUsedToday)=49 sum(decksUsed)=462 sum(fame)=73150
+15 nov 2026, 1:03:55 p.m.	Información	[API] OK clan #GYCU9YRG | miembros: 37
+15 nov 2026, 1:03:56 p.m.	Información	[API] Consultando clan: #GQQPPJGR
+15 nov 2026, 1:03:57 p.m.	Información	[API] HTTP 404 para /clans/%23GQQPPJGR/currentriverrace | Respuesta: {"reason":"notFound"}
+15 nov 2026, 1:03:57 p.m.	Información	[API][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-15 13:03:57 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+15 nov 2026, 1:03:57 p.m.	Información	[API] OK clan #GQQPPJGR | miembros: 1
+15 nov 2026, 1:03:57 p.m.	Información	[API] Clan #GQQPPJGR SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 1 miembros): no se cuenta como falla de la API.
+15 nov 2026, 1:03:57 p.m.	Información	[API] Consultando clan: #GG99LCJY
+15 nov 2026, 1:03:58 p.m.	Información	[API] HTTP 404 para /clans/%23GG99LCJY/currentriverrace | Respuesta: {"reason":"notFound"}
+15 nov 2026, 1:03:58 p.m.	Información	[API][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-15 13:03:58 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+15 nov 2026, 1:03:58 p.m.	Información	[API] OK clan #GG99LCJY | miembros: 6
+15 nov 2026, 1:03:58 p.m.	Información	[API] Clan #GG99LCJY SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 6 miembros): no se cuenta como falla de la API.
+15 nov 2026, 1:03:58 p.m.	Información	[API][PERIODO] RESUMEN periodIndex por clan: #GCRG8L00=13, #GYCU9YRG=13, #GQQPPJGR=sin dato, #GG99LCJY=sin dato -> los clanes con dato coinciden. | SIN currentriverrace: #GQQPPJGR, #GG99LCJY (404 o fuera de la carrera; no se escribe nada para ellos); sin guerra abierta (404, §PF379): #GQQPPJGR, #GG99LCJY.
+15 nov 2026, 1:04:04 p.m.	Información	[Archivo] T-27  S-02 P.I-13-D 15-11-2026 13.04 - Grupo乂Terna™ - clans.json: 15 clave(s) [location:4, memberList:50] → 15 clave(s) [location:4, memberList:50]
+15 nov 2026, 1:04:04 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-13): T-27  S-02 P.I-13-D 15-11-2026 13.04 - Grupo乂Terna™ - clans.json
+15 nov 2026, 1:04:07 p.m.	Información	[Archivo] T-27  S-02 P.I-13-D 15-11-2026 04.54 - Grupo乂Terna™ - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:7] → 7 clave(s) [clan:8, clans:5, periodLogs:7]
+15 nov 2026, 1:04:07 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-13): T-27  S-02 P.I-13-D 15-11-2026 04.54 - Grupo乂Terna™ - currentriverrace.json
+15 nov 2026, 1:04:09 p.m.	Información	[Archivo] T-27  S-02 P.I-13-D 15-11-2026 13.04 - GrupoXTerna™2 - clans.json: 15 clave(s) [location:4, memberList:38] → 15 clave(s) [location:4, memberList:37]
+15 nov 2026, 1:04:09 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-13): T-27  S-02 P.I-13-D 15-11-2026 13.04 - GrupoXTerna™2 - clans.json
+15 nov 2026, 1:04:12 p.m.	Información	[Archivo] T-27  S-02 P.I-13-D 15-11-2026 04.43 - GrupoXTerna™2 - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:7] → 7 clave(s) [clan:8, clans:5, periodLogs:7]
+15 nov 2026, 1:04:12 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-13): T-27  S-02 P.I-13-D 15-11-2026 04.43 - GrupoXTerna™2 - currentriverrace.json
+15 nov 2026, 1:04:14 p.m.	Información	[Archivo] T-27  S-02 P.I-13-D 15-11-2026 13.04 - GrupoXTerna™3 - clans.json: 15 clave(s) [location:4, memberList:1] → 15 clave(s) [location:4, memberList:1]
+15 nov 2026, 1:04:14 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-13): T-27  S-02 P.I-13-D 15-11-2026 13.04 - GrupoXTerna™3 - clans.json
+15 nov 2026, 1:04:17 p.m.	Información	[Archivo] T-27  S-02 P.I-13-D 15-11-2026 13.04 - Mini乂Ternas™ - clans.json: 15 clave(s) [location:4, memberList:6] → 15 clave(s) [location:4, memberList:6]
+15 nov 2026, 1:04:17 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-13): T-27  S-02 P.I-13-D 15-11-2026 13.04 - Mini乂Ternas™ - clans.json
+15 nov 2026, 1:04:20 p.m.	Información	[Log] Entrada registrada en Log_ScriptTerna.json: _guardarJsonClanesDesdeCaptura_()
+15 nov 2026, 1:04:20 p.m.	Información	[Captura][JSON] 6 archivo(s) escrito(s) en 19.2 s
+15 nov 2026, 1:04:21 p.m.	Información	[Captura] FIN (hora, 29 s)
+15 nov 2026, 1:04:21 p.m.	Información	[RUNGUERRA] Paso 1/8: terminado tras 29 s en su última llamada; la tanda lleva 30 s de 150 s.
+15 nov 2026, 1:04:22 p.m.	Información	[RUNGUERRA] Ejecutando paso 2/8: Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)
+15 nov 2026, 1:04:22 p.m.	Información	[Guerra] Actualizando... PeriodIndex actual: 13
+15 nov 2026, 1:04:26 p.m.	Información	[Guerra] _restaurarGuerraDesdeCSVSiVacia: hoja ya tiene 1383 fila(s) y ya cubre todas las de la temporada actual (27) presentes en Backup_Guerra.csv, se omite la restauración.
+15 nov 2026, 1:04:26 p.m.	Información	[Guerra][t] tras _restaurarGuerraDesdeCSVSiVacia: 3605 ms
+15 nov 2026, 1:04:27 p.m.	Información	[Guerra][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-15 13:04:27 | sectionIndex=1 periodIndex=13 periodType=warDay | Temporada(bot)=27 Semana=2 Dia=D | DiaGuerra=15/11/2026
+15 nov 2026, 1:04:27 p.m.	Información	ALERTA BARCOS: rafael (#YYYYULCRG) │ Grupo乂Terna™ │ Día(s): J:1 │ Total semana:1
+15 nov 2026, 1:04:27 p.m.	Información	[Guerra][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-15 13:04:27 | sectionIndex=1 periodIndex=13 periodType=warDay | Temporada(bot)=27 Semana=2 Dia=D | DiaGuerra=15/11/2026
+15 nov 2026, 1:04:27 p.m.	Información	[Guerra][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida (antes se escribia con periodIndex 0 / training).
+15 nov 2026, 1:04:27 p.m.	Información	[Guerra][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-15 13:04:27 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+15 nov 2026, 1:04:27 p.m.	Información	[Guerra][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida (antes se escribia con periodIndex 0 / training).
+15 nov 2026, 1:04:27 p.m.	Información	[Guerra][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-15 13:04:27 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+15 nov 2026, 1:04:27 p.m.	Información	[Guerra][t] tras loop de participantes: 4637 ms
+15 nov 2026, 1:04:30 p.m.	Información	[Guerra][t] tras escrituras (existentes+nuevas): 7410 ms
+15 nov 2026, 1:04:31 p.m.	Información	[Guerra][t] tras _aplicarFmtCondicionalGuerra + _ocultarFilasTagsOcultos: 9130 ms
+15 nov 2026, 1:04:32 p.m.	Información	[Guerra][t] tras _purgarTemporadasAnterioresGuerra: 9914 ms
+15 nov 2026, 1:04:33 p.m.	Información	[Guerra][t] tras _limpiarLinksAccidentalesGuerraIncremental (completo: true): 10861 ms
+15 nov 2026, 1:04:38 p.m.	Información	[Guerra] updateGuerraSheet completado. Nuevas filas: 1 | tiempo total tras restauración: 15321 ms
+15 nov 2026, 1:04:38 p.m.	Información	[RUNGUERRA] Paso 2/8: terminado tras 16 s en su última llamada; la tanda lleva 46 s de 150 s.
+15 nov 2026, 1:04:38 p.m.	Información	[RUNGUERRA] Ejecutando paso 3/8: Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día
+15 nov 2026, 1:04:40 p.m.	Información	[GuerraLogs] Actualizando... PeriodIndex actual: 13
+15 nov 2026, 1:04:43 p.m.	Información	[GuerraLogs][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+15 nov 2026, 1:04:43 p.m.	Información	[GuerraLogs][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+15 nov 2026, 1:04:45 p.m.	Información	[GuerraLogs] completado. Nuevas filas creadas: 0
+15 nov 2026, 1:04:45 p.m.	Información	[RUNGUERRA] Paso 3/8: terminado tras 7 s en su última llamada; la tanda lleva 54 s de 150 s.
+15 nov 2026, 1:04:46 p.m.	Información	[RUNGUERRA] Ejecutando paso 4/8: Hoja Control: actualizar → hoja Control al día
+15 nov 2026, 1:04:47 p.m.	Información	[Control] Actualizando...
+15 nov 2026, 1:04:51 p.m.	Información	[TorneosMed] hoja Guerra: 1384 fila(s) leídas en 847ms
+15 nov 2026, 1:04:53 p.m.	Información	[TorneosMed] Guerra_Logs: 960 fila(s) leídas y procesadas en 1037ms
+15 nov 2026, 1:04:53 p.m.	Información	[TorneosMed] procesar: 1384 fila(s), 807 de día de guerra; bucle 1 = 1569ms (cruce de meta: 807 llamada(s), 1549ms); bucle 2 = 3ms
+15 nov 2026, 1:04:53 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 1574ms
+15 nov 2026, 1:04:55 p.m.	Información	[TorneosMed] hoja Guerra: 1384 fila(s) leídas en 832ms
+15 nov 2026, 1:04:56 p.m.	Información	[TorneosMed] Guerra_Logs: 960 fila(s) leídas y procesadas en 1445ms
+15 nov 2026, 1:04:56 p.m.	Información	[TorneosMed] procesar: 1384 fila(s), 807 de día de guerra; bucle 1 = 1485ms (cruce de meta: 807 llamada(s), 1454ms); bucle 2 = 2ms
+15 nov 2026, 1:04:56 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 1488ms
+15 nov 2026, 1:04:59 p.m.	Información	[Control] Formato pesado (bordes/anchos/condicional/visibilidad) SALTADO -- sin cambios de jugadores/temporada/semana desde la última reconstrucción (respaldo forzado cada 6h).
+15 nov 2026, 1:05:01 p.m.	Información	[Control] Actualizado. Jugadores: 94
+15 nov 2026, 1:05:01 p.m.	Información	[RUNGUERRA] Paso 4/8: terminado tras 15 s en su última llamada; la tanda lleva 70 s de 150 s.
+15 nov 2026, 1:05:02 p.m.	Información	[RUNGUERRA] Ejecutando paso 5/8: Hoja Pendientes: actualizar → hoja Pendientes al día
+15 nov 2026, 1:05:02 p.m.	Información	[Pendientes] Sin guerra abierta (HTTP 404, no es falla de la API; se omiten sus miembros): #GQQPPJGR, #GG99LCJY.
+15 nov 2026, 1:05:03 p.m.	Información	[Pendientes] Calculando pendientes...
+15 nov 2026, 1:05:08 p.m.	Información	[Pendientes] Actualizado. Jugadores con pendientes: 58
+15 nov 2026, 1:05:08 p.m.	Información	[RUNGUERRA] Paso 5/8: terminado tras 7 s en su última llamada; la tanda lleva 77 s de 150 s.
+15 nov 2026, 1:05:09 p.m.	Información	[RUNGUERRA] Ejecutando paso 6/8: Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía
+15 nov 2026, 1:05:10 p.m.	Información	[RUNGUERRA] Paso 6/8: terminado tras 1 s en su última llamada; la tanda lleva 78 s de 150 s.
+15 nov 2026, 1:05:10 p.m.	Información	[RUNGUERRA] Ejecutando paso 7/8: Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día
+15 nov 2026, 1:05:11 p.m.	Información	[Guerra] _syncGuerraCSV: leyendo la hoja (1384 fila(s) de dato).
+15 nov 2026, 1:05:25 p.m.	Información	[Guerra] _syncGuerraCSV: hoja leída en 14.1 s; leyendo Backup_Guerra.csv de Drive.
+15 nov 2026, 1:05:26 p.m.	Información	[Guerra] _syncGuerraCSV: CSV leído con 40746 fila(s) y 5523227 caracteres; hoja con 1384 fila(s); referencia 5758279 bytes.
+15 nov 2026, 1:05:26 p.m.	Información	[Guerra] _syncGuerraCSV: tiempos hasta aquí: leer hoja 14.1 s (getLastRow 0.1 s; getDisplayValues 0.6 s; columnas de fecha 13.3 s); leer CSV 0 s; tamaño de referencia 0.2 s; relectura directa 0 s; armar filas 1.2 s; total 15.5 s.
+15 nov 2026, 1:05:30 p.m.	Información	[Archivo] Backup_Guerra.csv: 40746 fila(s) → 40747 fila(s)
+15 nov 2026, 1:05:30 p.m.	Información	[Guerra] Backup_Guerra.csv fusionado (40747 filas totales; 1 nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores). Clan_Tag conservado del CSV (la hoja lo traía vacío): 404 fila(s).
+15 nov 2026, 1:05:30 p.m.	Información	[runGuerra] Respaldo CSV de Guerra terminado en 20 s.
+15 nov 2026, 1:05:30 p.m.	Información	[RUNGUERRA] Paso 7/8: terminado tras 20 s en su última llamada; la tanda lleva 99 s de 150 s.
+15 nov 2026, 1:05:31 p.m.	Información	[RUNGUERRA] Ejecutando paso 8/8: Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 1 leída directo de Backup_Guerra.csv (208 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 2 leída directo de Backup_Guerra.csv (172 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 3 leída directo de Backup_Guerra.csv (176 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 4 leída directo de Backup_Guerra.csv (192 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T4 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T4 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 5 leída directo de Backup_Guerra.csv (56 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T5 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T5 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T5 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 6 leída directo de Backup_Guerra.csv (24 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T6 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T6 S1 dia V: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T6 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T6 S2 dia V: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T6 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T6 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 7 leída directo de Backup_Guerra.csv (320 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T7 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Valores diarios] T7 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 8 leída directo de Backup_Guerra.csv (64 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 9 leída directo de Backup_Guerra.csv (196 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:39 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 10 leída directo de Backup_Guerra.csv (384 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 11 leída directo de Backup_Guerra.csv (276 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 12 leída directo de Backup_Guerra.csv (304 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 13 leída directo de Backup_Guerra.csv (596 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 14 leída directo de Backup_Guerra.csv (588 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 15 leída directo de Backup_Guerra.csv (672 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 16 leída directo de Backup_Guerra.csv (896 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 17 leída directo de Backup_Guerra.csv (772 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 18 leída directo de Backup_Guerra.csv (636 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 19 leída directo de Backup_Guerra.csv (1016 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 20 leída directo de Backup_Guerra.csv (776 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 21 leída directo de Backup_Guerra.csv (1008 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 22 leída directo de Backup_Guerra.csv (7681 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:40 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 23 leída directo de Backup_Guerra.csv (3631 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:41 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 24 leída directo de Backup_Guerra.csv (8172 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:41 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 25 leída directo de Backup_Guerra.csv (5335 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:41 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 26 leída directo de Backup_Guerra.csv (5212 fila(s) — hoja Guerra no tocada).
+15 nov 2026, 1:05:42 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 3ms
+15 nov 2026, 1:05:42 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 4ms
+15 nov 2026, 1:06:11 p.m.	Información	15/11 13:06:11 [Dashboard] build=B3 total=40111ms | ctx=485 | guerraHoy+pendientes=1813 | directorio=1934 | temporadasCSV=809 | valoresDiarios=5412 | control2Vigente=2389 | control2Historico=1514 | ingresos.nuevos=1602 | ingresos.guerra=4 | ingresos.rivales=472 | ingresos.control2=835 | ingresos=22842 || detalle: dir.lectura=1638ms/1x | c2.guerraData=345ms/27x | c2.minG=1838ms/27x | c2.bucleJugadores=845ms/27x
+15 nov 2026, 1:06:11 p.m.	Depurar	15/11 13:06:11 [Dashboard] build=B3 total=40111ms | ctx=485 | guerraHoy+pendientes=1813 | directorio=1934 | temporadasCSV=809 | valoresDiarios=5412 | control2Vigente=2389 | control2Historico=1514 | ingresos.nuevos=1602 | ingresos.guerra=4 | ingresos.rivales=472 | ingresos.control2=835 | ingresos=22842 || detalle: dir.lectura=1638ms/1x | c2.guerraData=345ms/27x | c2.minG=1838ms/27x | c2.bucleJugadores=845ms/27x
+15 nov 2026, 1:06:11 p.m.	Información	15/11 13:06:11 [WebGuerraEnVivo] datos del dashboard calculados en 40243ms
+15 nov 2026, 1:06:11 p.m.	Depurar	15/11 13:06:11 [WebGuerraEnVivo] datos del dashboard calculados en 40243ms
+15 nov 2026, 1:06:12 p.m.	Información	15/11 13:06:12 [WebGuerraEnVivo] caché guardada: JSON 2392167 car. -> gzip+base64 296144 car. en 4 trozo(s), 7200 s.
+15 nov 2026, 1:06:12 p.m.	Depurar	15/11 13:06:12 [WebGuerraEnVivo] caché guardada: JSON 2392167 car. -> gzip+base64 296144 car. en 4 trozo(s), 7200 s.
+15 nov 2026, 1:06:25 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra.json: antes sin contar → 17 clave(s) [ctx:12, guerraPorClan:2, diasSemanaGuerra:4]
+15 nov 2026, 1:06:25 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_ctx.json: 2 clave(s) [ctx:12] → 2 clave(s) [ctx:12]
+15 nov 2026, 1:06:25 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_top.json: 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1] → 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1]
+15 nov 2026, 1:06:25 p.m.	Información	15/11 13:06:25 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2370 KB; guerra_top.json 39 KB) en 13079ms
+15 nov 2026, 1:06:26 p.m.	Depurar	15/11 13:06:25 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2370 KB; guerra_top.json 39 KB) en 13079ms
+15 nov 2026, 1:06:34 p.m.	Información	[Archivo] GrupoTerna/Web@data/roster.json: 2 clave(s) [clanes:4] → 2 clave(s) [clanes:4]
+15 nov 2026, 1:06:34 p.m.	Información	15/11 13:06:34 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (36 KB) en 8722ms
+15 nov 2026, 1:06:34 p.m.	Depurar	15/11 13:06:34 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (36 KB) en 8722ms
+15 nov 2026, 1:06:59 p.m.	Información	[Archivo] GrupoTerna/Web@data/home.json: 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4] → 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4]
+15 nov 2026, 1:06:59 p.m.	Información	15/11 13:06:59 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 24982ms
+15 nov 2026, 1:06:59 p.m.	Depurar	15/11 13:06:59 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 24982ms
+15 nov 2026, 1:06:59 p.m.	Información	15/11 13:06:59 [TorneosEstatico] se calculó hace menos de 90 min; se omite en este ciclo
+15 nov 2026, 1:06:59 p.m.	Depurar	15/11 13:06:59 [TorneosEstatico] se calculó hace menos de 90 min; se omite en este ciclo
+15 nov 2026, 1:06:59 p.m.	Información	15/11 13:06:59 [WebGuerraEnVivo] caché CALENTADA por el bot en 88213ms, TTL 7200 s
+15 nov 2026, 1:06:59 p.m.	Depurar	15/11 13:06:59 [WebGuerraEnVivo] caché CALENTADA por el bot en 88213ms, TTL 7200 s
+15 nov 2026, 1:06:59 p.m.	Información	[runGuerra] Calentamiento del caché terminado en 88 s.
+15 nov 2026, 1:07:00 p.m.	Información	[RUNGUERRA] Paso 8/8: terminado tras 89 s en su última llamada; la tanda lleva 188 s de 150 s.
+15 nov 2026, 1:07:01 p.m.	Información	[CSV] Revisión posterior: Backup_Guerra.csv pesa 5758416 bytes (se escribieron 5523362 caracteres). Sin cambios.
+15 nov 2026, 1:07:02 p.m.	Información	=== runGuerra (horaria) FIN ===
+15 nov 2026, 1:07:03 p.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	_continuarRunGuerraRapido	Basada en el tiempo	15 nov 2026, 10:05:54 a.m.	203.304 s	
+Fallida
+Registros de Cloud
+15 nov 2026, 10:06:28 a.m.	Información	=== runGuerraRapido CONTINÚA desde el paso 10/11 [programada, sin API] ===
+15 nov 2026, 10:06:30 a.m.	Información	[RUNGUERRARAPIDO] ESTADO al empezar: pasos cerrados 9/11; paso 10/11 POR EMPEZAR: Hoja Mensajes: generar a partir de Pendientes → hoja Mensajes al día (la tanda anterior cerró el paso 9 y se quedó sin tiempo).
+15 nov 2026, 10:06:31 a.m.	Información	[RUNGUERRARAPIDO] Reanudando en el paso 10 (version programada): se reconstruye el cache de clanes desde el checkpoint de Drive, SIN API.
+15 nov 2026, 10:06:33 a.m.	Información	[API][SinAPI] Clanes cargados del checkpoint de Drive (captura de hace 62 min, 15/11 09:04:07 Lima) SIN llamar a la API | periodIndex: #GCRG8L00=13, #GYCU9YRG=13, #GQQPPJGR=sin dato, #GG99LCJY=sin dato
+15 nov 2026, 10:06:33 a.m.	Información	[RUNGUERRARAPIDO] Ejecutando paso 10/11: Hoja Mensajes: generar a partir de Pendientes → hoja Mensajes al día
+15 nov 2026, 10:06:33 a.m.	Información	[Mensajes] Generando mensajes...
+15 nov 2026, 10:08:51 a.m.	Información	[Mensajes] Generados 14 mensajes.
+15 nov 2026, 10:08:51 a.m.	Información	[Mensajes] Completado.
+15 nov 2026, 10:08:51 a.m.	Información	[RUNGUERRARAPIDO] Paso 10/11: terminado tras 138 s en su última llamada; la tanda lleva 142 s de 150 s.
+15 nov 2026, 10:08:52 a.m.	Información	[RUNGUERRARAPIDO] Ejecutando paso 11/11: Menú dinámico: actualizar las entradas Dinámico → menú al día
+15 nov 2026, 10:09:17 a.m.	Error	Lo sentimos, se produjo un error en el servidor. Aguarde un momento e inténtelo de nuevo.
+Encabezado	runSyncCSV	Basada en el tiempo	15 nov 2026, 7:50:25 a.m.	219.415 s	
+Fallida
+Registros de Cloud
+15 nov 2026, 7:50:34 a.m.	Información	[CSV] Iniciando sincronización...
+15 nov 2026, 7:50:34 a.m.	Información	[RUNSYNCCSV] ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/14 POR EMPEZAR: Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día.
+15 nov 2026, 7:50:34 a.m.	Información	[RUNSYNCCSV] Ejecutando paso 1/14: Backup CSV Directorio y Clan: sincronizar → CSV en Drive al día
+15 nov 2026, 7:51:07 a.m.	Información	[Archivo] Backup_Directorio.csv: 105 fila(s) → 107 fila(s)
+15 nov 2026, 7:51:08 a.m.	Información	[Backup] Backup_Directorio.csv sincronizado (107 registros, 60 columnas formato DC, Cat_disp/Clanes_Admin tomadas de Administradores).
+15 nov 2026, 7:51:12 a.m.	Información	[Archivo] Backup_Clan.csv: 4 fila(s) → 4 fila(s)
+15 nov 2026, 7:51:12 a.m.	Información	[Backup] Backup_Clan.csv sincronizado.
+15 nov 2026, 7:51:12 a.m.	Información	[RUNSYNCCSV] Paso 1/14: terminado tras 38 s en su última llamada; la tanda lleva 38 s de 150 s.
+15 nov 2026, 7:51:13 a.m.	Información	[RUNSYNCCSV] Ejecutando paso 2/14: Backup CSV Acumulativos: sincronizar Inactivos y hojas acumulativas → CSV al día (puede necesitar varias tandas)
+15 nov 2026, 7:51:13 a.m.	Información	[Backup][t] syncAcumulativosCSV: empieza el trabajo 1/7 (Inactivos); a la ejecución le quedan 321 s.
+15 nov 2026, 7:53:55 a.m.	Información	[Archivo] Backup_Inactivos.csv: 1415 fila(s) → 1421 fila(s)
+15 nov 2026, 7:53:55 a.m.	Información	[Backup] Backup_Inactivos.csv sincronizado (1421 registros, 60 columnas armadas sin expandir la hoja Inactivos, 29 cols reales).
+15 nov 2026, 7:53:55 a.m.	Información	[Backup][t] syncAcumulativosCSV: trabajo 1/7 (Inactivos): 161869 ms
+15 nov 2026, 7:53:55 a.m.	Información	[Backup] syncAcumulativosCSV: presupuesto interno agotado tras el trabajo 1/7 (Inactivos). Se reintenta el mismo paso en la próxima continuación.
+15 nov 2026, 7:53:55 a.m.	Información	[Backup]   respaldo CSV de acumulativos: acumulado 1 de 7 trabajos (14 %); en tandas anteriores: 0; faltan 6.
+15 nov 2026, 7:53:55 a.m.	Información	[Backup]   respaldo CSV de acumulativos: en esta tanda: 1 trabajos.
+15 nov 2026, 7:53:55 a.m.	Información	[RUNSYNCCSV] No se vuelve a llamar al paso 2/14 en esta tanda: la tanda ya usó 201 s de los 150 s de su presupuesto.
+15 nov 2026, 7:53:55 a.m.	Información	[RUNSYNCCSV] Paso 2/14: incompleto tras 162 s en su última llamada; la tanda lleva 201 s de 150 s.
+15 nov 2026, 7:53:55 a.m.	Información	[RUNSYNCCSV] Paso 2/14 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+15 nov 2026, 7:53:55 a.m.	Información	[RUNSYNCCSV]   Avance del paso 2/14 (tanda 1 de este paso): al cierre: respaldo CSV de acumulativos: 1 de 7 trabajos. (Sin tanda anterior comparable de este paso.)
+15 nov 2026, 7:53:56 a.m.	Información	[CSV] Revisión posterior: Backup_Directorio.csv pesa 463205 bytes (se escribieron 460025 caracteres). Sin cambios.
+15 nov 2026, 7:53:57 a.m.	Información	[CSV] Revisión posterior: Backup_Clan.csv pesa 3269 bytes (se escribieron 3131 caracteres). Sin cambios.
+15 nov 2026, 7:54:03 a.m.	Información	[CSV] Revisión posterior: Backup_Inactivos.csv pesa 228787 bytes (se escribieron 220122 caracteres). Sin cambios.
+15 nov 2026, 7:54:04 a.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Encabezado	runGuerra	Basada en el tiempo	14 nov 2026, 5:38:44 p.m.	480.491 s	
+Fallida
+Registros de Cloud
+14 nov 2026, 5:46:45 p.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error DEADLINE_EXCEEDED.
+Encabezado	runGuerra	Basada en el tiempo	14 nov 2026, 5:03:44 p.m.	182.284 s	
+Fallida
+Registros de Cloud
+14 nov 2026, 5:03:47 p.m.	Información	=== Actualización Guerra INICIO | UTC 22:3 | Ventana ligera (4-5am): false ===
+14 nov 2026, 5:03:49 p.m.	Información	=== runGuerra (horaria) INICIO ===
+14 nov 2026, 5:03:49 p.m.	Información	[RUNGUERRA] ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/8 POR EMPEZAR: Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados.
+14 nov 2026, 5:03:50 p.m.	Información	[RUNGUERRA] Ejecutando paso 1/8: Clanes: capturar los datos de los clanes (API, o lo ya guardado si es reciente) → datos de clanes cargados
+14 nov 2026, 5:03:50 p.m.	Información	[Captura] INICIO (hora, edad maxima del checkpoint 240 s)
+14 nov 2026, 5:03:50 p.m.	Información	[API] Progreso de clanes en Drive tiene 55 min — más viejo que el máximo permitido (4 min). Se descarta, no se reutiliza (se pedirá fresco a la API).
+14 nov 2026, 5:03:50 p.m.	Información	[API] Iniciando _fetchAllClanData para 4 clanes...
+14 nov 2026, 5:03:50 p.m.	Información	[API] Consultando clan: #GCRG8L00
+14 nov 2026, 5:03:51 p.m.	Información	[API][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-14 17:03:51 | sectionIndex=1 periodIndex=12 periodType=warDay | Temporada(bot)=n/d Semana=2 Dia=S | DiaGuerra=n/d | participantes=123 sum(decksUsedToday)=83 sum(decksUsed)=452 sum(fame)=72250
+14 nov 2026, 5:03:51 p.m.	Información	[API] OK clan #GCRG8L00 | miembros: 49
+14 nov 2026, 5:03:52 p.m.	Información	[API] Consultando clan: #GYCU9YRG
+14 nov 2026, 5:03:53 p.m.	Información	[API][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-14 17:03:53 | sectionIndex=1 periodIndex=12 periodType=warDay | Temporada(bot)=n/d Semana=2 Dia=S | DiaGuerra=n/d | participantes=130 sum(decksUsedToday)=68 sum(decksUsed)=366 sum(fame)=58300
+14 nov 2026, 5:03:53 p.m.	Información	[API] OK clan #GYCU9YRG | miembros: 36
+14 nov 2026, 5:03:53 p.m.	Información	[API] Consultando clan: #GQQPPJGR
+14 nov 2026, 5:03:54 p.m.	Información	[API] HTTP 404 para /clans/%23GQQPPJGR/currentriverrace | Respuesta: {"reason":"notFound"}
+14 nov 2026, 5:03:54 p.m.	Información	[API][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-14 17:03:54 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+14 nov 2026, 5:03:54 p.m.	Información	[API] OK clan #GQQPPJGR | miembros: 1
+14 nov 2026, 5:03:54 p.m.	Información	[API] Clan #GQQPPJGR SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 1 miembros): no se cuenta como falla de la API.
+14 nov 2026, 5:03:54 p.m.	Información	[API] Consultando clan: #GG99LCJY
+14 nov 2026, 5:03:56 p.m.	Información	[API] HTTP 404 para /clans/%23GG99LCJY/currentriverrace | Respuesta: {"reason":"notFound"}
+14 nov 2026, 5:03:56 p.m.	Información	[API][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-14 17:03:56 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+14 nov 2026, 5:03:56 p.m.	Información	[API] OK clan #GG99LCJY | miembros: 6
+14 nov 2026, 5:03:56 p.m.	Información	[API] Clan #GG99LCJY SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 6 miembros): no se cuenta como falla de la API.
+14 nov 2026, 5:03:56 p.m.	Información	[API][PERIODO] RESUMEN periodIndex por clan: #GCRG8L00=12, #GYCU9YRG=12, #GQQPPJGR=sin dato, #GG99LCJY=sin dato -> los clanes con dato coinciden. | SIN currentriverrace: #GQQPPJGR, #GG99LCJY (404 o fuera de la carrera; no se escribe nada para ellos); sin guerra abierta (404, §PF379): #GQQPPJGR, #GG99LCJY.
+14 nov 2026, 5:04:02 p.m.	Información	[Archivo] T-27  S-02 P.I-12-S 14-11-2026 17.03 - Grupo乂Terna™ - clans.json: 15 clave(s) [location:4, memberList:48] → 15 clave(s) [location:4, memberList:49]
+14 nov 2026, 5:04:02 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-12): T-27  S-02 P.I-12-S 14-11-2026 17.03 - Grupo乂Terna™ - clans.json
+14 nov 2026, 5:04:04 p.m.	Información	[Archivo] T-27  S-02 P.I-12-S 14-11-2026 04.54 - Grupo乂Terna™ - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:6] → 7 clave(s) [clan:8, clans:5, periodLogs:6]
+14 nov 2026, 5:04:04 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-12): T-27  S-02 P.I-12-S 14-11-2026 04.54 - Grupo乂Terna™ - currentriverrace.json
+14 nov 2026, 5:04:06 p.m.	Información	[Archivo] T-27  S-02 P.I-12-S 14-11-2026 17.04 - GrupoXTerna™2 - clans.json: 15 clave(s) [location:4, memberList:36] → 15 clave(s) [location:4, memberList:36]
+14 nov 2026, 5:04:06 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-12): T-27  S-02 P.I-12-S 14-11-2026 17.04 - GrupoXTerna™2 - clans.json
+14 nov 2026, 5:04:08 p.m.	Información	[Archivo] T-27  S-02 P.I-12-S 14-11-2026 04.44 - GrupoXTerna™2 - currentriverrace.json: 7 clave(s) [clan:8, clans:5, periodLogs:6] → 7 clave(s) [clan:8, clans:5, periodLogs:6]
+14 nov 2026, 5:04:08 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-12): T-27  S-02 P.I-12-S 14-11-2026 04.44 - GrupoXTerna™2 - currentriverrace.json
+14 nov 2026, 5:04:10 p.m.	Información	[Archivo] T-27  S-02 P.I-12-S 14-11-2026 17.04 - GrupoXTerna™3 - clans.json: 15 clave(s) [location:4, memberList:1] → 15 clave(s) [location:4, memberList:1]
+14 nov 2026, 5:04:10 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-12): T-27  S-02 P.I-12-S 14-11-2026 17.04 - GrupoXTerna™3 - clans.json
+14 nov 2026, 5:04:12 p.m.	Información	[Archivo] T-27  S-02 P.I-12-S 14-11-2026 17.04 - Mini乂Ternas™ - clans.json: 15 clave(s) [location:4, memberList:6] → 15 clave(s) [location:4, memberList:6]
+14 nov 2026, 5:04:12 p.m.	Información	[Cache] Actualizado en Drive (mismo archivo, T-27  S-02 P.I-12): T-27  S-02 P.I-12-S 14-11-2026 17.04 - Mini乂Ternas™ - clans.json
+14 nov 2026, 5:04:15 p.m.	Información	[Log] Entrada registrada en Log_ScriptTerna.json: _guardarJsonClanesDesdeCaptura_()
+14 nov 2026, 5:04:15 p.m.	Información	[Captura][JSON] 6 archivo(s) escrito(s) en 16.7 s
+14 nov 2026, 5:04:18 p.m.	Información	[Captura] FIN (hora, 29 s)
+14 nov 2026, 5:04:18 p.m.	Información	[RUNGUERRA] Paso 1/8: terminado tras 29 s en su última llamada; la tanda lleva 29 s de 150 s.
+14 nov 2026, 5:04:19 p.m.	Información	[RUNGUERRA] Ejecutando paso 2/8: Hoja Guerra: actualizar → hoja Guerra al día (puede necesitar varias tandas)
+14 nov 2026, 5:04:20 p.m.	Información	[Guerra] Actualizando... PeriodIndex actual: 12
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra] _restaurarGuerraDesdeCSVSiVacia: hoja ya tiene 1286 fila(s) y ya cubre todas las de la temporada actual (27) presentes en Backup_Guerra.csv, se omite la restauración.
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra][t] tras _restaurarGuerraDesdeCSVSiVacia: 2536 ms
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-14 17:04:23 | sectionIndex=1 periodIndex=12 periodType=warDay | Temporada(bot)=27 Semana=2 Dia=S | DiaGuerra=14/11/2026
+14 nov 2026, 5:04:23 p.m.	Información	ALERTA BARCOS: rafael (#YYYYULCRG) │ Grupo乂Terna™ │ Día(s): J:1 │ Total semana:1
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-14 17:04:23 | sectionIndex=1 periodIndex=12 periodType=warDay | Temporada(bot)=27 Semana=2 Dia=S | DiaGuerra=14/11/2026
+14 nov 2026, 5:04:23 p.m.	Información	ALERTA BARCOS: jimmy (#CLQ2889J8) │ GrupoXTerna™2 │ Día(s): V:4, S:4 │ Total semana:8
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida (antes se escribia con periodIndex 0 / training).
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-14 17:04:23 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida (antes se escribia con periodIndex 0 / training).
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-14 17:04:23 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+14 nov 2026, 5:04:23 p.m.	Información	[Guerra][t] tras loop de participantes: 3181 ms
+14 nov 2026, 5:04:27 p.m.	Información	[Guerra][t] tras escrituras (existentes+nuevas): 6771 ms
+14 nov 2026, 5:04:28 p.m.	Información	[Guerra][t] tras _aplicarFmtCondicionalGuerra + _ocultarFilasTagsOcultos: 8263 ms
+14 nov 2026, 5:04:29 p.m.	Información	[Guerra][t] tras _purgarTemporadasAnterioresGuerra: 8795 ms
+14 nov 2026, 5:04:30 p.m.	Información	[Guerra][t] tras _limpiarLinksAccidentalesGuerraIncremental (completo: true): 9897 ms
+14 nov 2026, 5:04:33 p.m.	Información	[Guerra] updateGuerraSheet completado. Nuevas filas: 1 | tiempo total tras restauración: 12610 ms
+14 nov 2026, 5:04:33 p.m.	Información	[RUNGUERRA] Paso 2/8: terminado tras 13 s en su última llamada; la tanda lleva 44 s de 150 s.
+14 nov 2026, 5:04:33 p.m.	Información	[RUNGUERRA] Ejecutando paso 3/8: Hoja Guerra_Logs: actualizar → hoja Guerra_Logs al día
+14 nov 2026, 5:04:35 p.m.	Información	[GuerraLogs] Actualizando... PeriodIndex actual: 12
+14 nov 2026, 5:04:37 p.m.	Información	[GuerraLogs][PROTECCION] GrupoXTerna™3 (#GQQPPJGR): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+14 nov 2026, 5:04:37 p.m.	Información	[GuerraLogs][PROTECCION] Mini乂Ternas™ (#GG99LCJY): currentriverrace sin periodIndex valido; se omite este clan en esta corrida.
+14 nov 2026, 5:04:39 p.m.	Información	[GuerraLogs] completado. Nuevas filas creadas: 0
+14 nov 2026, 5:04:39 p.m.	Información	[RUNGUERRA] Paso 3/8: terminado tras 6 s en su última llamada; la tanda lleva 50 s de 150 s.
+14 nov 2026, 5:04:40 p.m.	Información	[RUNGUERRA] Ejecutando paso 4/8: Hoja Control: actualizar → hoja Control al día
+14 nov 2026, 5:04:41 p.m.	Información	[Control] Actualizando...
+14 nov 2026, 5:04:44 p.m.	Información	[TorneosMed] hoja Guerra: 1287 fila(s) leídas en 517ms
+14 nov 2026, 5:04:45 p.m.	Información	[TorneosMed] Guerra_Logs: 950 fila(s) leídas y procesadas en 881ms
+14 nov 2026, 5:04:45 p.m.	Información	[TorneosMed] procesar: 1287 fila(s), 710 de día de guerra; bucle 1 = 1351ms (cruce de meta: 710 llamada(s), 1347ms); bucle 2 = 2ms
+14 nov 2026, 5:04:45 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 1354ms
+14 nov 2026, 5:04:48 p.m.	Información	[TorneosMed] hoja Guerra: 1287 fila(s) leídas en 912ms
+14 nov 2026, 5:04:48 p.m.	Información	[TorneosMed] Guerra_Logs: 950 fila(s) leídas y procesadas en 713ms
+14 nov 2026, 5:04:48 p.m.	Información	[TorneosMed] procesar: 1287 fila(s), 710 de día de guerra; bucle 1 = 723ms (cruce de meta: 710 llamada(s), 717ms); bucle 2 = 0ms
+14 nov 2026, 5:04:48 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 725ms
+14 nov 2026, 5:04:50 p.m.	Información	[Control] Formato pesado (bordes/anchos/condicional/visibilidad) SALTADO -- sin cambios de jugadores/temporada/semana desde la última reconstrucción (respaldo forzado cada 6h).
+14 nov 2026, 5:04:50 p.m.	Información	[Control] _limpiarLinksAccidentalesEnHoja() SALTADO (throttle 60 min, faltan 5 min para la próxima).
+14 nov 2026, 5:04:50 p.m.	Información	[Control] Actualizado. Jugadores: 91
+14 nov 2026, 5:04:50 p.m.	Información	[RUNGUERRA] Paso 4/8: terminado tras 10 s en su última llamada; la tanda lleva 61 s de 150 s.
+14 nov 2026, 5:04:51 p.m.	Información	[RUNGUERRA] Ejecutando paso 5/8: Hoja Pendientes: actualizar → hoja Pendientes al día
+14 nov 2026, 5:04:51 p.m.	Información	[Pendientes] Sin guerra abierta (HTTP 404, no es falla de la API; se omiten sus miembros): #GQQPPJGR, #GG99LCJY.
+14 nov 2026, 5:04:52 p.m.	Información	[Pendientes] Calculando pendientes...
+14 nov 2026, 5:04:56 p.m.	Información	[Pendientes] Actualizado. Jugadores con pendientes: 51
+14 nov 2026, 5:04:56 p.m.	Información	[RUNGUERRA] Paso 5/8: terminado tras 5 s en su última llamada; la tanda lleva 67 s de 150 s.
+14 nov 2026, 5:04:57 p.m.	Información	[RUNGUERRA] Ejecutando paso 6/8: Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía
+14 nov 2026, 5:04:57 p.m.	Información	[RUNGUERRA] Paso 6/8: terminado tras 1 s en su última llamada; la tanda lleva 68 s de 150 s.
+14 nov 2026, 5:04:58 p.m.	Información	[RUNGUERRA] Ejecutando paso 7/8: Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día
+14 nov 2026, 5:04:59 p.m.	Información	[Guerra] _syncGuerraCSV: leyendo la hoja (1287 fila(s) de dato).
+14 nov 2026, 5:05:04 p.m.	Información	[Guerra] _syncGuerraCSV: hoja leída en 5.8 s; leyendo Backup_Guerra.csv de Drive.
+14 nov 2026, 5:05:05 p.m.	Información	[Guerra] _syncGuerraCSV: CSV leído con 40649 fila(s) y 5509245 caracteres; hoja con 1287 fila(s); referencia 5743616 bytes.
+14 nov 2026, 5:05:05 p.m.	Información	[Guerra] _syncGuerraCSV: tiempos hasta aquí: leer hoja 5.8 s (getLastRow 0.1 s; getDisplayValues 0.4 s; columnas de fecha 5.3 s); leer CSV 0 s; tamaño de referencia 0.2 s; relectura directa 0 s; armar filas 0.3 s; total 6.2 s.
+14 nov 2026, 5:05:08 p.m.	Información	[Archivo] Backup_Guerra.csv: 40649 fila(s) → 40650 fila(s)
+14 nov 2026, 5:05:08 p.m.	Información	[Guerra] Backup_Guerra.csv fusionado (40650 filas totales; 1 nueva(s) desde la hoja, el resto actualizadas o intactas de temporadas anteriores). Clan_Tag conservado del CSV (la hoja lo traía vacío): 404 fila(s).
+14 nov 2026, 5:05:08 p.m.	Información	[runGuerra] Respaldo CSV de Guerra terminado en 10 s.
+14 nov 2026, 5:05:08 p.m.	Información	[RUNGUERRA] Paso 7/8: terminado tras 10 s en su última llamada; la tanda lleva 79 s de 150 s.
+14 nov 2026, 5:05:09 p.m.	Información	[RUNGUERRA] Ejecutando paso 8/8: Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados
+14 nov 2026, 5:05:18 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 1 leída directo de Backup_Guerra.csv (208 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:19 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 2 leída directo de Backup_Guerra.csv (172 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:19 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 3 leída directo de Backup_Guerra.csv (176 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:19 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 4 leída directo de Backup_Guerra.csv (192 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T4 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T4 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:19 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 5 leída directo de Backup_Guerra.csv (56 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T5 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T5 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T5 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:19 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 6 leída directo de Backup_Guerra.csv (24 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T6 S1 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T6 S1 dia V: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T6 S2 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:19 p.m.	Información	[Valores diarios] T6 S2 dia V: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:20 p.m.	Información	[Valores diarios] T6 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:20 p.m.	Información	[Valores diarios] T6 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:20 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 7 leída directo de Backup_Guerra.csv (320 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:20 p.m.	Información	[Valores diarios] T7 S3 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:20 p.m.	Información	[Valores diarios] T7 S4 dia J: filas en 0 para todos -> se trata como dia sin registro.
+14 nov 2026, 5:05:20 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 8 leída directo de Backup_Guerra.csv (64 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:20 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 9 leída directo de Backup_Guerra.csv (196 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:20 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 10 leída directo de Backup_Guerra.csv (384 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:20 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 11 leída directo de Backup_Guerra.csv (276 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:21 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 12 leída directo de Backup_Guerra.csv (304 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:21 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 13 leída directo de Backup_Guerra.csv (596 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:21 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 14 leída directo de Backup_Guerra.csv (588 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:21 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 15 leída directo de Backup_Guerra.csv (672 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:21 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 16 leída directo de Backup_Guerra.csv (896 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:22 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 17 leída directo de Backup_Guerra.csv (772 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:22 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 18 leída directo de Backup_Guerra.csv (636 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:22 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 19 leída directo de Backup_Guerra.csv (1016 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:22 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 20 leída directo de Backup_Guerra.csv (776 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:22 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 21 leída directo de Backup_Guerra.csv (1008 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:22 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 22 leída directo de Backup_Guerra.csv (7681 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:23 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 23 leída directo de Backup_Guerra.csv (3631 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:23 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 24 leída directo de Backup_Guerra.csv (8172 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:23 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 25 leída directo de Backup_Guerra.csv (5335 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:23 p.m.	Información	[Control] _getDatosGuerraParaControl: temporada histórica 26 leída directo de Backup_Guerra.csv (5212 fila(s) — hoja Guerra no tocada).
+14 nov 2026, 5:05:24 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 2ms
+14 nov 2026, 5:05:24 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 1ms
+14 nov 2026, 5:05:54 p.m.	Información	14/11 17:05:54 [Dashboard] build=B3 total=45193ms | ctx=620 | guerraHoy+pendientes=1289 | directorio=1623 | temporadasCSV=184 | valoresDiarios=11526 | control2Vigente=2019 | control2Historico=2756 | ingresos.nuevos=2328 | ingresos.guerra=2 | ingresos.rivales=388 | ingresos.control2=693 | ingresos=21765 || detalle: dir.lectura=1492ms/1x | c2.guerraData=276ms/27x | c2.minG=1561ms/27x | c2.bucleJugadores=1134ms/27x
+14 nov 2026, 5:05:54 p.m.	Depurar	14/11 17:05:54 [Dashboard] build=B3 total=45193ms | ctx=620 | guerraHoy+pendientes=1289 | directorio=1623 | temporadasCSV=184 | valoresDiarios=11526 | control2Vigente=2019 | control2Historico=2756 | ingresos.nuevos=2328 | ingresos.guerra=2 | ingresos.rivales=388 | ingresos.control2=693 | ingresos=21765 || detalle: dir.lectura=1492ms/1x | c2.guerraData=276ms/27x | c2.minG=1561ms/27x | c2.bucleJugadores=1134ms/27x
+14 nov 2026, 5:05:54 p.m.	Información	14/11 17:05:54 [WebGuerraEnVivo] datos del dashboard calculados en 45477ms
+14 nov 2026, 5:05:54 p.m.	Depurar	14/11 17:05:54 [WebGuerraEnVivo] datos del dashboard calculados en 45477ms
+14 nov 2026, 5:05:55 p.m.	Información	14/11 17:05:55 [WebGuerraEnVivo] caché guardada: JSON 2384595 car. -> gzip+base64 295024 car. en 4 trozo(s), 7200 s.
+14 nov 2026, 5:05:55 p.m.	Depurar	14/11 17:05:55 [WebGuerraEnVivo] caché guardada: JSON 2384595 car. -> gzip+base64 295024 car. en 4 trozo(s), 7200 s.
+14 nov 2026, 5:06:04 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra.json: antes sin contar → 17 clave(s) [ctx:12, guerraPorClan:2, diasSemanaGuerra:4]
+14 nov 2026, 5:06:04 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_ctx.json: 2 clave(s) [ctx:12] → 2 clave(s) [ctx:12]
+14 nov 2026, 5:06:04 p.m.	Información	[Archivo] GrupoTerna/Web@data/guerra_top.json: 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1] → 3 clave(s) [valoresDiariosSelectores:4, valoresDiariosPorSemana:1]
+14 nov 2026, 5:06:05 p.m.	Información	14/11 17:06:05 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2363 KB; guerra_top.json 37 KB) en 9904ms
+14 nov 2026, 5:06:05 p.m.	Depurar	14/11 17:06:05 [GuerraEstatico] publicado en GrupoTerna/Web@data/guerra.json (2363 KB; guerra_top.json 37 KB) en 9904ms
+14 nov 2026, 5:06:11 p.m.	Información	[Archivo] GrupoTerna/Web@data/roster.json: 2 clave(s) [clanes:4] → 2 clave(s) [clanes:4]
+14 nov 2026, 5:06:11 p.m.	Información	14/11 17:06:11 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (35 KB) en 6217ms
+14 nov 2026, 5:06:11 p.m.	Depurar	14/11 17:06:11 [RosterEstatico] publicado en GrupoTerna/Web@data/roster.json (35 KB) en 6217ms
+14 nov 2026, 5:06:32 p.m.	Información	[Archivo] GrupoTerna/Web@data/home.json: 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4] → 6 clave(s) [clanInfo:1, aniversarios:1, rankings:4]
+14 nov 2026, 5:06:32 p.m.	Información	14/11 17:06:32 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 21066ms
+14 nov 2026, 5:06:32 p.m.	Depurar	14/11 17:06:32 [HomeEstatico] publicado en GrupoTerna/Web@data/home.json (13 KB) en 21066ms
+14 nov 2026, 5:06:33 p.m.	Información	14/11 17:06:33 [TorneosEstatico] modo sin historial: se conserva el historial ya publicado
+14 nov 2026, 5:06:33 p.m.	Depurar	14/11 17:06:33 [TorneosEstatico] modo sin historial: se conserva el historial ya publicado
+14 nov 2026, 5:06:38 p.m.	Información	[TorneosMed] hoja Guerra: 1287 fila(s) leídas en 494ms
+14 nov 2026, 5:06:39 p.m.	Información	[TorneosMed] Guerra_Logs: 950 fila(s) leídas y procesadas en 803ms
+14 nov 2026, 5:06:39 p.m.	Información	[TorneosMed] procesar: 1287 fila(s), 710 de día de guerra; bucle 1 = 810ms (cruce de meta: 710 llamada(s), 805ms); bucle 2 = 1ms
+14 nov 2026, 5:06:39 p.m.	Información	[TorneosMed] _procesarFilasGuerraParaControl (con cruce de meta) en 814ms
+14 nov 2026, 5:06:40 p.m.	Información	[TorneosMed] _webGanadoresTorneoMasReciente total=5462ms; participantes=1830ms, ctx=705ms, datosGuerra=1529ms, ataquesSemana=1ms, trofeos=0ms, minT=749ms, top3yLista=648ms
+14 nov 2026, 5:06:40 p.m.	Información	14/11 17:06:40 [TorneosEstatico] torneos calculado en 7387ms
+14 nov 2026, 5:06:40 p.m.	Depurar	14/11 17:06:40 [TorneosEstatico] torneos calculado en 7387ms
+14 nov 2026, 5:06:43 p.m.	Información	[Archivo] GrupoTerna/Web@data/torneos.json: 3 clave(s) [historial:1, torneos:2] → 3 clave(s) [historial:1, torneos:2]
+14 nov 2026, 5:06:43 p.m.	Información	14/11 17:06:43 [TorneosEstatico] publicado en GrupoTerna/Web@data/torneos.json (15 KB) en 10970ms
+14 nov 2026, 5:06:43 p.m.	Depurar	14/11 17:06:43 [TorneosEstatico] publicado en GrupoTerna/Web@data/torneos.json (15 KB) en 10970ms
+14 nov 2026, 5:06:43 p.m.	Información	14/11 17:06:43 [WebGuerraEnVivo] caché CALENTADA por el bot en 94471ms, TTL 7200 s
+14 nov 2026, 5:06:43 p.m.	Depurar	14/11 17:06:43 [WebGuerraEnVivo] caché CALENTADA por el bot en 94471ms, TTL 7200 s
+14 nov 2026, 5:06:43 p.m.	Información	[runGuerra] Calentamiento del caché terminado en 95 s.
+14 nov 2026, 5:06:44 p.m.	Información	[RUNGUERRA] Paso 8/8: terminado tras 95 s en su última llamada; la tanda lleva 174 s de 150 s.
+14 nov 2026, 5:06:45 p.m.	Información	[CSV] Revisión posterior: Backup_Guerra.csv pesa 5743768 bytes (se escribieron 5509385 caracteres). Sin cambios.
+14 nov 2026, 5:06:46 p.m.	Información	=== runGuerra (horaria) FIN ===
+14 nov 2026, 5:06:46 p.m.	Error	El motor de JavaScript detectó un error inesperado. Código de error INTERNAL.
+Filas por página
