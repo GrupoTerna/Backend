@@ -53,8 +53,8 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 ### B1. Torneos, sorteos, Directorio y hojas
 
 - [ ] `PF098` — Planificar de nuevo el torneo del 18-oct a las 21:00 y comprobar la hora en `T_Lista`; probar también Registrar y Modificar, que usan la misma función.
-- [ ] `PF099` — Falta «Modificar torneo» sobre un torneo de otro día y Barcos (planificar ya salió bien el 17-oct).
-- [ ] `PF100` — Falta el cambio a «API» y a la hora de Creación real al registrar el link (planificar ya salió bien el 17-oct).
+- [ ] `PF099` — Falta «Modificar torneo» sobre un torneo de otro día y Barcos.
+- [ ] `PF100` — Falta el cambio a «API» y a la hora de Creación real al registrar el link.
 - [ ] `PF104` — `Préstamo` borrado a mano en Directorio ya no debería restaurarse: subir `Base` (`subirBaseDesdeGithub()`), volver a borrar los valores, correr `runUpdate()` y mirar la hoja y `Backup_Directorio.csv`.
 - [ ] `PF114` — Con `Base` ya subida (`subirBaseDesdeGithub()`): en Directorio, vaciar a mano `Admin` y `Cat_disp` de una cuenta que ya tenga fila, correr `runUpdate()` y mirar que sigan vacías en la hoja; luego mirar que `Backup_Directorio.csv` ya no las vuelva a llenar.
 - [ ] `PF109` — Comprobar en Apps Script real, con `Base` ya subida (`subirBaseDesdeGithub()`): en `S_Lista` poner la hora `20:00:00` en una fila, correr `runUpdate()` y luego `runAll()`, y mirar que la columna Hora siga mostrando solo la hora (sin `30/12/1899`).
@@ -64,7 +64,7 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 ### B2. Acta del sorteo y Docs de Drive (con Word real)
 
 - [ ] `PF221` — Abrir `sorteo.html` con sesión de admin con al menos un ganador y pulsar «Descargar acta del sorteo»: debe bajar un `.docx` con la columna «Hora» y la línea «Resumen del sorteo:», y el doc de Drive debe verse igual.
-- [ ] `PF228` — Ya se vio bajar el `.docx` de Drive (24-oct). Falta probar ganadores sin guardar y un sorteo con premios extra.
+- [ ] `PF228` — Falta probar ganadores sin guardar y un sorteo con premios extra.
 - [ ] `PF229` — Pulsar «Descargar acta del sorteo» y comprobar en Word: título «Lista de ganadores del sorteo»; «Ganadores del sorteo:», el resumen y la tabla en la misma página; y la hora de la última columna (en la captura salía «04:32 p. m», sin punto final).
 - [ ] `PF230` — Publicar la implementación web, descargar el acta con ganadores y comprobar en Word: la fuente de todo lo escrito por el sistema es Arial (sin «Arial Unicode MS»), el resumen sale con título y tres viñetas, y la tabla tiene valores centrados en horizontal y vertical y columnas de ancho proporcional al contenido.
 - [ ] `PF231` — Correr `repararBordesSAsistencia()` desde el editor y comprobar que todas las filas de `S_Asistencia` tienen bordes en la columna «Ganó»; descargar el acta y comprobar que «Ganadores del sorteo:» arranca la página 2 sin línea en blanco arriba y que no queda una hoja vacía.
@@ -89,7 +89,7 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 - [ ] `PF150` — Aviso de «pull pendiente» del Generador: probarlo en Apps Script real (`subirGeneradorDesdeGithub()` primero, luego `descargarGenerador()`). Filtro por carpeta y primera vez sin referencia: ya decididos (ver `PF150`).
 - [ ] `PF151` — `Indice_Base.md` e `Indice_Generador.md`: probarlos en Apps Script real (ver la secuencia de prueba en la sección).
 - [ ] `PF273` — Probar en Apps Script real la comprobación del commit de cierre (`§PF273`): correr `subirGeneradorDesdeGithub()` (proyecto Generador, archivo `01_Principal.gs`) y comprobar que el registro sigue igual cuando nadie sube nada a `Generador/` mientras corre.
-- [ ] `PF274` — El registro «paso 1/N» a «paso N/N» ya se vio en `runSyncCSV` y `runGuerra`; faltan `runGuerraRapido()` y `runUpdate()`.
+- [ ] `PF274` — Ver el registro «paso 1/N» a «paso N/N» en `runGuerraRapido()` y en `runUpdate()`.
 - [ ] `PF283` — Comprobar en el registro de una cadena con un paso de varias tandas (`runSyncCSV`, `runAll`, `runUpdate`, la reenumeración) las líneas `ESTADO al empezar: … POR EMPEZAR / EN CURSO` y `Avance del paso N/M (tanda k de este paso): AVANZÓ / SIN AVANCE`.
 - [ ] `PF278` — Falta ver una subida que escriba archivos nuevos por el camino de árboles y la reprogramación a 10 minutos ante un freno.
 - [ ] `PF279` — Actualizada por `§PF280`. El activador de la copia debe quedar en 5:15–5:45 (`atHour(5).nearMinute(30)`): correr `subirGeneradorDesdeGithub()` (proyecto Generador, `01_Principal.gs`) y luego `instalarActivadorDatosDriveGithub()` (proyecto Generador, `12_Datos_Drive_GitHub.gs`, una sola vez).
@@ -99,8 +99,7 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 - [ ] `PF291` — Falta probar el punto 9 de `§PF291` (suma por ID); en la corrida del 9-nov esa fusión sumó 0 filas nuevas.
 - [ ] `PF292` — Para que la cadena use las llamadas extra. En la primera corrida de `runSyncCSV`, buscar en el registro «se vuelve a llamar al mismo paso» y «No se vuelve a llamar», y comprobar que la tanda termina antes de los 360 s. Ver `§PF292`.
 - [ ] `PF294` — (1) Pasar a Apps Script el comentario nuevo de `17_GuerraSheet.gs` con `subirBaseDesdeGithub()` (solo comentarios, sin prisa). (2) Probar en Apps Script y navegador reales que los agregados a mano de `sorteo.html` queden en `S_Asistencia` con Ganó = `No` (puntos 10 y 11, con las sugerencias de miembros y «Agregar de fuera»;
-- [ ] `PF311` — Las partes A (reloj de seguridad) y B (`runGuerra` por tandas) se vieron funcionar en real el 4-nov; faltan C (cancelación que frena la tanda viva), D (menos trabajo por tanda) y la causa de los errores `INTERNAL`.
-- [ ] `PF091` — Decididas por Claude y confirmadas por la usuaria el 17-oct-2026: `runAll()` fuerza el roster fresco; el paso `guardarApiDump()` se omite en la versión programada; ninguna cadena borra ya el checkpoint de clanes.
+- [ ] `PF311` — Faltan C (cancelación que frena la tanda viva), D (menos trabajo por tanda) y la causa de los errores `INTERNAL`.
 - [ ] `PF162` — Probar en Apps Script real el recorte al subir (`§PF162`).
 - [ ] `PF541` — `procesarTorneos()` reanudable por fases: en una corrida lenta de `_continuarRunUpdate` buscar «se corta antes de la fase N/9» y «Retoma en la fase N/9»; en una normal debe salir `TOTAL procesarTorneos()`; el activador «Torneo en vivo» sigue corriendo las 9 fases; `TORNEOS_FASE_CURSOR` no debe quedar colgado; y el memo de guerra (punto 9) debe bajar unos 16 a 20 s sobre los 77 s medidos.
 - [ ] `PF031` — Reparación del 04-oct: capturas posteriores de ceros del `periodIndex` en Drive, lectura de la carpeta de cada clan, `_syncGuerraCSV()` tras escribir la hoja y su reflejo en el perfil web (en Apps Script real). Las 7 filas sin resolver ya tienen causa (`§PF294`).
@@ -125,15 +124,14 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 - [ ] `PF430` — Probar en Apps Script real la protección y el cierre del domingo (`§PF430`) y revisar aparte dos filas de Guerra con ataques y Fame 0: una de T21 (Origen «Reconstruido», jueves) y una del domingo 16-ago-2026 (N° 8157, 4 ataques).
 - [ ] `PF436` — Probar en Apps Script real la reconstrucción por presencia (`§PF436`): que una semana con el jugador presente solo algunos días cree solo esos días, que un caso sin evidencia llegue a `Revision_Guerra.csv` como «presencia no establecida» y que `AtaquesSemana` quede en el último día con presencia.
 - [ ] `PF438` — Probar en Apps Script real el reemplazo de letras (`§PF438`): que el registro de la corrección de guerra muestre «g=…» y la leyenda nueva, que `Revision_Guerra.csv` diga «g = …» en las filas resueltas por clan terminado y que el tiempo de `_cgwCombinacionesPorPuntuacion_` con las combinaciones más numerosas no pase de unos…
-- [ ] `PF470` — (1) ~~Explicar por qué cada corrida de «Verificar semana actual» dice 42 discrepancias y escribe 38 filas~~ (explicado con los payloads posteriores, `§PF473` punto 8; el de las 04:43 no se conserva).
 - [ ] `PF473` — (1) Correr `subirBaseDesdeGithub()` (proyecto Generador, archivo `01_Principal.gs`) y publicar versión nueva del Web App. (2) Correr «Verificar Semana en Curso» fuera de 04:00 a 05:00 (Lima) y comprobar en el log que dice cuántos «tag(s) en más de un clan (valores sumados)» y que, para uno de esos jugadores,…
 - [ ] `PF474` — (1) Reinstalar Tampermonkey v3.27 desde `Tampermonkey/Tampermonkey.md`, correr `subirBaseDesdeGithub()` (proyecto Generador, archivo `01_Principal.gs`) y publicar versión nueva del Web App.
 - [ ] `PF477` — (1) Correr `subirBaseDesdeGithub()` (proyecto Generador, archivo `01_Principal.gs`) y publicar versión nueva del Web App; no hace falta tocar Tampermonkey.
 - [ ] `PF479` — Reinstalar Tampermonkey v3.31 desde `Tampermonkey/Tampermonkey.md`. Pulsar «Iniciar» de «Verificar semana en curso» entre las 04:00 y las 05:00 (Lima): debe salir el aviso y no leer ningún clan. Entre las 03:50 y las 03:59 debe pedir confirmación.
 - [ ] `PF307` — Etapa A de `PF250`: (3) que el botón de `Correcciones_Guerra` (cuentas completas y jugadores elegidos) alimente «Nuevos» y (4) el registro de contradicciones entre filas de `§PF252` punto 3.
-- [ ] `PF446` — (3) Comprobar en un «Aplicar» real que la guarda de `59_Verificar_CRR_vs_Backup.gs` no frena cambios válidos y revisar a mano los conflictos nuevos (las 72 series revertidas saldrán como «SIN ESCRIBIR»). El punto (2) se decidió: se mantiene el bloqueo (`§PF542`).
-- [ ] `PF534` — Pegar `Tampermonkey.md` v3.35 (no hace falta `subirBaseDesdeGithub()`): en la siguiente corrida del Log de guerra el panel debe decir «en N envíos seguidos de hasta 150 jugadores» y la lista de ejecuciones no debe traer `doPost` en tiempo de espera. Los «Registros» de tres ejecuciones ya llegaron y se analizaron (`§PF535`).
-- [ ] `PF546` — Columna `Comprobada` y estado «Valores»: pasos (1) a (4) y la primera corrida real ya hechos el 21-nov. Faltan (5) que una fila comprobada del día en curso pierda la marca si `runGuerra` le cambia ataques, fame o barcos, y (6) el estado «Valores» tras `subirBaseDesdeGithub()`: `generarGuerraDesglose()` debe decir «Días «Valores» (…)» y vigilar el tiempo (ahora lee `Correcciones_Guerra.csv`, 15 MB).
+- [ ] `PF446` — (3) Comprobar en un «Aplicar» real que la guarda de `59_Verificar_CRR_vs_Backup.gs` no frena cambios válidos y revisar a mano los conflictos nuevos (las 72 series revertidas saldrán como «SIN ESCRIBIR»).
+- [ ] `PF534` — Pegar `Tampermonkey.md` v3.35 (no hace falta `subirBaseDesdeGithub()`): en la siguiente corrida del Log de guerra el panel debe decir «en N envíos seguidos de hasta 150 jugadores» y la lista de ejecuciones no debe traer `doPost` en tiempo de espera.
+- [ ] `PF546` — Columna `Comprobada` y estado «Valores»: faltan (5) que una fila comprobada del día en curso pierda la marca si `runGuerra` le cambia ataques, fame o barcos, y (6) el estado «Valores» tras `subirBaseDesdeGithub()`: `generarGuerraDesglose()` debe decir «Días «Valores» (…)» y vigilar el tiempo (ahora lee `Correcciones_Guerra.csv`, 15 MB).
 - [ ] `PF160` — Correr `repararDiasConExcesoInforme()` (proyecto **Base**) con el selector nuevo (102 series) y revisar el CSV antes de aplicar; sin probar en Apps Script real: puntos (1), (2), (3), (5) y (6) de `§PF160`, `§PF487`, `§PF488`.
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 
@@ -145,7 +143,7 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 ### B7 y B8. Reenumeración, migraciones y cambio de rango
 
 - [ ] `PF270` — Si la reenumeración corrió sin el paso de informes de `§PF270`, hay que renombrar a mano 9 informes (`REENUM_DELTA_MESES` ya se borró; `§PF270` punto 4). Confirmar si hace falta.
-- [ ] `PF247` — Correr `ejecutarReenumeracionSugerida()` (`47_Migraciones.gs`) con la fecha que salga. El historial anterior a T1 ya se trajo con los perfiles (`Correcciones_Guerra.csv` llega a T-47).
+- [ ] `PF247` — Correr `ejecutarReenumeracionSugerida()` (`47_Migraciones.gs`) con la fecha que salga.
 - [ ] `PF249 / PF250 / PF254–PF256` — Reenumeración de temporadas (`PASOS_REENUMERAR_TEMPORADAS`, `47_Migraciones.gs`): sin prueba en Apps Script real (`§PF470` punto 9).
 - [ ] `PF258` — Probar en una copia el paso de informes de `runReenumerarTemporadas('AAAA-MM-DD')` (2 o 3 informes de `CSV/Informes` y `CSV/Tampermonkey`, uno con BOM, uno con columna `ID`, y una segunda corrida que no sume dos veces).
 - [ ] `PF268 / PF269 / PF270 / PF271` — El paso nuevo de reenumeración corre solo al final de la cadena (o con `reanudarReenumerarTemporadas()`); falta confirmar que corrió. Informes (`§PF270`) sin probar en Apps Script real; `JSON/Guerra` (`§PF271`, script local) falta correrlo con el CSV nuevo. Progreso por paso (`§PF269` punto 5, commit `7e38f68`): sin probar.
@@ -164,7 +162,7 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 - [ ] emoji en línea en los títulos de las minigráficas de `perfil.html` (`PF399`) y texto nuevo de los cupos de `guerra.html` (`sw.js` v273) (6-nov-2026). Falta abrir `perfil.html`: los títulos de las minigráficas deben llevar el emoji en la misma línea.
 - [ ] ⚠️ de clanes vetados o rivales (`PF375`) (5-nov-2026). Falta que la usuaria corra en Apps Script `subirBaseDesdeGithub()`, `generarIndiceClanesExternos()` hasta completar el índice y `actualizarAlertasClanesSospechosos()`;
 - [ ] el cuadro de filtro de columnas queda a la vista y se desplaza hasta «Aceptar» (`PF361`, 2.ª parte) (4-nov-2026). La 1.ª parte no resolvió el cierre en el navegador real: el cuadro se colocaba suponiendo ≈420 px de alto, medía ≈560 y, con el embudo a media pantalla, «Aceptar» quedaba bajo el borde de la ventana;
-- [ ] inactivas con ataques hoy en «Participación de Hoy» (`PF344`) [+ Apps Script] (2-nov-2026). Ya subida y publicada (`sw.js` v198; la usuaria confirmó el 3-nov-2026 que tiene el código más reciente).
+- [ ] inactivas con ataques hoy en «Participación de Hoy» (`PF344`) [+ Apps Script] (2-nov-2026). Falta la prueba en navegador real (el cómo está en `§PF344`).
 - [ ] buscador por nombre o Tag en las tablas de guerra (24-oct-2026). Abrir `guerra.html`: la caja con lupa sale arriba de Pendientes de Atacar, Valores diarios, Valores semanales y (admin, día de guerra) Participación de Hoy; `PF224`
 - [ ] columnas Temporada y Semana del mini historial [+ Apps Script] (23-oct-2026). Falta correr `subirBaseDesdeGithub()`, publicar `Web` (`sw.js` v152) y abrir el 📈 de un jugador (y «Comparar con») en `guerra.html` y `directorio.html`: columnas N° · Fecha · Temporada · Semana · Día, «S1»,… `PF178`
 - [ ] pastilla «✉ Mensajes de guerra» en `guerra.html` (23-oct-2026). Con sesión de admin en día de guerra, comprobar: la pastilla junto a «jugador(es)», que abre y cierra la fila de botones «Copiar», que sigue abierta tras la recarga automática y que en móvil el título y la…
@@ -174,8 +172,7 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 - [ ] 📈 y WhatsApp en «Participación de Hoy» [+ Apps Script] (22-oct-2026). Falta correr `subirBaseDesdeGithub()`, publicar `Web` (`sw.js` v141) y abrir `guerra.html` con sesión de admin en día de guerra: cada cuenta debe llevar el 📈 y, si tenemos su celular, el ícono de WhatsApp; `PF171`
 - [ ] 📈 en «Pendientes de Atacar» (22-oct-2026). Comprobar en `guerra.html` que el 📈 sale junto al nombre en cada clan (también con la columna Jugador de admins), abre el historial y no rompe el filtro ni el orden por Nombre. → §PF170 `PF170`
 - [ ] 📈 del mini historial en la tabla del Directorio (22-oct-2026). Comprobar en `directorio.html`: el 📈 sale junto al nombre en los cuatro clanes, abre la ventana con el historial del jugador, «Comparar con» lista a los jugadores de la tabla del clan que se ve, y… `PF169`
-- [ ] Respaldo local de los JSON estáticos (`PF115`, `PF116`, `PF117`): probado en Chromium real (30-oct); faltan Safari, Firefox y móvil.
-- [ ] Con sesión de admin en día de guerra, abrir `guerra.html`: la pastilla «✉ Mensajes de guerra» junto a «jugador(es)» abre y cierra los botones «Copiar», sigue abierta tras la recarga automática y en móvil no ensancha la página. `PF177`
+- [ ] Respaldo local de los JSON estáticos (`PF115`, `PF116`, `PF117`): falta probarlo en Safari, Firefox y móvil.
 - [ ] Dos filas que se salían del ancho en celular real (`PF526`): `guerra.html` (botones «Imprimir/Descargar PDF») y el modal «costo de mejora» de `perfil.html`; ya comprobadas en un navegador emulado (`PF531`).
 
 ### directorio.html
@@ -189,7 +186,7 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 - [ ] ⚠️ de un miembro nuevo sin esperar al índice (`PF397`; reemplaza el pendiente de definir del `PF396`) [+ Apps Script] (6-nov-2026). Falta que la usuaria corra `subirBaseDesdeGithub()` (proyecto Generador, archivo `01_Principal.gs`) antes de cualquier descarga (cambian `15_DeteccionInfiltrados.gs` y `20_HistorialGuerraJugador.gs` de…
 - [ ] emoji y etiqueta en una línea en «Semana actual» (`PF396`) (6-nov-2026). Abrir `directorio.html` con sesión de admin: en «Ingresos recientes», «⚔️ Ataques», «⭐ Medallas» y «🚢 Barcos» deben verse cada uno en una sola línea, también con dos tarjetas por fila.
 - [ ] Buscador del roster de `directorio.html` (`PF384`) y orden de íconos (`PF383`): en real, con sesión de admin, ⚠️ va antes que WhatsApp y la tarjeta de ingreso muestra RoyaleAPI, CWStats, ⚠️ y 📈 (19-nov, `PF521`); faltan `guerra.html`, un jugador con los tres íconos y la tarjeta con los cinco, y el filtro del buscador.
-- [ ] «Ocultar sin pendientes» con día opcional (`PF225`, caso (b) de P18) [+ Apps Script] (31-oct-2026). Ya subida y publicada (`sw.js` v196; la usuaria confirmó el 3-nov-2026 que tiene el código más reciente).
+- [ ] «Ocultar sin pendientes» con día opcional (`PF225`, caso (b) de P18) [+ Apps Script] (31-oct-2026). Falta la prueba en navegador real (el cómo está en `§PF225`).
 - [ ] medallas y barcos del día en el mini historial de `guerra.html` y en el comparador de `directorio.html` (22-oct-2026). Comprobar: en el 📈 de un jugador las medallas son del día y el total es la suma de esos días; en «Comparar jugadores» de `directorio.html` la gráfica «Medallas (Fame) por día de guerra» (y Barcos) ya no sube… `PF167`
 - [ ] ícono de WhatsApp en «Ingresos recientes» [+ Apps Script] (22-oct-2026). Falta correr `subirBaseDesdeGithub()`, publicar `Web` (`sw.js` v134) y abrir `directorio.html` con sesión de admin (el ícono sale solo en las cuentas con celular) y sin sesión (no debe verse ni llegar… `PF165`
 - [ ] Con sesión de admin, abrir «Ingresos recientes» en `directorio.html`: comprobar el 📈 junto al WhatsApp (clic abre el mini historial y no el perfil), la pastilla «Ocultar con número» y que contador y gráficas se actualicen. `PF175`
@@ -245,15 +242,10 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 
 ### Varias páginas u otros
 
-- [ ] «Vetar miembro» dentro de la ficha de «Buscar miembro» (`PF365`) (5-nov-2026). Con sesión de admin con la función «Vetar», buscar a un miembro: debe salir la pastilla «🚫 Vetar» arriba a la derecha de la ficha, junto al nombre (`sw.js` v216);
-- [ ] pastilla «🕵️ ¿Infiltrado?» en la ficha de «Buscar miembro» (`PF366`) (5-nov-2026). Confirmado con las capturas de la usuaria (ancho de escritorio, miembro Chistris): «Vetar» y «¿Infiltrado?» caben en la cabecera, a la derecha del nombre, y el panel abre con el título, el veredicto y el clan…
-- [ ] clanes externos en la pastilla «🕵️ ¿Infiltrado?» y tarjeta «Detección de infiltrados» solo para clanes (`PF367`) [+ Apps Script] (5-nov-2026). Confirmado con las capturas de la usuaria (5-nov-2026): `Base` ya está subida a Apps Script y `Web` publicada (`sw.js` v218), y en la ficha de Chistris sale la tabla «Clanes externos donde jugó guerra» con…
-- [ ] tarjeta «Buscar clan» y temporada Supercell en los clanes externos (`PF368`) [+ Apps Script] (5-nov-2026). Confirmado con las capturas y los registros de la usuaria (5-nov-2026): `Base` ya está en Apps Script y `Web` publicada; la ficha muestra nombre, Tag, ubicación, miembros, puntos y trofeos de guerra;
 - [ ] activos e inactivos en «¿Infiltrado?» de un clan (`PF372`) [+ Apps Script] (5-nov-2026). Falta (1) correr `subirBaseDesdeGithub()` antes de cualquier descarga (proyecto Generador, archivo `01_Principal.gs`; cambia `15_DeteccionInfiltrados.gs` de `Base`) y publicar `Web` (`sw.js` v226);
 - [ ] «Rival de esta temporada» nunca salía en las consultas web y archivos duplicados en Drive (`PF370`) [+ Apps Script] (5-nov-2026). Se encontró leyendo el código: las consultas web no cargan la caché de clanes, así que `_getClanesRivalesTemporadaActual()` devolvía siempre vacío y solo salía la marca de `Conflictos`.
-- [ ] índice de clanes externos, ex miembros de cualquier clan y NARANJA x en `Conflictos` (`PF369`) [+ Apps Script] (5-nov-2026). Confirmado con los registros de Apps Script de la usuaria (5-nov-2026): `moverClanVetadoAConflictos()` agregó NARANJA x a `Conflictos` y quitó la fila 6 de `Clan` (`Backup_Clan.csv` de 5 a 4 filas);
 - [ ] trofeos del Log de Guerra sin desfase y trofeos de RoyaleAPI (`PF362`) [+ Apps Script] (4-nov-2026). Falta (1) correr `subirBaseDesdeGithub()` antes de cualquier descarga (cambian `17_GuerraSheet.gs`, `38_Web_Endpoints.gs`, `40_Web_Noticias.gs` y `01_Config_Global.gs`), publicar `Web` (`sw.js` v208) y…
-- [ ] permiso «Actualizar V. Guerra» y tope de consultas `/players` del botón «Actualizar» (`PF347`) [+ Apps Script] (3-nov-2026). Ya subida a Apps Script y publicada (`sw.js` v200; la usuaria confirmó el 3-nov-2026 que tiene el código más reciente). La decisión de refrescar V. Guerra con permiso y tope la tomó ella (3-nov-2026).
+- [ ] permiso «Actualizar V. Guerra» y tope de consultas `/players` del botón «Actualizar» (`PF347`) [+ Apps Script] (3-nov-2026). Falta la prueba en navegador real (el cómo está en `§PF347`).
 - [ ] búsqueda, filtros y barras de las tablas de «verificar» (28-oct-2026). Con sesión de admin, abrir Cambio de rango > «Verificar un cambio de rango aplicado»: cada tabla trae la caja de búsqueda arriba, el embudo en cada encabezado ordena y filtra, las barras moradas de arriba y… `PF286`
 - [ ] acta de ganadores del sorteo (`PF228` a `PF232`) (24-oct-2026). `PF228` ya se vio funcionando en Word real (bajó el `.docx` de Drive). Falta correr `subirBaseDesdeGithub()` antes de cualquier descarga (cambia `28_Torneos_Docs.gs`, `37_Web_API.gs` y `02_Setup_Hojas.gs`),…
 - [ ] barras de desplazamiento moradas en todo el sitio (24-oct-2026). Mirar la barra de la página, la de las ventanas (mini historial), las listas y los campos de texto largos: todas deben verse moradas, ninguna gris (§PF199). `PF199`
@@ -271,7 +263,6 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 - [ ] Probar en el perfil real un jugador con 0/0 donaciones. `PF163`
 - [ ] Abrir «Comparar con» en el 📈 de un jugador: comprobar columnas, color por jugador, semanas alternadas, enlaces a perfil en nueva pestaña y ancho en móvil. Probado solo con jsdom. `PF174`
 - [ ] Mini historial en el directorio (escritorio) (`PF184`): la columna cortada ya está cerrada; falta «Ver más» (clic) y el móvil.
-- [ ] Abrir el 📈 de un jugador en el móvil (directorio y guerra) y la tarjeta «Historial de guerra» del perfil: el título, el resumen y el botón «Ver más» quedan fijos y solo la tabla se mueve a los lados. `PF197`
 - [ ] Abrir en Word real (escritorio) el `.doc` descargado con «Exportar»: comprobar que el fondo negro se vea y se imprima (depende de `<w:DisplayBackgroundShape/>`; las celdas de la tabla llevan su propio fondo por si no se aplica). `PF220`
 
 ---
@@ -304,7 +295,6 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 - [ ] **Revocar el token fine-grained de GitHub y borrar `Claude.txt`** al terminar la tanda (el token quedó escrito en esta conversación; no se copia aquí).
 - [ ] **Purga en Soporte de GitHub** de los commits viejos con celulares: tras la reescritura del historial (28-oct) siguen accesibles por su hash y por `refs/pull/*/head` (`§PF288` punto 3). Tratar esos números como expuestos.
 - [ ] **Confirmar o revertir las decisiones de Claude** del 17-nov (`§PF499` puntos 2, 3, 4, 5 y 8) y del 20-nov (`§PF542`, `§PF543`, `§PF544`, `§PF545`); no se ejecutó nada con ellas que no se pueda deshacer.
-- [ ] **Reinstalar la skill `md`** desde `Claude/SKILL.md` (rev. 11, con la regla de este archivo).
 - [ ] `PF532`: confirmar la lectura de «con cuántas medallas nos podrían alcanzar» (punto 1 de `§PF532`).
 - [ ] `PF123`: mover a mano a `Informes` el archivo `Completar_DomingoDesdeJsonRoyaleApi` con marca `2026-10-18 22.26.35` (quedó en la raíz de `CSV`).
 

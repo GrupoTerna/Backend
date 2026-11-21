@@ -562,6 +562,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF548` | **Decisiones de Claude sobre el grupo A1 de `Pendientes.md`** (`PF046`, `PF072`, `PF120`, `PF123`, `PF182`, `PF183`, `PF233`) **y `PF355` (1)** (21-nov-2026, Lima, solo lectura): la comparación con los JSON ya se hizo; `PF183` ya está en código (`§PF493`); lo demás no se inventa. |
 | `PF549` | **Decisiones de Claude sobre el grupo A2 de `Pendientes.md`** (`PF160` (8), `PF356`, `PF439` (2), `PF441`, `PF471`, `PF493`) (21-nov-2026, Lima, solo lectura): `PF493` ya estaba aplicado el 16-nov; `PF471` se cumplió; el resto se cierra o pasa a vigilar. |
 | `PF550` | **Decisiones de Claude sobre los grupos A3 y A4 de `Pendientes.md`** (21-nov-2026, Lima, solo lectura): `esNuevo` se queda; etapas A y C de nuevos y reenumeración cerradas o pasadas a prueba; `PF130`, `PF378`, `PF018`, `PF242` y los bloques históricos reubicados. |
+| `PF551` | **Depuración de `Pendientes.md` por partes (B, C y E)** (21-nov-2026, Lima): cada línea queda solo con lo que falta; lo ya hecho figura en su `§PF`. |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -10951,3 +10952,11 @@ Fuentes: `Backup_Guerra.csv` (copia de las 5:26 a. m. de hoy, `92e44c96`, 40 954
 8. **`PF018`: no se programa sin medir con datos reales.** El TBT de 1 817 ms se midió con 4 clanes × 50 jugadores inventados. Pasa a vigilar. **`PF242`:** sigue esperando a Supercell (vigilar).
 9. **`PF377`:** pasa a acción de la usuaria (revisar cintas, rótulos y pastillas). **`PF286` y `PF285`** siguen en A4: son pedidos de programación y una migración continua.
 10. **Bloques históricos del detalle (`01B108`, `05B001`, `07B001`, `08B001`, `09B082`, `09B107`, `17B005`, `24B001`, `26B001`, `31B001`, `37B003`, `38B001`, `42B002` y «Notas de la parte 1»): se quitan de los pendientes.** Son preguntas de octubre sobre código que ha cambiado mucho desde entonces y no se pueden contrastar sin Apps Script; siguen escritas en `Contexto_Base_Web_Detalle.md` si surge el tema.
+
+### PF551 — Depuración de `Pendientes.md` por partes (21-nov-2026, Lima; la usuaria pidió que en abiertos quede solo lo que aún no se hizo; **solo lectura**, ningún `.gs` ni `Web` cambió)
+
+Criterio: se quita de una línea lo que su propio texto dice ya hecho o confirmado por la usuaria; se conserva lo que falta probar. No se probó nada en Apps Script ni en navegador real.
+
+1. **Recortadas (queda solo lo que falta):** `PF099`, `PF100` (planificar ya salió bien el 17-oct); `PF228` (el `.docx` de Drive ya se vio el 24-oct); `PF274` (el registro «paso 1/N» ya se vio en `runSyncCSV` y `runGuerra`; falta `runGuerraRapido()` y `runUpdate()`); `PF311` (las partes A y B se vieron en real el 4-nov); `PF247` de B7 (el historial anterior a T1 ya se trajo con los perfiles); `PF446` (el punto 2 se decidió, `§PF542`); `PF534` (los «Registros» de tres ejecuciones ya se analizaron, `§PF535`); `PF546` (pasos 1 a 4 y primera corrida real hechos); `PF115`, `PF116` y `PF117` (Chromium real probado el 30-oct; faltan Safari, Firefox y móvil); `PF344`, `PF225` y `PF347` (ya subidas y publicadas; falta solo la prueba en navegador).
+2. **Retiradas por completo:** `PF091` (solo decisiones ya confirmadas el 17-oct); `PF470` (su único punto quedó explicado en `§PF473` punto 8); `PF365` a `PF369` (confirmados con capturas y registros de la usuaria el 5-nov; `PF365` se retira porque la captura de `PF366` muestra «Vetar» en la cabecera, pero la usuaria puede reabrirla); `PF177` y `PF197` (repetían otra línea de la misma sección C); el aviso de reinstalar la skill `md` (la instalada ya está en rev. 12, igual a `Claude/SKILL.md`).
+3. **Queda pendiente de esta depuración:** varias líneas largas de B y C ya venían cortadas con «…» en `Pendientes.md`, y no se pudieron recortar sin ver su texto original (`git show 70c2d284:Contexto_Base_Web.md`). El grupo D se dejó igual porque solo tiene vigilancias.
