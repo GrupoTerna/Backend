@@ -133,7 +133,7 @@ function repararBordesSAsistencia() {
 
 /**
  * aplicarNotasColumnas() — proyecto Base, archivo 02_Setup_Hojas.gs. [→ Contexto_Base_Web.md §PF286]
- * Escribe, en el encabezado de cada columna de las hojas que figuran en _definicionNotasColumnas_(), una nota que dice qué es la columna, quién la escribe y si se puede editar. Hoy cubre solo Historial_A/D.
+ * Escribe, en el encabezado de cada columna de las hojas que figuran en _definicionNotasColumnas_(), una nota que dice qué es la columna, quién la escribe y si se puede editar. Hoy cubre Historial_A/D, Pendientes y Mensajes.
  * Es idempotente y no toca datos. Una nota que ya tenga el encabezado y NO empiece con «[Sistema] » se considera puesta a mano y se conserva; las del sistema se actualizan si cambió el texto. Si el encabezado de una columna no es el esperado, esa columna se omite y queda en el registro.
  * También la llama setupAllSheets() (por _setupAscensosSheet), así que las notas vuelven solas si se recrea la hoja. Se puede correr aparte, sin ejecutar todo el setup.
  */
@@ -511,6 +511,8 @@ function _setupPendientes(ss) {
   // Ocultas por defecto: ver comentarios de las columnas más arriba.
   try { sh.hideColumns(4); } catch (e) {}
   try { sh.hideColumns(5); } catch (e) {}
+  // 21-nov-2026 (PF286, punto 17 b): notas de columna; no pisa las puestas a mano.
+  _aplicarNotasColumnasHoja_(sh, _definicionNotasColumnas_()[CFG.SHEETS.PENDIENTES]);
   Logger.log('[Setup] Pendientes OK');
 }
 
@@ -653,6 +655,8 @@ function _setupMensajes(ss) {
   applyHeaderStyle(sh, headers.length);
   _aplicarSubindiceEncabezados(sh);
   sh.setColumnWidth(MC.CONTENIDO, 428); // Contenido: ancho fijo, texto largo (428px, pedido usuario 14-ago-2026); 6-nov-2026 (tanda 7, Clanes por Tag): antes headers.length (Contenido era la ultima)
+  // 21-nov-2026 (PF286, punto 17 b): notas de columna; no pisa las puestas a mano.
+  _aplicarNotasColumnasHoja_(sh, _definicionNotasColumnas_()[CFG.SHEETS.MENSAJES]);
   Logger.log('[Setup] Mensajes OK (16 cols, encabezados al dia)');
 }
 
@@ -1217,6 +1221,60 @@ function _definicionNotasColumnas_() {
       texto: 'Día de la semana de la Fecha (de Domingo a Sábado), calculado desde ella. No lo edites.' },
     { col: ASC.PAR_ID, enc: ASC_PAR_ENCABEZADO,
       texto: 'Id del par de CR_Lista (el del Ascenso, «A_…») que generó la propuesta. Sirve para saber contra qué requisitos evaluarla y a qué corrida pertenece. Vacío en los cambios que el sistema detecta solo. No lo edites a mano.' }
+  ];
+
+  // Pendientes (21-nov-2026): la escribe updatePendientesSheet() (17_GuerraSheet.gs). Las columnas son fijas; el encabezado `enc` evita poner una nota en otra columna.
+  var borra = 'Esta hoja se borra y se reescribe entera en cada actualización: lo que escribas a mano se pierde. En un día sin guerra solo dice «No es día de guerra».';
+  defs[CFG.SHEETS.PENDIENTES] = [
+    { col: 1, enc: 'N°', texto: 'Número de fila de esta lista. ' + borra },
+    { col: 2, enc: 'Tag',
+      texto: 'Tag de la cuenta. Solo salen los miembros de los clanes Terna que hoy todavía tienen ataques por usar.' },
+    { col: 3, enc: 'Nombre',
+      texto: 'Nombre en el juego, tomado de la lista de miembros del clan (si no aparece ahí, el que trae la guerra).' },
+    { col: 4, enc: 'Nom_Multi',
+      texto: 'Se copia del Directorio. Esta columna se oculta por defecto.' },
+    { col: 5, enc: 'Préstamo',
+      texto: 'Se copia del Directorio. Esta columna se oculta por defecto.' },
+    { col: 6, enc: 'Clan',
+      texto: 'Clan en el que está hoy la cuenta, con el nombre que trae la API.' },
+    { col: 7, enc: 'Faltantes',
+      texto: 'Ataques que le faltan hoy: 4 menos los ataques usados (se toma el mayor entre la caché de la API y la hoja Guerra). Solo salen cuentas con 1 o más. Las filas van ordenadas por clan, luego por más faltantes y luego por nombre, y se pintan según la cantidad (4, de 2 a 3, y 1).' },
+    { col: 8, enc: 'Celular',
+      texto: 'Celular del Directorio, solo con dígitos. Queda vacío si la cuenta no tiene.' },
+    { col: 9, enc: 'WSP',
+      texto: 'Enlace de WhatsApp armado con el prefijo y el celular del Directorio. Solo aparece si la cuenta tiene celular.' },
+    { col: 10, enc: 'RoyaleAPI',
+      texto: 'Enlace al perfil de la cuenta en RoyaleAPI.' }
+  ];
+
+  // Mensajes (21-nov-2026): la escribe generarTodosMensajes() (30_Mensajes.gs).
+  var regenera = 'Esta hoja se borra y se reescribe entera cada vez que se generan los mensajes: lo que escribas a mano se pierde.';
+  defs[CFG.SHEETS.MENSAJES] = [
+    { col: MC.NUM, enc: 'N°', texto: 'Número de fila, según el orden final de los mensajes. ' + regenera },
+    { col: MC.FECHA, enc: 'Fecha',
+      texto: 'Momento en que se generaron los mensajes. Todas las filas de una misma corrida llevan la misma fecha.' },
+    { col: MC.TEMPORADA, enc: 'Temporada', texto: 'Temporada que estaba en curso al generar los mensajes.' },
+    { col: MC.SEMANA, enc: 'Semana', texto: 'Semana de guerra de esa temporada al generar los mensajes.' },
+    { col: MC.DIA, enc: 'Dia',
+      texto: 'Día de guerra en que se generaron, como letra: L lunes, M martes, X miércoles, J jueves, V viernes, S sábado, D domingo.' },
+    { col: MC.PERIOD, enc: 'PeriodIndex',
+      texto: 'Contador de días de guerra que da la API; cada 7 forman una semana.' },
+    { col: MC.N1, enc: 'N1°', texto: 'Número de la categoría, por orden de aparición en la hoja.' },
+    { col: MC.CATEGORIA, enc: 'Categoría',
+      texto: 'Categoría del mensaje. Las dinámicas se arman con datos del momento; las estáticas vienen de plantillas de Google Docs.' },
+    { col: MC.N2, enc: 'N2°', texto: 'Número de la subcategoría dentro de su categoría.' },
+    { col: MC.SUBCATEGORIA, enc: 'Subcategoría', texto: 'Subcategoría del mensaje dentro de su categoría.' },
+    { col: MC.N3, enc: 'N3°', texto: 'Número del mensaje dentro de su subcategoría.' },
+    { col: MC.CLAN, enc: 'Clan',
+      texto: 'Clan al que va el mensaje. Los mensajes generales van al Chat General, que se llama «' + CLAN_CHAT_GENERAL + '».' },
+    { col: MC.RANGO, enc: 'Rango',
+      texto: 'Solo lo llenan los mensajes que se ordenan por el rango de la cuenta en el Directorio (por ejemplo, los de pendientes de guerra). En el resto queda vacío.' },
+    { col: MC.TIPO, enc: 'Tipo',
+      texto: 'Dinámico (armado con datos del momento) o Estático (texto de una plantilla de Google Docs).' },
+    { col: MC.CONTENIDO, enc: 'Contenido',
+      texto: 'Texto del mensaje, listo para copiar y enviar.' },
+    { col: MC.CLAN_TAG, enc: 'Clan_Tag',
+      texto: 'Tag del clan de la columna Clan. Queda vacío en el Chat General y en lo que no es un clan Terna. El clan se identifica por este Tag, no por el nombre.' }
   ];
   return defs;
 }
