@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 23:59:06 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 00:26:14 */
 
 
 
@@ -23508,13 +23508,15 @@ var GC = {
   DON_D:        22,
   ORIGEN:       23,
   CLAN_TAG:     24,  // 7-nov-2026: Tag del CLAN de la fila (p. ej. #GCRG8L00); es la clave de identidad del clan, la columna Clan es solo el nombre.
-  COMPROBADA:   25   // 20-nov-2026 (§PF437 F3): vacía (sin comprobar) o «Valores + Battlelog» (GUERRA_COMPROBADA_BATTLELOG)
+  COMPROBADA:   25   // 20-nov-2026 (§PF437 F3): vacía (sin comprobar), «Valores» (GUERRA_COMPROBADA_VALORES, desde el 21-nov-2026) o «Valores + Battlelog» (GUERRA_COMPROBADA_BATTLELOG)
 };
 
 var GUERRA_TOTAL_COLS = 25;
 
 // Texto de la columna Comprobada cuando el día se comprobó con el battlelog (el mismo de GDS_COMPROBADA_BATTLELOG en 18_CorreccionGuerra.gs).
 var GUERRA_COMPROBADA_BATTLELOG = 'Valores + Battlelog';
+// 21-nov-2026 (§PF437 F3, estado «Valores»): la semana del jugador coincide con el total de RoyaleAPI (perfil) y todos sus días tienen desglose «Único» o «Battlelog». El mismo texto de GDS_COMPROBADA_VALORES en 18_CorreccionGuerra.gs.
+var GUERRA_COMPROBADA_VALORES = 'Valores';
 
 // PF289 (28-oct-2026): blindaje de _syncGuerraCSV() contra una lectura vacía o recortada de Backup_Guerra.csv. Solo se aplica si el CSV de referencia pesa más que el mínimo; el ratio es la fracción del tamaño de referencia por debajo de la cual se rechaza leer o escribir. [→ Contexto_Base_Web.md §PF289]
 var GUERRA_CSV_BLINDAJE_MIN_BYTES = 100000;
@@ -30258,7 +30260,8 @@ var GDS_HEADERS = (function () {
   for (i = 0; i < GDS_DIAS.length; i++) h.push(GDS_DIAS[i] + ' Comprobada');   // §PF437 F3 (15-nov-2026): al final, para no mover ninguna columna anterior
   return h;
 })();
-var GDS_COMPROBADA_BATTLELOG = 'Valores + Battlelog';   // §PF437 F3: único estado que se calcula hoy; «Valores» (punto 5 a) pide el total semanal de RoyaleAPI y no se implementó, ver §PF437 punto 11
+var GDS_COMPROBADA_BATTLELOG = 'Valores + Battlelog';   // §PF437 F3: día con desglose exacto del battlelog que coincide con la hoja
+var GDS_COMPROBADA_VALORES = 'Valores';   // §PF437 F3 (21-nov-2026, §PF546 punto 12): semana del jugador con la fame igual al total de RoyaleAPI (perfil) y todos sus días «Único» o «Battlelog»
 var GDS_CAMPOS_VALOR = ['duelo250', 'duelo100', 'pvp200', 'pvp100', 'barco125', 'barco75', 'sinFame'];   // en el orden de las columnas DueloGanadas … SinFame
 var GDS_CAPTURAS_HEADERS = ['Tag', 'Archivo', 'Descargado', 'EntradaMasAntigua', 'EntradaMasNueva', 'Entradas'];
 var GDS_MAX_COMBINACIONES_TEXTO = 6;                // combinaciones que se escriben en la celda «Combinaciones» (el resto se cuenta)
@@ -30902,7 +30905,17 @@ function generarGuerraDesglose() {
     restriccionesPorSemana = {};
   }
 
-  var res = _gdsConstruirFilas_(filas, { ternaTags: ternaTags, tagPorNombre: tagPorNombre, battlelogPorTag: battlelogPorTag, capturasPorTag: cap.porTag, restriccionesPorSemana: restriccionesPorSemana });
+  // 21-nov-2026 (§PF437 F3, estado «Valores»): el total semanal de RoyaleAPI (fila del perfil de Correcciones_Guerra.csv). Solo lectura de Drive, sin API. Si no se puede leer, el desglose sale igual y no se marca ninguna semana como «Valores».
+  var perfilFamePorSemana = {}, perfilOk = false, tPerfil = Date.now();
+  try {
+    perfilFamePorSemana = _gdsPerfilFamePorSemana_(_cargarOverlayCorreccionesGuerraPorClan());
+    perfilOk = Object.keys(perfilFamePorSemana).length > 0;
+  } catch (ePerfil) {
+    Logger.log(etiqueta + ' AVISO: no se pudo leer ' + CORRECCIONES_GUERRA_CSV + ' para el estado «' + GDS_COMPROBADA_VALORES + '» (' + (ePerfil.message || ePerfil) + '). El desglose sale igual y no se marca ninguna semana como «' + GDS_COMPROBADA_VALORES + '».');
+    perfilFamePorSemana = {};
+  }
+
+  var res = _gdsConstruirFilas_(filas, { ternaTags: ternaTags, tagPorNombre: tagPorNombre, battlelogPorTag: battlelogPorTag, capturasPorTag: cap.porTag, restriccionesPorSemana: restriccionesPorSemana, perfilFamePorSemana: perfilFamePorSemana });
   if (!res.ok) { Logger.log(etiqueta + ' ABORT: ' + res.motivo); return; }
   var c = res.cuenta;
   if (!res.filas.length) { Logger.log(etiqueta + ' No salió ninguna fila (' + c.filasLeidas + ' leídas de Backup_Guerra.csv, ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag); no se escribe ' + GDS_CSV_NOMBRE + '.'); return; }
@@ -30919,6 +30932,8 @@ function generarGuerraDesglose() {
   Logger.log(etiqueta + ' ' + GDS_CSV_NOMBRE + ' escrito: ' + c.filasSalida + ' fila(s) (jugador, semana y clan; ' + c.diasSalida + ' día(s) con datos) de ' + c.semanasJugador + ' semana(s) de jugador (' + c.filasLeidas + ' filas leídas de Backup_Guerra.csv; ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag, ' + c.fueraDeSemana + ' fuera de la semana de guerra).');
   Logger.log(etiqueta + ' Fuente del desglose (por día): ' + resumenDe(c.porFuente) + '.');
   Logger.log(etiqueta + ' Días comprobados («' + GDS_COMPROBADA_BATTLELOG + '»): ' + c.comprobadas + ' de ' + c.diasSalida + ' día(s) con datos.');   // §PF437 F3
+  if (perfilOk) Logger.log(etiqueta + ' Días «' + GDS_COMPROBADA_VALORES + '» (fame de la semana igual al total del perfil de RoyaleAPI y todos los días «Único» o «Battlelog»): ' + c.comprobadasValores + ' día(s) en ' + c.semanasValores + ' semana(s) de jugador (' + Object.keys(perfilFamePorSemana).length + ' semana(s) con total de perfil; leído en ' + Math.round((Date.now() - tPerfil) / 1000) + ' s).');
+  else Logger.log(etiqueta + ' AVISO: ' + CORRECCIONES_GUERRA_CSV + ' no trajo ningún total de perfil; no se marcó ninguna semana como «' + GDS_COMPROBADA_VALORES + '».');
   Logger.log(etiqueta + ' Cobertura de la mejor captura (por día): ' + resumenDe(c.porCobertura) + '. La cobertura es por tiempo y no prueba que el día esté completo (el log pierde batallas, §18B049).');
   if (restriccionesOk) Logger.log(etiqueta + ' «' + GDS_MARCA_BACKUP_CONTRADICHO + '» (fame acumulada del backup fuera del rango de los JSON): ' + c.contradichosJson + ' día(s), anotados en ConsistenciaValores. Solo se marca: FuenteDesglose no cambia.');
   else Logger.log(etiqueta + ' AVISO: Cruce_CRR_Restricciones.csv no existe o está vacío (corre verificarCrrVsBackupInforme() en este proyecto): no se marcó «' + GDS_MARCA_BACKUP_CONTRADICHO + '».');
@@ -36467,6 +36482,47 @@ function _gdsComprobadaDia_(fuente, consistencia) {
 }
 
 /**
+ * _gdsSemanaValoresOk_(dias, totalPerfil) — §PF437 F3 (21-nov-2026, estado «Valores»). Función pura. true si la semana de UN jugador (todos sus clanes Terna) se puede llamar «Valores»:
+ * (1) hay total de RoyaleAPI (totalPerfil es un número: la fame de la semana que dio el perfil, Correcciones_Guerra.csv, origen «perfil»);
+ * (2) hay al menos un día y TODOS tienen desglose único: fuente «Battlelog» con consistencia exactamente «Coincide», o fuente «Único» sin ninguna marca en ConsistenciaValores (ni «Backup contradicho por JSON»);
+ * (3) todos traen la fame del día (número) y la suma de la fame de los días, de todos los clanes, es EXACTAMENTE totalPerfil.
+ * dias = [{ fuente, consistencia, fame }]. No demuestra el total de ataques (RoyaleAPI no lo da de forma fiable, §PF437 punto 13) ni el reparto de un día «Posible»: esos días no entran, y basta uno para que la semana no se marque.
+ */
+function _gdsSemanaValoresOk_(dias, totalPerfil) {
+  if (typeof totalPerfil !== 'number' || isNaN(totalPerfil)) return false;
+  if (!Array.isArray(dias) || !dias.length) return false;
+  var suma = 0;
+  for (var i = 0; i < dias.length; i++) {
+    var d = dias[i];
+    if (!d) return false;
+    var cons = String(d.consistencia === undefined || d.consistencia === null ? '' : d.consistencia).trim();
+    if (d.fuente === 'Battlelog') { if (cons !== 'Coincide') return false; }
+    else if (d.fuente === 'Único') { if (cons !== '') return false; }
+    else return false;
+    if (typeof d.fame !== 'number' || isNaN(d.fame)) return false;
+    suma += d.fame;
+  }
+  return suma === totalPerfil;
+}
+
+/**
+ * _gdsPerfilFamePorSemana_(overlayPorClan) — §PF437 F3 (21-nov-2026). Función pura. A partir del mapa «temporada|semana|clanTag|tag» de _cargarOverlayCorreccionesGuerraPorClan() arma
+ * { 'temporada|semana|TAG': fame } con SOLO las filas del perfil de RoyaleAPI (clanTag '' y origen «perfil»); la del perfil de un clan externo no cuenta (§PF183 act. 16: su total incluye ataques fuera de los clanes Terna).
+ * Los «sin perfil: Log» no entran (el total del Log es por clan y no prueba la semana completa). Temporada y semana se normalizan como número.
+ */
+function _gdsPerfilFamePorSemana_(overlayPorClan) {
+  var res = {}, claves = Object.keys(overlayPorClan || {});
+  for (var i = 0; i < claves.length; i++) {
+    var e = overlayPorClan[claves[i]], p = claves[i].split('|');
+    if (!e || p.length < 4 || p[2] !== '') continue;
+    if (e.origenPerfil !== CGW_ORIGEN_PERFIL || _cgwPerfilEsExterno_(e)) continue;
+    if (typeof e.fame !== 'number' || isNaN(e.fame)) continue;
+    res[(Number(p[0]) || 0) + '|' + (Number(p[1]) || 0) + '|' + _blgNormalizarTag_(p[3])] = e.fame;
+  }
+  return res;
+}
+
+/**
  * _gdsNumGuerra_(v) — §PF437 F3 (20-nov-2026). Función pura. Número de una celda de la hoja Guerra o de Backup_Guerra.csv (quita comas de miles); 0 si está vacía o no es un número.
  */
 function _gdsNumGuerra_(v) {
@@ -36498,7 +36554,7 @@ function _gdsFirmaValoresGuerra_(f) {
 /**
  * _gdsPlanComprobadasGuerra_(marcas, filasHoja, tagPorNombre) — §PF437 F3 (20-nov-2026). Función pura (no lee ni escribe nada). Calcula el contenido de la columna «Comprobada» de la hoja Guerra.
  * marcas = lista que devuelve _gdsConstruirFilas_ ({ clave, estado, firma } por cada día con fila en Backup_Guerra.csv); filasHoja = las filas de la hoja (sin el encabezado), de GUERRA_TOTAL_COLS columnas.
- * Una fila de la hoja queda con «Valores + Battlelog» solo si su clave tiene una marca con ese estado Y su firma de valores es igual a la de la marca; en cualquier otro caso queda vacía (una marca vieja
+ * Una fila de la hoja queda con el estado de su marca («Valores + Battlelog» o, desde el 21-nov-2026, «Valores») solo si su clave tiene una marca con ese estado Y su firma de valores es igual a la de la marca; en cualquier otro caso queda vacía (una marca vieja
  * que ya no vale se quita). Un texto distinto en la celda (ni vacío ni «Valores + Battlelog») no se toca y se cuenta aparte. Devuelve { columna: [valor por fila], puestas, quitadas, igual, noCoinciden, ajenas }:
  * puestas = vacías que pasan a comprobadas; quitadas = comprobadas que ya no valen; igual = sin cambio; noCoinciden = filas con marca pero con otros valores que el backup (se quedan sin marca); ajenas = celdas con otro texto.
  */
@@ -36513,7 +36569,7 @@ function _gdsPlanComprobadasGuerra_(marcas, filasHoja, tagPorNombre) {
   for (i = 0; i < filasHoja.length; i++) {
     var f = filasHoja[i];
     var actual = String(f[GC.COMPROBADA - 1] === undefined || f[GC.COMPROBADA - 1] === null ? '' : f[GC.COMPROBADA - 1]).trim();
-    if (actual !== '' && actual !== GUERRA_COMPROBADA_BATTLELOG) { res.columna.push(f[GC.COMPROBADA - 1]); res.ajenas++; continue; }
+    if (actual !== '' && actual !== GUERRA_COMPROBADA_BATTLELOG && actual !== GUERRA_COMPROBADA_VALORES) { res.columna.push(f[GC.COMPROBADA - 1]); res.ajenas++; continue; }   // 21-nov-2026: «Valores» también es un texto propio
     var deseado = '';
     if (String(f[GC.ETAPA - 1]).trim() === 'Guerra') {
       var marca = porClave[_gdsClaveFilaGuerra_(f, tagPorNombre)];
@@ -36639,9 +36695,10 @@ function _gdsConstruirFilas_(filas, opciones) {
   var blgPorTag = opciones.battlelogPorTag || {};
   var capPorTag = opciones.capturasPorTag || {};
   var restrPorSemana = opciones.restriccionesPorSemana || {};
+  var perfilFame = opciones.perfilFamePorSemana || {};   // 21-nov-2026 (estado «Valores»): { 'temporada|semana|TAG': fame de la semana según el perfil de RoyaleAPI }; sin esta opción no se marca ninguna semana
   var cuenta = {
     filasLeidas: filas.length, repetidas: [], noGuerra: 0, sinClanTag: 0, clanAjeno: 0, fueraDeSemana: 0, filasSalida: 0,
-    semanasJugador: 0, diasSalida: 0, variosDias: 0, comprobadas: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {},
+    semanasJugador: 0, diasSalida: 0, variosDias: 0, comprobadas: 0, comprobadasValores: 0, semanasValores: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {},
     revisiones: []   // §PF480: días donde el battlelog contradice la hoja Guerra, en el formato de _registrarRevisionGuerra_ (las anota generarGuerraDesglose)
   };
   var marcas = [];   // §PF437 F3: una por cada día con fila: { clave, estado, firma }; las usa _gdsPlanComprobadasGuerra_ para llenar la columna «Comprobada» de la hoja Guerra
@@ -36709,6 +36766,7 @@ function _gdsConstruirFilas_(filas, opciones) {
     }
     var capturas = capPorTag[tagN] || [];
     var seriesSemana = restrPorSemana[(Number(gr.temporada) || 0) + '|' + (Number(gr.semana) || 0)];   // §PF445 (d): las series de los JSON de esa semana
+    var diasGrupo = [];   // 21-nov-2026 (estado «Valores»): los días de TODOS los clanes del jugador esa semana: { marca, o, fuente, consistencia, fame, fila }
     Object.keys(gr.clanes).forEach(function (clanTagK) {
       var idxPorDia = gr.clanes[clanTagK];
       var enOtroClan = [false, false, false, false];   // días con fila del jugador en otro clan Terna esa semana: no son huecos de este clan (§PF445)
@@ -36717,7 +36775,7 @@ function _gdsConstruirFilas_(filas, opciones) {
         for (var od = 0; od < BLG_DIAS_GUERRA; od++) if (gr.clanes[otroTag][od] !== undefined) enOtroClan[od] = true;
       });
       var vh = _gdsValoresHojaDeClan_(filas, idxPorDia, enOtroClan);   // §PF445: base en la última fila existente y regla semanal de jueves a domingo; el informe de battlelog sigue con _blgValoresHojaDeClan_
-      var diasClan = [], ultimo = null;
+      var diasClan = [], ultimo = null, itemsClan = [];
       var serieJson = null;   // la serie de los JSON de este jugador en este clan (se ubica con el nombre de clan de la primera fila del clan)
       for (var o = 0; o < BLG_DIAS_GUERRA; o++) {
         var idx = idxPorDia[o];
@@ -36761,7 +36819,9 @@ function _gdsConstruirFilas_(filas, opciones) {
           ataquesAcum: fila[GC.ATAQUES_SEM - 1], barcosAcum: fila[GC.BARCOS - 1], fameAcum: fila[GC.FAME - 1],
           cobertura: cob
         });
-        marcas.push({ clave: _gdsClaveFilaGuerra_(fila, tagPorNombre), estado: _gdsComprobadaDia_(des.fuente, consistencia), firma: _gdsFirmaValoresGuerra_(fila) });   // §PF437 F3
+        var marcaDia = { clave: _gdsClaveFilaGuerra_(fila, tagPorNombre), estado: _gdsComprobadaDia_(des.fuente, consistencia), firma: _gdsFirmaValoresGuerra_(fila) };   // §PF437 F3
+        marcas.push(marcaDia);
+        itemsClan.push({ marca: marcaDia, o: o, fuente: des.fuente, consistencia: consistencia, fame: fb.fame, fila: null });
         ultimo = fila;   // el último día con fila da el nombre del jugador y del clan
         cuenta.diasSalida++;
         cuenta.porFuente[des.fuente] = (cuenta.porFuente[des.fuente] || 0) + 1;
@@ -36774,8 +36834,21 @@ function _gdsConstruirFilas_(filas, opciones) {
       });
       cuenta.filasSalida++;
       var filaSal = salida[salida.length - 1].fila;   // §PF437 F3: días comprobados (las 4 últimas columnas, «J Comprobada» a «D Comprobada»)
+      itemsClan.forEach(function (it) { it.fila = filaSal; diasGrupo.push(it); });
       for (var dc = filaSal.length - GDS_DIAS.length; dc < filaSal.length; dc++) if (filaSal[dc]) cuenta.comprobadas++;
     });
+    // 21-nov-2026 (§PF437 F3, estado «Valores»): con todos los clanes del jugador ya calculados, la semana pasa a «Valores» si _gdsSemanaValoresOk_ lo permite. Solo cambia los días que aún no tienen estado
+    // (los de «Valores + Battlelog» se quedan como están) y la celda de «Comprobada» del día en Guerra_Desglose.csv.
+    var totalPerfil = perfilFame[(Number(gr.temporada) || 0) + '|' + (Number(gr.semana) || 0) + '|' + tagN];
+    if (totalPerfil !== undefined && _gdsSemanaValoresOk_(diasGrupo, totalPerfil)) {
+      cuenta.semanasValores++;
+      diasGrupo.forEach(function (it) {
+        if (it.marca.estado) return;
+        it.marca.estado = GDS_COMPROBADA_VALORES;
+        it.fila[it.fila.length - GDS_DIAS.length + it.o] = GDS_COMPROBADA_VALORES;
+        cuenta.comprobadasValores++;
+      });
+    }
   }
   salida.sort(function (p, q) {
     if (p.temporada !== q.temporada) return p.temporada - q.temporada;
