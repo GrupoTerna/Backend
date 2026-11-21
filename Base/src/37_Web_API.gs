@@ -5564,7 +5564,7 @@ function _calentarHayTiempoParaPublicar_(limiteMs, nombre) {
   return false;
 }
 
-// PF537 (21-nov-2026): `soloGuerra` en true calcula el Dashboard, calienta el caché y publica solo guerra.json; roster.json, home.json y torneos.json los publica cada uno su propio paso de la cadena RUNGUERRA (_runGuerraPasoPublicar_(), 00_Main.gs). Sin ese tercer argumento hace lo de siempre (cuatro publicaciones). [→ Contexto_Base_Web.md §PF537]
+// PF537 (20-nov-2026): `soloGuerra` en true calcula el Dashboard, calienta el caché y publica solo guerra.json; roster.json, home.json y torneos.json los publica cada uno su propio paso de la cadena RUNGUERRA (_runGuerraPasoPublicar_(), 00_Main.gs). Sin ese tercer argumento hace lo de siempre (cuatro publicaciones). [→ Contexto_Base_Web.md §PF537]
 function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs, soloGuerra) {
   var t0 = Date.now();
   CALENTAR_OMITIO_PUBLICACION_ = false;

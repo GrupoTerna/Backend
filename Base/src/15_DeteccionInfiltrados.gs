@@ -1050,7 +1050,7 @@ function _continuarGenerarIndiceClanesExternos() {
 function _generarIndiceClanesExternosUnaCorrida_() {
   var inicio = Date.now();
   var ahoraTxt = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm');
-  // §PF537 (21-nov-2026): tiempos por tramo. Las 4 pasadas cortadas a los 361 s del 17 y 18-nov no dejaron ninguna línea propia (§PF536 punto 6): sin esto no se sabe qué tramo se pasó del tiempo.
+  // §PF537 (20-nov-2026): tiempos por tramo. Las 4 pasadas cortadas a los 361 s del 17 y 18-nov no dejaron ninguna línea propia (§PF536 punto 6): sin esto no se sabe qué tramo se pasó del tiempo.
   var seg = function () { return Math.round((Date.now() - inicio) / 1000); };
   var marca = function (texto, desde) { Logger.log('[IndiceClanes]   ' + texto + ' en ' + Math.round((Date.now() - desde) / 1000) + ' s (la pasada lleva ' + seg() + ' s).'); };
 

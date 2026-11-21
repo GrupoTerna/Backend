@@ -79,7 +79,7 @@ var PASOS_RUNGUERRA = [
     catch (eCierreNuevos) { Logger.log('[PASOS_RUNGUERRA] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
   },
   function () { return _runGuerraPasoRespaldoCsv_(); },
-  // PF537 (21-nov-2026): el paso único «Caché y publicaciones» se partió en cuatro, para que el motor mire el reloj entre una publicación y la siguiente (antes empezaba con ~134 s de tanda gastados y no se podía interrumpir; PF536 punto 5).
+  // PF537 (20-nov-2026): el paso único «Caché y publicaciones» se partió en cuatro, para que el motor mire el reloj entre una publicación y la siguiente (antes empezaba con ~134 s de tanda gastados y no se podía interrumpir; PF536 punto 5).
   function () { return _runGuerraPasoCalentarGuerra_(); },
   function () { return _runGuerraPasoPublicar_('roster', 'roster.json', CFG.RUNGUERRA_PUBLICAR_MARGEN_MIN_MS, function () { _publicarRosterEstatico_(); }); },
   function () { return _runGuerraPasoPublicar_('home', 'home.json', CFG.RUNGUERRA_PUBLICAR_MARGEN_MIN_MS, function () { _publicarHomeEstatico_(); }); },
@@ -1555,7 +1555,7 @@ function _runGuerraPasoRespaldoCsv_() {
 }
 
 /**
- * _runGuerraPasoCalentarGuerra_() - PF537 (21-nov-2026). Primer paso de lo que antes era «Caché y publicaciones» (PF311 parte B) en la cadena RUNGUERRA: calcula el Dashboard, calienta el caché de la guerra en vivo y publica guerra.json.
+ * _runGuerraPasoCalentarGuerra_() - PF537 (20-nov-2026). Primer paso de lo que antes era «Caché y publicaciones» (PF311 parte B) en la cadena RUNGUERRA: calcula el Dashboard, calienta el caché de la guerra en vivo y publica guerra.json.
  * Las otras tres publicaciones (roster.json, home.json, torneos.json) ya no van aquí: son pasos propios (_runGuerraPasoPublicar_()). Exige 1 m 30 s de margen como mínimo, o lo que tardó la última vez por 1,5, con tope de lo que cabe en una tanda nueva.
  */
 function _runGuerraPasoCalentarGuerra_() {
@@ -1567,7 +1567,7 @@ function _runGuerraPasoCalentarGuerra_() {
 }
 
 /**
- * _runGuerraPasoPublicar_(clave, nombre, margenMinMs, trabajo) - PF537 (21-nov-2026). Ejecuta UNA publicación de la cadena RUNGUERRA como paso propio. Antes las cuatro iban juntas en un solo paso que empezaba con unos 134 s de tanda gastados y no se podía interrumpir:
+ * _runGuerraPasoPublicar_(clave, nombre, margenMinMs, trabajo) - PF537 (20-nov-2026). Ejecuta UNA publicación de la cadena RUNGUERRA como paso propio. Antes las cuatro iban juntas en un solo paso que empezaba con unos 134 s de tanda gastados y no se podía interrumpir:
  * el 17-nov roster.json tardó 169 s, home.json 107 s y el Dashboard 189 s con el mismo código, y la ejecución se cortó a los 361 s (6 veces del 14 al 19-nov, PF536 punto 5). Con un paso por publicación, el motor mira el reloj entre una y otra y manda la siguiente a una tanda nueva.
  * Antes de empezar exige tiempo según lo que tardó la última vez que terminó bien (propiedad RUNGUERRA_PUBLICAR_ULT_MS_<clave>) por 1,5, y como mínimo `margenMinMs`, con tope de lo que cabe en una tanda nueva. Si no hay tiempo, o `trabajo` devuelve false (incompleto), devuelve false y el motor lo repite en la tanda siguiente;
  * tras 2 repeticiones se deja para la próxima hora, para no encadenar tandas sin fin. Un error de la publicación se anota y también se deja para la próxima hora, como antes. [→ Contexto_Base_Web.md §PF537]

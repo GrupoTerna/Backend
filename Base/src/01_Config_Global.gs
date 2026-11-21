@@ -371,7 +371,7 @@ var CFG = {
   // FIX (02-sep-2026): runGuerra() (00_Main.gs) es monolítica — a diferencia [→ Contexto_Base_Web.md §01B054]
   RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS: 90 * 1000, // 1m30s de margen mínimo antes del límite duro
 
-  // PF537 (21-nov-2026): margen mínimo para empezar cada una de las publicaciones roster.json, home.json y torneos.json de la cadena RUNGUERRA (cada una es un paso propio). En el registro de octubre tardaban 15 a 35 s; el 17-nov llegaron a 107 y 169 s, por eso además se exige lo que tardó la última vez por 1,5. [→ Contexto_Base_Web.md §PF537]
+  // PF537 (20-nov-2026): margen mínimo para empezar cada una de las publicaciones roster.json, home.json y torneos.json de la cadena RUNGUERRA (cada una es un paso propio). En el registro de octubre tardaban 15 a 35 s; el 17-nov llegaron a 107 y 169 s, por eso además se exige lo que tardó la última vez por 1,5. [→ Contexto_Base_Web.md §PF537]
   RUNGUERRA_PUBLICAR_MARGEN_MIN_MS: 40 * 1000, // 40s
 
   // PF143 (21-oct-2026): el respaldo CSV y el calentamiento del caché de runGuerra() corren en la continuación _continuarRunGuerra(). [→ Contexto_Base_Web.md §PF143]
