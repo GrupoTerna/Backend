@@ -565,13 +565,13 @@ Ninguno.
 | `_construirCards2PorTag` | función | 31_Cards_Mazos.gs | 958 | Contexto_Base_Web.md §31B046 |
 | `_construirCartaRarezaMap` | función | 31_Cards_Mazos.gs | 1277 | Contexto_Base_Web.md §31B056 |
 | `_construirCoberturaPorTag` | función | 18_CorreccionGuerra.gs | 4522 | Contexto_Base_Web.md §18B111 |
-| `_construirContenidoDocCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 1047 |  |
-| `_construirContenidoDocCambioRango` | función | 29_Docs_NoCalificados.gs | 1043 |  |
+| `_construirContenidoDocCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 1056 |  |
+| `_construirContenidoDocCambioRango` | función | 29_Docs_NoCalificados.gs | 1052 |  |
 | `_construirContenidoDocGanadoresSorteo` | función | 28_Torneos_Docs.gs | 1936 | Contexto_Base_Web.md §28B044 |
 | `_construirContenidoDocGanadoresTorneo` | función | 28_Torneos_Docs.gs | 1963 | Contexto_Base_Web.md §28B045 |
-| `_construirContenidoDocNoCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 1051 |  |
-| `_construirContenidoDocNoCalificadosSorteo` | función | 29_Docs_NoCalificados.gs | 1039 |  |
-| `_construirContenidoDocNoCalificadosTorneo` | función | 29_Docs_NoCalificados.gs | 1035 |  |
+| `_construirContenidoDocNoCalificadosCambioRango` | función | 29_Docs_NoCalificados.gs | 1060 |  |
+| `_construirContenidoDocNoCalificadosSorteo` | función | 29_Docs_NoCalificados.gs | 1048 |  |
+| `_construirContenidoDocNoCalificadosTorneo` | función | 29_Docs_NoCalificados.gs | 1044 |  |
 | `_construirContenidoDocParticipantesCalificadosSorteo` | función | 28_Torneos_Docs.gs | 1870 | Contexto_Base_Web.md §28B042 |
 | `_construirContenidoDocParticipantesCalificadosTorneo` | función | 28_Torneos_Docs.gs | 1901 | Contexto_Base_Web.md §28B043 |
 | `_construirCostosPorRareza` | función | 31_Cards_Mazos.gs | 1214 | Contexto_Base_Web.md §31B053 |
@@ -1309,13 +1309,13 @@ Ninguno.
 | `_msgTorneosPedirHora` | función | 44_BotWhatsApp.gs | 1104 |  |
 | `_msgTorneosPedirLink` | función | 44_BotWhatsApp.gs | 1096 |  |
 | `_msRestantesDeEjecucion_` | función | 00_Main.gs | 2321 | Contexto_Base_Web.md §PF311 |
-| `_ncBordesBlancosEncabezado_` | función | 29_Docs_NoCalificados.gs | 987 |  |
-| `_ncContenidoBasePlaceholder` | función | 29_Docs_NoCalificados.gs | 1055 |  |
+| `_ncBordesBlancosEncabezado_` | función | 29_Docs_NoCalificados.gs | 996 |  |
+| `_ncContenidoBasePlaceholder` | función | 29_Docs_NoCalificados.gs | 1064 |  |
 | `_ncEscribirDocumento` | función | 29_Docs_NoCalificados.gs | 872 | Contexto_Base_Web.md §29B021 |
-| `_ncFechaHoraPeru` | función | 29_Docs_NoCalificados.gs | 941 | Contexto_Base_Web.md §29B027 |
+| `_ncFechaHoraPeru` | función | 29_Docs_NoCalificados.gs | 950 | Contexto_Base_Web.md §29B027 |
 | `_ncFmtNum` | función | 29_Docs_NoCalificados.gs | 823 | Contexto_Base_Web.md §29B026 |
 | `_ncNombreRol` | función | 29_Docs_NoCalificados.gs | 833 |  |
-| `_ncTablaEstiloOscuro` | función | 29_Docs_NoCalificados.gs | 958 |  |
+| `_ncTablaEstiloOscuro` | función | 29_Docs_NoCalificados.gs | 967 |  |
 | `_ncTextoRequisito` | función | 29_Docs_NoCalificados.gs | 843 | Contexto_Base_Web.md §29B023 |
 | `_ncTextoRequisitoVsReal` | función | 29_Docs_NoCalificados.gs | 853 | Contexto_Base_Web.md §29B024 |
 | `_ncVeredictoCambioRango` | función | 29_Docs_NoCalificados.gs | 730 | Contexto_Base_Web.md §29B018 |

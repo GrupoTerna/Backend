@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 19:00:25 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 19:42:16 */
 
 
 
@@ -54932,6 +54932,8 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
     return;
   }
 
+  var _ncT0 = Date.now(), _ncT = Date.now(); // PF535: tiempos por tramo, sin cambiar el comportamiento
+  function _ncTramo_(nombre) { Logger.log('[DocsNoCalificados][t] ' + nombreDoc + ' | ' + nombre + ': ' + (Date.now() - _ncT) + ' ms'); _ncT = Date.now(); }
   var doc;
   try {
     doc = DocumentApp.openById(archivo.getId());
@@ -54940,8 +54942,10 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
     return;
   }
 
+  _ncTramo_('abrir documento');
   var body = doc.getBody();
   body.clear();
+  _ncTramo_('body.clear');
 
   _rdocParrafoTexto(body, titulo, true, DocumentApp.HorizontalAlignment.CENTER);
   _rdocParrafoTexto(body, 'Generado el ' + _ncFechaHoraPeru() + ' (hora de Perú).', false, DocumentApp.HorizontalAlignment.CENTER);
@@ -54961,6 +54965,7 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
   _rdocParrafoTexto(body, resumen, false, DocumentApp.HorizontalAlignment.JUSTIFY);
   _rdocParrafoTexto(body, '', false);
 
+  _ncTramo_('encabezado, requisitos y resumen');
   var hayTabla = !!(filas && filas.length > 1);
   if (hayTabla) {
     // 23-oct-2026: los dos «No calificados» (torneo y sorteo) usan la tabla de encabezado negro;
@@ -54976,11 +54981,15 @@ function _ncEscribirDocumento(nombreDoc, titulo, requisitos, filas, resumen, tex
     _rdocParrafoTexto(body, '', false);
     alAgregarSecciones(body);
   }
+  _ncTramo_('tabla (' + (filas ? filas.length : 0) + ' fila(s)) y secciones finales');
 
   doc.saveAndClose();
+  _ncTramo_('saveAndClose');
 
   // Los bordes de una sola fila no se pueden fijar con DocumentApp: van aparte, con la API de Docs.
   if (hayTabla && estiloUniforme) _ncBordesBlancosEncabezado_(archivo.getId(), filas[0].length);
+  _ncTramo_('bordes del encabezado (API de Docs)');
+  Logger.log('[DocsNoCalificados][t] ' + nombreDoc + ' | TOTAL escribir: ' + (Date.now() - _ncT0) + ' ms');
 }
 
 /**
