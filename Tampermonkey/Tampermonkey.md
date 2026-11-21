@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.34
+// @version      3.35
 // @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI. v3.4 (pedido usuaria, 24-oct-2026, §PF234): cuarto botón «Corrección de jugadores elegidos»: escribes los tags y lee la semana en curso (River Race), el Log, Analytics y el perfil, pero guarda y envía SOLO a esos jugadores; al final lista las diferencias entre fuentes. Antes, forzar perfiles solo cambiaba la fase de Perfiles y el Log y Analytics enviaban a toda la comunidad. v3.5 (pedido usuaria, 25-oct-2026, §PF236): cuando se visita un perfil se envían TODAS sus filas (ya no se descartan las semanas cubiertas por Log/Analytics ni las ya guardadas) y el backend decide qué conserva: una fila igual a la guardada no se reescribe. v3.6 (pedido usuaria, 25-oct-2026, §PF237): el panel muestra «REVISAR PERFIL» cuando el backend reemplaza un valor del perfil ya guardado por otro distinto (antes/ahora), y el perfil ya no envía la semana en curso. v3.8 (pedido usuaria, 25-oct-2026, §PF243): el botón de miembros nuevos manda TODO lo que lee de cada perfil visitado (las semanas del perfil de todos los candidatos, no solo de los que cuentan como nuevos) y el backend decide qué guarda en la hoja «Nuevos» y qué en Correcciones_Guerra.csv; el panel muestra cuántas filas del perfil se aplicaron, cuántas estaban sin cambios y los avisos «REVISAR PERFIL». v3.15 (pedido usuaria, 30-oct-2026, §PF303): los cuatro botones del panel se ordenan de arriba abajo: Verificar Semana en Curso, miembros nuevos, jugadores elegidos y Corrección de Guerra completa. v3.20 (pedido usuaria, 2-nov-2026, §PF341): el perfil que visitan «Miembros nuevos» y «Corrección de jugadores elegidos» también se envía a los JSON individuales (Histórico de Guerra), incluso el de quien ya no está en los clanes Terna (solo en su JSON individual); «Miembros nuevos» ahora pide también el token del Histórico de Guerra. v3.21: el histórico de Guerra (JSON individual) manda el tag del clan en todas las filas, también las del Log, Analytics y River Race. v3.22: el nombre del clan de las filas del perfil sale limpio (sin la fecha pegada) también en las de clanes Terna. v3.24 (pedido usuaria, 4-nov-2026, §PF363): el botón «Corrección de Guerra» ya no abre el cuadro de perfiles a forzar (VARIOS o tags): trabaja con todos los jugadores; elegir perfiles es cosa de «Corrección de jugadores elegidos». v3.23 (pedido usuaria, 4-nov-2026, §PF362): al leer el Log de cada clan, los botones «Corrección de Guerra» y «Corrección de jugadores elegidos» también leen la tabla resumen de arriba (puesto, barcos, cambio de trofeos y trofeos finales de cada semana de cada temporada) y la envían al backend, que la guarda en Trofeos_Guerra_RoyaleAPI.csv y la compara con Guerra_Logs. v3.27 (§PF474): «Verificar Semana en Curso» manda el Tag de cada clan (clanTag) junto con el nombre en cada jugador, para que el backend compare cada clan contra lo que Guerra tiene de ESE clan y deje la diferencia con el clan al que corresponde. v3.34 (§PF507): si al visitar un perfil RoyaleAPI responde con la página 404 «Player tag … not found» (cuenta baneada o tag sin ningún registro), el script lo detecta de inmediato, manda el tag al backend (Tags_Sin_Perfil en Drive) y pasa al siguiente jugador, en lugar de esperar el botón, reintentar tres veces y saltarlo sin dejar marca.
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
@@ -499,6 +499,10 @@
   // historial muy largo.
   var LOTE_ENVIO_MIN_JUGADORES_HISTORIAL = 4;      // criterio PRINCIPAL: nunca se manda un lote con menos de 4 jugadores (salvo forzar=true al cerrar fase)
   var LOTE_ENVIO_MAX_REGISTROS_HISTORIAL = 400;    // tope duro de seguridad: si se acumulan tantos registros, se manda igual aunque no haya 4 jugadores
+  // v3.35 (§PF534): una sola página del Log de guerra puede dar más de 700 jugadores, y el backend guarda un JSON de Drive por jugador (~0,25 s cada uno, sin tope de tiempo
+  // en _aplicarHistorialGuerra). Un POST con 700 jugadores tardaba ~3 min y uno de ~1 300 pasaba de los 361 s de Apps Script: la plataforma lo cortaba, el lote volvía a la cola,
+  // crecía con el siguiente y se repetía. Ahora cada lote se parte en envíos SEGUIDOS (uno después de otro) de hasta este número de jugadores.
+  var LOTE_HISTORIAL_MAX_JUGADORES_POR_ENVIO = 150;
 
   var CLOUDFLARE_WAIT_MS = 15000;
   var TABLE_WAIT_MS = 12000;
@@ -1102,6 +1106,7 @@
   // reenviarse. Reenviar es seguro: el backend guarda cada registro por
   // (tag, temporada, semana) con reglas de prioridad, no lo duplica.
   var _historialLotesEnVuelo = [];
+  var _historialUltimoProgresoMs = 0; // v3.35 (§PF534): hora en que el backend confirmó el último envío; la espera de _esperarHistorialEnVuelo() cuenta desde aquí
 
   function _reintegrarLoteHistorial(estado, lote) {
     for (var i = 0; i < lote.length; i++) {
@@ -1246,7 +1251,8 @@
     var inicio = Date.now();
     var iv = setInterval(function () {
       if (_historialLotesEnVuelo.length === 0) { clearInterval(iv); continuar(); return; }
-      if (Date.now() - inicio >= HISTORIAL_ESPERA_MAX_MS) {
+      // v3.35 (§PF534): el tope es de tiempo SIN PROGRESO, no de tiempo total: un lote grande que va respondiendo envío tras envío no se da por perdido.
+      if (Date.now() - Math.max(inicio, _historialUltimoProgresoMs) >= HISTORIAL_ESPERA_MAX_MS) {
         clearInterval(iv);
         var sinRespuesta = _historialLotesEnVuelo.splice(0, _historialLotesEnVuelo.length);
         for (var k = 0; k < sinRespuesta.length; k++) _reintegrarLoteHistorial(estado, sinRespuesta[k].lote);
@@ -1293,31 +1299,47 @@
 
     var lote = _tomarLoteHistorial(estado);
     _guardarSegunEstado(estado);
+    // v3.35 (§PF534): el lote se manda en envíos SEGUIDOS de hasta LOTE_HISTORIAL_MAX_JUGADORES_POR_ENVIO jugadores (nunca varios a la vez: dos POST simultáneos
+    // escribirían los mismos JSON de Drive). `enVuelo.lote` guarda lo que el backend aún NO confirmó: si el envío se corta o no responde a tiempo, solo eso vuelve a la cola.
+    var enVuelo = { lote: lote.slice() };
+    var nEnvios = Math.ceil(lote.length / LOTE_HISTORIAL_MAX_JUGADORES_POR_ENVIO);
     _logSegunEstado(estado, '  → [HistorialGuerra] Enviando lote de ' + lote.length + ' jugador(es)' +
-      (forzar ? ' (cierre de fase)' : '') + '…');
-    var enVuelo = { lote: lote };
+      (forzar ? ' (cierre de fase)' : '') +
+      (nEnvios > 1 ? ' en ' + nEnvios + ' envíos seguidos de hasta ' + LOTE_HISTORIAL_MAX_JUGADORES_POR_ENVIO + ' jugadores' : '') + '…');
     _historialLotesEnVuelo.push(enVuelo);
-    enviarHistorialGuerra(lote, function (err, resp) {
-      var pos = _historialLotesEnVuelo.indexOf(enVuelo);
-      if (pos === -1) return; // ya se dio por sin respuesta y se re-encoló (ver _esperarHistorialEnVuelo)
-      _historialLotesEnVuelo.splice(pos, 1);
-      if (err || !resp || !resp.ok) {
-        _reintegrarLoteHistorial(estado, lote);
-        _guardarSegunEstado(estado);
-        _logSegunEstado(estado, '⚠ [HistorialGuerra] ' + (err || (resp && resp.error) || 'respuesta inválida del backend') +
-          ' (lote de ' + lote.length + ' jugador(es) vuelve a la cola: se reenvía con el próximo lote).');
-      } else {
+    _historialUltimoProgresoMs = Date.now();
+    function enviarSiguienteParte() {
+      var pos0 = _historialLotesEnVuelo.indexOf(enVuelo);
+      if (pos0 === -1) return; // ya se dio por sin respuesta y se re-encoló (ver _esperarHistorialEnVuelo)
+      if (!enVuelo.lote.length) { _historialLotesEnVuelo.splice(pos0, 1); return; } // todo confirmado
+      var parte = enVuelo.lote.slice(0, LOTE_HISTORIAL_MAX_JUGADORES_POR_ENVIO);
+      enviarHistorialGuerra(parte, function (err, resp) {
+        var pos = _historialLotesEnVuelo.indexOf(enVuelo);
+        if (pos === -1) return; // ya se dio por sin respuesta y se re-encoló (ver _esperarHistorialEnVuelo)
+        if (err || !resp || !resp.ok) {
+          _historialLotesEnVuelo.splice(pos, 1);
+          _reintegrarLoteHistorial(estado, enVuelo.lote);
+          _guardarSegunEstado(estado);
+          _logSegunEstado(estado, '⚠ [HistorialGuerra] ' + (err || (resp && resp.error) || 'respuesta inválida del backend') +
+            ' (' + enVuelo.lote.length + ' jugador(es) sin confirmar vuelven a la cola: se reenvían con el próximo lote).');
+          return;
+        }
+        enVuelo.lote = enVuelo.lote.slice(parte.length);
+        _historialUltimoProgresoMs = Date.now();
         estado.historialTotalEnviados = (estado.historialTotalEnviados || 0) + (resp.registrosGuardados || 0);
         _logSegunEstado(estado, '  ✔ [HistorialGuerra] Backend actualizado: ' + (resp.registrosGuardados || 0) +
           ' registro(s) de ' + (resp.procesados || 0) + ' jugador(es)' + (resp.registrosExternos ? ' (' + resp.registrosExternos + ' de clan que no es Terna, solo en el JSON individual)' : '') +
+          (enVuelo.lote.length ? ' — faltan ' + enVuelo.lote.length + ' de este lote' : '') +
           ' (total acumulado: ' + estado.historialTotalEnviados + ').');
         if (resp.errores && resp.errores.length) {
           _logSegunEstado(estado, '  ⚠ [HistorialGuerra] ' + resp.errores.length + ' jugador(es) con error individual: ' +
             resp.errores.map(function (e2) { return e2.tag + ' (' + e2.error + ')'; }).join('; '));
         }
         _guardarSegunEstado(estado);
-      }
-    });
+        enviarSiguienteParte();
+      });
+    }
+    enviarSiguienteParte();
   }
 
   // =========================================================================
