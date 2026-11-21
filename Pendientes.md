@@ -32,12 +32,8 @@ Decididos por Claude el 21-nov-2026 con los archivos y el código (reversibles).
 
 ### A2. Corrección de guerra: casos y decisiones abiertas
 
-- [ ] `PF160` — Punto (8): mirar uno por uno los casos donde «clanes + Externo» no iguala a RoyaleAPI (3 + 131 + 47; `§PF499` puntos 11 y 12). Lo demás de `§PF160` está decidido (`§PF491`) o hecho; falta solo su prueba en Apps Script (sección B).
-- [ ] `PF356` — Confirmar en RoyaleAPI la semana T7 S1 `#VY0UJ82PV` (`§PF357` punto 10 b). Lo demás de `PF356` quedó cerrado (`§PF544`).
-- [ ] `PF439` — (2) Decidir si la posible pérdida de un ataque al cierre del domingo (200 puntos en Grupo乂Terna™) justifica algo (`§PF439` punto 4).
-- [ ] `PF441` — Quedan 2 filas «Revisar» de T27 S3 (`#8YCLY8CRU` y `#U8G029GUQ`, ambas del jueves 19-nov; `§PF545` punto 8), la lista `revisarManual` (2) y confirmar en la hoja `Guerra` real que lo guardado por Tampermonkey sobrevive a `runGuerra` (4). Las otras filas se cerraron solas como «No vigente».
-- [ ] `PF493` — La corrida real del 16-nov-2026 (informe) y `§PF494` quedaron bien; **falta decidir y correr el «aplicar»** de `repararSemanaDesdeJsonRoyaleApi…`. Mientras tanto la regla se apaga con `valores.sinClanTerminado = true` si algo no cuadra.
-- [ ] `PF471` — No correr `aprobarCorreccionesRiverRacePendientes()` (proyecto **Base**, `19_CorreccionRiverRace.gs`) hasta cumplir `§PF477` punto 3.
+Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
+
 
 ### A3. Nuevos, reenumeración y migraciones
 
@@ -124,6 +120,7 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 
 ### B5. Guerra, corrección y Tampermonkey (la vigente es la v3.34; las versiones que nombran las filas viejas ya quedaron superadas)
 
+- [ ] `PF441` — (4) Confirmar en la hoja `Guerra` real que lo guardado por Tampermonkey sobrevive a `runGuerra`.
 - [ ] `PF159` — (1) Perfil de Chistris: ningún día pasa de 4 ataques. (2) Revisar los 91 días (75 jugadores) que siguen con más de 4 ataques con la resta sola.
 - [ ] `PF164` — (1) Correr `subirBaseDesdeGithub()`, pegar Tampermonkey v3.2 y repetir la captura (Corrección de Guerra, escribiendo `VARIOS` en el cuadro de perfiles a forzar).
 - [ ] `PF166` — (1) Correr `subirBaseDesdeGithub()` y probar el botón con sesión de admin en tres momentos: sin nada corriendo, con `runGuerra` en la hora (debe decir «Esperando turno» y empezar sola) y dentro de la ventana 3:40-5:00 a. m. Lima (debe rechazar).
@@ -291,6 +288,8 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 
 ## D. Vigilar o esperar un evento
 
+- [ ] `PF160` — Volver a medir las filas de `Correcciones_Guerra.csv` cuyo «clan + Externo» no iguala a RoyaleAPI con el mismo criterio de `§PF499` punto 11, cuando termine la corrección completa. Decidido: no se crean filas en la hoja (`§PF499` punto 12).
+- [ ] `PF441` — Las 2 filas «Revisar» de T27 S3 (`#8YCLY8CRU` y `#U8G029GUQ`, del jueves 19-nov) se cierran solas como «No vigente» al pasar la semana, como las 45 de T24 a T27 S1 (`§PF477` punto 8; `#U8G029GUQ` es cuenta de apoyo, punto 9).
 - [ ] `PF145` — `runGuerraRapidoProgramado` terminó «Completada» con 22 s de margen el 21-oct; vigilar si empieza a cortarse (12:47 → 182,4 s, sin continuación).
 - [ ] `PF198` — Probar un día de coliseo (la fama de hoy de los rivales con la foto como base). Rivales confirmados el 24-oct; el coliseo del 29-oct al 1-nov no consta como probado.
 - [ ] `PF275` — Origen de los archivos repetidos con el mismo nombre en la carpeta Individual: sin comprobar; la búsqueda por nombre exacto antes de crear (`§PF486` punto 6) debería evitarlos. Si aparecen repetidos nuevos, reabrir.
