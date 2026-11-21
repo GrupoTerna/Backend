@@ -3,7 +3,7 @@
   "backfillPerfilHecho": false,
   "ultimaTemporadaCubierta": null,
   "ultimaSemanaCubierta": null,
-  "fechaUltimaConsulta": "19/11/2026",
+  "fechaUltimaConsulta": "20/11/2026",
   "registros": [
     {
       "temporadaInterna": 26,
@@ -1584,6 +1584,20 @@
       "fuente": "riverrace",
       "cerrada": false,
       "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 26,
+      "temporadaRoyaleAPI": 137,
+      "semana": 4,
+      "clan": "Los Calavera XD",
+      "ataques": 16,
+      "fame": 2350,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#2JQ0VL0J",
       "comentario": ""
     }
   ]
