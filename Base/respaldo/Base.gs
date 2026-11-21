@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 16:28:38 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 16:59:02 */
 
 
 
@@ -3812,7 +3812,7 @@ function _csvSubcarpetaDe_(filename) {
       /^Reparar_SemanaDesdeJsonRoyaleApi /.test(n)) return 'Informes';
   // Tampermonkey: lo que se arma con datos traídos de RoyaleAPI por Tampermonkey.
   // §PF321 (1-nov-2026): HistorialGuerra_Grupal.csv (RoyaleAPI vía Tampermonkey, una fila por jugador, semana y clan) vive aquí, no en Informes; la usuaria lo movió a mano a CSV/Tampermonkey.
-  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv' || n === 'HistorialGuerra_Grupal.csv' || n === 'Trofeos_Guerra_RoyaleAPI.csv' || n === 'Tags_Sin_Perfil.csv') return 'Tampermonkey'; // 04-nov-2026 (§PF362): trofeos por semana del Log de RoyaleAPI
+  if (/^Correcciones_/.test(n) || /^Log_Tampermonkey_/.test(n) || n === 'Backup_Guerra_Semanal.csv' || n === 'HistorialGuerra_Grupal.csv' || n === 'Trofeos_Guerra_RoyaleAPI.csv' || n === 'Tags_Sin_Perfil.csv' || n === 'Visitas_Perfil.csv') return 'Tampermonkey'; // 04-nov-2026 (§PF362): trofeos por semana del Log de RoyaleAPI
   // Jugador: datos que dependen de cada jugador (no son comportamiento general ni respaldo de una hoja).
   var jugador = ['Backup_Cards_2.csv', 'Backup_Insignias_2.csv', 'Backup_Logros_2.csv', 'Backup_ProgresoEventos.csv',
     'Backup_Battlelogs.csv', 'Backup_PerfilWeb.csv', 'Backup_CaminoLeyendas.csv',
@@ -30545,6 +30545,10 @@ var CGW_MAGNITUDES = [
 
 var CGW_ORIGEN_PERFIL = 'perfil';
 
+// §PF552 (21-nov-2026): registro de los perfiles visitados. Un perfil leído sin cambios no toca «Actualizado» en Correcciones_Guerra.csv, así que no dejaba ninguna marca de que se visitó.
+var CGW_VISITAS_PERFIL_CSV = 'Visitas_Perfil.csv';
+var CGW_VISITAS_PERFIL_ENCABEZADOS = ['Tag', 'Primera_Visita', 'Ultima_Visita', 'Envios', 'Filas_Leidas', 'Filas_Aplicadas', 'Filas_Sin_Cambios', 'Ultimo_Cambio'];
+
 var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
 
 // §PF244 (punto 1 de §PF235): seña de «perfil no consultado». Solo se ESCRIBE (valor calculado, como Externo y ID): una fila sin dato
@@ -33008,6 +33012,61 @@ function _buscarDatosJugadorParaReconstruccion(tag) {
 // ----- Aplicar las correcciones (motor) -----
 
 /**
+ * _registrarVisitasPerfil_(visitas, ahora) [→ Contexto_Base_Web.md §PF552]
+ * visitas: { '#TAG': { filas, aplicadas, sinCambios } } con las filas del perfil (sin ClanTag) que llegaron en un envío de Tampermonkey. Suma en
+ * CSV/Tampermonkey/Visitas_Perfil.csv (una fila por tag, la clave es el tag): Envios (+1), Filas_Leidas, Filas_Aplicadas y Filas_Sin_Cambios acumuladas,
+ * Ultima_Visita (hora de Lima, el mismo formato de «Actualizado» de Correcciones_Guerra.csv) y Ultimo_Cambio (la última vez que se aplicó al menos una fila).
+ * Así se sabe que un perfil se visitó aunque ninguna fila haya cambiado (en ese caso no se toca «Actualizado»). No toma el candado: la llama
+ * _aplicarCorreccionesGuerraImpl(), que ya lo tiene. Devuelve { tags, guardado }.
+ */
+function _registrarVisitasPerfil_(visitas, ahora) {
+  var tagsEnvio = Object.keys(visitas || {});
+  if (!tagsEnvio.length) return { tags: 0, guardado: false };
+
+  var carpeta = _getCsvSubcarpeta_('Tampermonkey', true);
+  var it = carpeta.getFilesByName(CGW_VISITAS_PERFIL_CSV);
+  var archivo = it.hasNext() ? it.next() : null;
+  var mapa = {}, orden = [], i;
+  if (archivo) {
+    var texto = archivo.getBlob().getDataAsString('UTF-8');
+    var filas = texto ? _parseCSV(texto) : [];
+    for (i = 1; i < filas.length; i++) { // fila 0 = encabezados
+      var f = filas[i] || [];
+      var t = String(f[0] || '').trim();
+      if (!t || mapa[t]) continue;
+      mapa[t] = { primera: String(f[1] || ''), ultima: String(f[2] || ''), envios: Number(f[3]) || 0, leidas: Number(f[4]) || 0,
+                  aplicadas: Number(f[5]) || 0, sinCambios: Number(f[6]) || 0, ultimoCambio: String(f[7] || '') };
+      orden.push(t);
+    }
+  }
+
+  for (i = 0; i < tagsEnvio.length; i++) {
+    var tag = tagsEnvio[i], v = visitas[tag];
+    var r = mapa[tag];
+    if (!r) {
+      r = { primera: ahora, ultima: ahora, envios: 0, leidas: 0, aplicadas: 0, sinCambios: 0, ultimoCambio: '' };
+      mapa[tag] = r;
+      orden.push(tag);
+    }
+    r.envios++;
+    r.leidas += v.filas;
+    r.aplicadas += v.aplicadas;
+    r.sinCambios += v.sinCambios;
+    r.ultima = ahora;
+    if (v.aplicadas > 0) r.ultimoCambio = ahora;
+  }
+
+  var filasCsv = [CGW_VISITAS_PERFIL_ENCABEZADOS.slice()].concat(orden.map(function (t) {
+    var x = mapa[t];
+    return [t, x.primera, x.ultima, x.envios, x.leidas, x.aplicadas, x.sinCambios, x.ultimoCambio];
+  }));
+  var contenido = _encodeCSV(filasCsv);
+  if (archivo) _setContentConConteo_(archivo, contenido);
+  else _createFileConConteo_(carpeta, CGW_VISITAS_PERFIL_CSV, contenido, MimeType.CSV);
+  return { tags: tagsEnvio.length, guardado: true };
+}
+
+/**
  * _aplicarCorreccionesGuerra(correcciones) [→ Contexto_Base_Web.md §18B098]
  */
 /**
@@ -33048,6 +33107,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
   var indiceAtaqueTerna = _cgwIndiceAtaqueTerna_(mapa, correcciones, _getTemporadaOffsetRoyaleApi()); // §PF343
   var cacheJsonTerna = {}, contradiccionesExternasIgnoradas = 0; // §PF343
+  var visitasPerfil = {}; // §PF552: por tag, filas del perfil recibidas en este envío ({ filas, aplicadas, sinCambios }); se registra en Visitas_Perfil.csv al final
   var indiceComprobadas = _gdsLeerIndiceComprobadas_(), avisadasComprobadas = {}, nAvisosComprobadas = 0; // §PF437 F4: solo avisa, no protege
   var aceptadasClanTerminado = [], aceptadasClanTerminadoTotal = 0; // §PF357: filas que solo cuadran suponiendo ataques sin fame por clan terminado (sin verificar)
   var aceptadasClanTerminadoVerificadas = 0, cacheCierreCrr = { leidas: {}, n: 0 }; // §PF357: cuántas se verificaron con los currentriverrace de Drive
@@ -33072,6 +33132,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     if (temporadaPropia < 1) anterioresT1++;
 
     var clanTag = _normalizarClanTagCorreccion(c.clanTag);
+    if (clanTag === '') { // §PF552: fila del perfil (sin ClanTag): el tag cuenta como visitado aunque la fila no cambie
+      if (!visitasPerfil[tag]) visitasPerfil[tag] = { filas: 0, aplicadas: 0, sinCambios: 0 };
+      visitasPerfil[tag].filas++;
+    }
     var clave = temporadaPropia + '|' + semana + '|' + clanTag + '|' + tag;
     var existente = mapa[clave];
     if (!avisadasComprobadas[clave]) {   // §PF437 F4: la corrección reemplaza el total de la semana, así que alcanza a los cuatro días
@@ -33101,6 +33165,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       var barcosExistente = (existente.barcos === undefined) ? null : existente.barcos;
       if (existente.ataquesSemana === ataquesSemana && existente.fame === fame && barcosExistente === barcosFinal &&
           existente.origenPerfil === origenEntrante && (existente.clanPerfil || '') === _normalizarClanTagCorreccion(c.clanPerfil)) {
+        visitasPerfil[tag].sinCambios++; // §PF552
         sinCambios++;
         continue;
       }
@@ -33232,6 +33297,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       mapa[clave].origenPerfil = String(c.fuente || '').trim().toLowerCase() === CGW_ORIGEN_PERFIL ? CGW_ORIGEN_PERFIL : CGW_ORIGEN_DESCONOCIDO;
       // PF183 act. 16: Tampermonkey v3.3 manda clanPerfil = tag del clan de la fila del perfil (leído del enlace). Sin él queda '' (se trata como Terna, como antes).
       mapa[clave].clanPerfil = _normalizarClanTagCorreccion(c.clanPerfil);
+      visitasPerfil[tag].aplicadas++; // §PF552
     }
     clavesTocadas.push(clave);
     aplicadas++;
@@ -33302,10 +33368,16 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     _guardarOverlayCorreccionesGuerra(mapa);
   }
 
+  // §PF552: deja constancia de los perfiles visitados, hayan cambiado o no. Un fallo aquí no afecta a lo ya aplicado: se avisa en el registro.
+  var visitasRes = null;
+  try { visitasRes = _registrarVisitasPerfil_(visitasPerfil, ahora); }
+  catch (eVisitas) { Logger.log('[CorreccionGuerra] AVISO: no se pudo registrar ' + CGW_VISITAS_PERFIL_CSV + ' (' + (eVisitas.message || eVisitas) + '). La corrección ya se aplicó.'); }
+
   Logger.log('[CorreccionGuerra] Aplicadas: ' + aplicadas + ', sin cambios: ' + sinCambios + ', omitidas: ' + omitidas +
     ' (de ' + correcciones.length + ' recibidas)' + (anterioresT1 ? '; ' + anterioresT1 + ' anterior(es) a T1 (temporada 0 o negativa, a la espera de la reenumeración)' : '') + '.');
 
   var resultado = { ok: true, aplicadas: aplicadas, omitidas: omitidas, sinCambios: sinCambios, total: correcciones.length };
+  if (visitasRes && visitasRes.tags) resultado.visitasPerfil = visitasRes.tags; // §PF552: tags de perfil registrados en este envío
   if (anterioresT1) resultado.anterioresT1 = anterioresT1; // §PF247
   if (contradiccionesExternasIgnoradas) { // §PF343
     resultado.contradiccionesExternasIgnoradas = contradiccionesExternasIgnoradas;
