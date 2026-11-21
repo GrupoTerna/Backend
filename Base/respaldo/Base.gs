@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 20:06:42 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 20:40:07 */
 
 
 
@@ -52202,6 +52202,21 @@ function reconstruirDocsTorneosSorteoFaltantes() {
   }
 }
 
+/**
+ * _tdTiempos_(etiqueta) - PF539 (20-nov-2026). Medición, sin cambiar el comportamiento: devuelve una función que imprime cuánto tardó cada tramo
+ * de la escritura de un Doc de torneo o de sorteo (`[DocsTorneos][t] <etiqueta> | <tramo>: N ms`); con el tramo 'TOTAL' imprime lo transcurrido
+ * desde que se creó. Es la misma idea de las líneas `[DocsNoCalificados][t]` de _ncEscribirDocumento() (PF535). Los `return` tempranos de cada
+ * función no imprimen los tramos que no llegan a correr. [→ Contexto_Base_Web.md §PF539]
+ */
+function _tdTiempos_(etiqueta) {
+  var t0 = Date.now(), t = t0;
+  return function (tramo) {
+    var ahora = Date.now();
+    Logger.log('[DocsTorneos][t] ' + etiqueta + ' | ' + tramo + ': ' + (ahora - (tramo === 'TOTAL' ? t0 : t)) + ' ms');
+    t = ahora;
+  };
+}
+
 // ----- Participantes calificados (sorteo y torneo) -----
 
 /**
@@ -52216,6 +52231,7 @@ function actualizarDocParticipantesCalificados(ctxParam) {
  * actualizarDocParticipantesCalificadosTorneo() [→ Contexto_Base_Web.md §28B046]
  */
 function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
+  var _t = _tdTiempos_('Participantes calificados (torneo)'); // PF539
   var archivo;
   try {
     // FASE (01/08/2026): _buscarArchivoEnPlantillas() busca primero por ID [→ Contexto_Base_Web.md §28B010]
@@ -52229,6 +52245,7 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
     return;
   }
 
+  _t('buscar el archivo en plantillas');
   var doc;
   try {
     doc = DocumentApp.openById(archivo.getId());
@@ -52238,9 +52255,11 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
   }
   var body = doc.getBody();
   var ss = _getSs();
+  _t('abrir el documento');
 
   // 1. Fecha: se toma la del torneo más reciente de T_Lista, salvo que el [→ Contexto_Base_Web.md §28B011]
   var fechaDocActualizada = _actualizarFechaDocTorneo(body, ss);
+  _t('fecha del documento');
 
   // 2. Requisitos: Min_T por clan, leído de la fila más reciente de cada [→ Contexto_Base_Web.md §28B012]
   var infoMinT = _getMinTPorTagClan('Torneo'); // PF409: por Tag, no por nombre
@@ -52329,9 +52348,13 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
     grupos.push({ clan: nombrePorTag[tagsOrden[gi]], personas: porClan[tagsOrden[gi]] }); // el nombre solo se muestra
   }
 
+  _t('leer hojas y evaluar a los calificados');
   _reemplazarListaParticipantes(body, grupos);
+  _t('reemplazar la lista en el documento');
 
   doc.saveAndClose();
+  _t('saveAndClose');
+  _t('TOTAL');
   Logger.log('[ParticipantesCalificados-Torneo] ' +
     (fechaDocActualizada ? 'Fecha actualizada al torneo más reciente de T_Lista. ' : 'Fecha del docx conservada (edición manual más reciente). ') +
     totalCalificados + ' cuenta(s) calificada(s) (temporada ' + temporadaMostrar +
@@ -52346,6 +52369,7 @@ function actualizarDocParticipantesCalificadosTorneo(ctxParam) {
  * actualizarDocGanadoresTorneo() [→ Contexto_Base_Web.md §28B020]
  */
 function actualizarDocGanadoresTorneo(ctxParam) {
+  var _tPrep = _tdTiempos_('Ganadores (torneo): datos'); // PF539
   var ss = _getSs();
   var shTA = ss.getSheetByName(CFG.SHEETS.T_ASISTENCIA);
   var shTL = ss.getSheetByName(CFG.SHEETS.T_LISTA);
@@ -52412,6 +52436,7 @@ function actualizarDocGanadoresTorneo(ctxParam) {
   });
 
   // FIX (09/08/2026): se pasa el encabezado REAL del documento [→ Contexto_Base_Web.md §28B026]
+  _tPrep('preparar los datos antes de escribir el Doc');
   _escribirDocGanadores(NOMBRE_DOC_GANADORES_TORNEO, DOC_ID_GANADORES_TORNEO, ganadoresFinal, idMasReciente, fechaMasReciente, 'Ganadores del torneo:');
 }
 
@@ -52527,6 +52552,7 @@ function actualizarDocGanadoresSorteo(extra) {
  * _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc) [→ Contexto_Base_Web.md §28B056]
  */
 function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
+  var _t = _tdTiempos_('Participantes calificados: ' + nombreDoc); // PF539
   var archivo;
   try {
     // FASE (01/08/2026): _buscarArchivoEnPlantillas() busca primero por ID [→ Contexto_Base_Web.md §28B057]
@@ -52540,6 +52566,7 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
     return;
   }
 
+  _t('buscar el archivo en plantillas');
   var doc;
   try {
     doc = DocumentApp.openById(archivo.getId());
@@ -52548,11 +52575,13 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
     return;
   }
   var body = doc.getBody();
+  _t('abrir el documento');
 
   // 1. Marcador "[Mes]".
   var mesEfectivo = _calcularMesEfectivoRealDeHoy();
   var nombreMes = _MESES_ES[mesEfectivo.mes];
   body.replaceText('\\[Mes\\]', nombreMes);
+  _t('reemplazar [Mes]');
 
   // 1b. PF206 (24-oct-2026): la «Fecha:» del Doc es la del sorteo en S_Lista (antes quedaba la de la plantilla: 06 de julio).
   // Se escribe después de evaluar, con el ID del sorteo vigente; si la evaluación falla, la fecha no se toca.
@@ -52561,6 +52590,7 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
   // web (_evaluarCalificacionSorteo_(), 29_Docs_NoCalificados.gs): promedio de las «Semanas» de S_Lista, ataques,
   // torneos y barcos; ya NO se leen los mínimos del texto de este documento ni se usa el acumulado de la temporada. [→ Contexto_Base_Web.md §PF202]
   var ev = _evaluarCalificacionSorteo_(ctxParam);
+  _t('evaluar el sorteo (hojas y cálculo)');
   if (!ev) {
     Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": no se pudo evaluar el sorteo (ver el motivo en el registro [CalificacionSorteo]). Se deja la lista como estaba; solo se actualizó "[Mes]".');
     doc.saveAndClose();
@@ -52585,6 +52615,7 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
     Logger.log('[ParticipantesCalificados] No se pudo actualizar la «Fecha:» en \"' + nombreDoc + '\": ' + eFecha.message);
   }
 
+  _t('requisitos y fecha en el documento');
   // 3. Un array de calificados por cada clan (mismo orden que los requisitos de S_Lista).
   var porClan = {};
   for (var ci = 0; ci < ev.ordenClanes.length; ci++) porClan[ev.ordenClanes[ci]] = [];
@@ -52601,9 +52632,13 @@ function _actualizarUnDocParticipantesCalificados(nombreDoc, idDoc, ctxParam) {
     grupos.push({ clan: ev.ordenClanes[gi], personas: porClan[ev.ordenClanes[gi]] });
   }
 
+  _t('armar los grupos');
   _reemplazarListaParticipantes(body, grupos);
+  _t('reemplazar la lista en el documento');
 
   doc.saveAndClose();
+  _t('saveAndClose');
+  _t('TOTAL');
   Logger.log('[ParticipantesCalificados] "' + nombreDoc + '": "[Mes]" -> "' + nombreMes + '". ' +
     totalCalificados + ' de ' + ev.evaluados.length + ' cuenta(s) calificada(s) (temporada ' + ev.temporadaActual + ', sorteo ' + (ev.idSorteo || 'sin ID') + ').');
 }
@@ -53319,6 +53354,7 @@ function _parseRequisitosParticipantes(body) {
  */
 function _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorneo, encabezado) {
   encabezado = encabezado || 'Ganadores:';
+  var _t = _tdTiempos_('Ganadores (torneo): ' + nombreDoc); // PF539
 
   var archivo;
   try {
@@ -53333,6 +53369,7 @@ function _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorne
     return;
   }
 
+  _t('buscar el archivo en plantillas');
   var doc;
   try {
     doc = DocumentApp.openById(archivo.getId());
@@ -53341,9 +53378,11 @@ function _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorne
     return;
   }
   var body = doc.getBody();
+  _t('abrir el documento');
 
   // FIX (pedido usuario): igual que en _actualizarFechaDocTorneo() — [→ Contexto_Base_Web.md §28B092]
   _actualizarFechaDocTorneo(body, _getSs());
+  _t('fecha del documento');
 
   var encontrado = body.findText(encabezado);
   if (!encontrado) {
@@ -53399,7 +53438,10 @@ function _escribirDocGanadores(nombreDoc, idDoc, ganadores, idTorneo, fechaTorne
     body.insertParagraph(idxHeading + 1 + k, lineas[k]);
   }
 
+  _t('borrar y escribir la lista (' + ganadores.length + ' ganador(es))');
   doc.saveAndClose();
+  _t('saveAndClose');
+  _t('TOTAL');
   Logger.log('[Ganadores-Torneo] Torneo ' + idTorneo + ': ' + ganadores.length + ' ganador(es) escrito(s).');
 }
 
@@ -53791,6 +53833,7 @@ function _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen) {
  * _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo, resumen) [→ Contexto_Base_Web.md §28B030]
  */
 function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo, resumen) {
+  var _t = _tdTiempos_('Ganadores (sorteo)'); // PF539
   var archivo;
   try {
     archivo = _buscarArchivoEnPlantillas(NOMBRE_DOC_GANADORES_SORTEO, DOC_ID_GANADORES_SORTEO);
@@ -53803,6 +53846,7 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo, resumen) 
     return '';
   }
 
+  _t('buscar el archivo en plantillas');
   var doc;
   try {
     doc = DocumentApp.openById(archivo.getId());
@@ -53811,9 +53855,11 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo, resumen) 
     return '';
   }
   var body = doc.getBody();
+  _t('abrir el documento');
 
   // PF207 (24-oct-2026, pedido de la usuaria): sin ganadores NO se muestra la tabla, solo un texto corto; con ganadores se rehace la tabla.
   var resTabla = _escribirGanadoresSorteoEnDoc_(body, ganadores, resumen);
+  _t('tabla de ganadores');
   if (!resTabla) {
     Logger.log('[Ganadores-Sorteo] No se encontró \"Ganadores del sorteo:\" en el documento. Se omite.');
     doc.saveAndClose();
@@ -53840,8 +53886,11 @@ function _escribirDocGanadoresSorteo(ganadores, idSorteo, fechaSorteo, resumen) 
   } catch (eFechaGan) {
     Logger.log('[Ganadores-Sorteo] No se pudo actualizar la «Fecha:»: ' + eFechaGan.message);
   }
+  _t('requisitos y fecha en el documento');
 
   doc.saveAndClose();
+  _t('saveAndClose');
+  _t('TOTAL');
   Logger.log('[Ganadores-Sorteo] Sorteo ' + idSorteo + ': ' + ganadores.length + ' ganador(es) escrito(s).');
   return archivo.getId();
 }
