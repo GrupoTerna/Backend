@@ -6,7 +6,10 @@ ERRORES (código de salida 1): fila de pendiente cortada con «…», filas ya
 resueltas (tachadas, «[x]» o «Resuelto»), filas repetidas, grupos del resumen
 que no coinciden con las secciones.
 AVISOS (se miran a mano): `PFnnn` citado que no tiene sección en
-Contexto_Base_Web.md (puede ser una fila sin PF, como «Torneos / sesión»).
+Contexto_Base_Web.md (puede ser una fila sin PF, como «Torneos / sesión»); filas
+que repiten un requisito de subir o publicar («corre `subirBaseDesdeGithub()`»,
+«`sw.js` vNNN», «pega Tampermonkey vN»), que se vence al cumplirse y debe leerse
+con `estado_subidas.py`; un mismo `PFnnn` dentro de un grupo en dos filas.
 """
 import re, sys, os
 
@@ -41,6 +44,30 @@ for i, l in filas:
     for pf in set(re.findall(r'PF(\d+)', l)):
         if f'PF{pf}' not in secciones:
             avisos.append(f'{i}: PF{pf} no tiene sección «### PF{pf}» en Contexto_Base_Web.md')
+
+# Requisitos de subir/publicar copiados en las filas (se vencen al cumplirse).
+REQ = re.compile(r'`(?:subirBase|subirGenerador|subirContactos)DesdeGithub\(\)`'
+                 r'|`sw\.js`\)? v\d+|Tampermonkey(?:\.md)? v\d+\.\d+')
+con_req = [i for i, l in filas if REQ.search(l)]
+if con_req:
+    avisos.append(f'{len(con_req)} fila(s) repiten un requisito de subir o publicar que ya se venció o se vencerá '
+                  f'(líneas {", ".join(map(str, con_req[:12]))}{"…" if len(con_req) > 12 else ""}): '
+                  'las filas dicen solo lo que falta probar; lo que hay por subir sale de '
+                  '«python3 -I \'Consolidados de cambios/estado_subidas.py\'». Al tocar una fila, se le quita.')
+
+# Un mismo PFnnn en dos filas del mismo grupo (suelen ser filas duplicadas no idénticas).
+g_actual, por_grupo = None, {}
+for i, l in enumerate(lineas, 1):
+    m = re.match(r'^## ([A-E])\.', l)
+    if m: g_actual = m.group(1)
+    if g_actual and re.match(r'^- \[[ xX]\]', l):
+        pf1 = re.match(r'^- \[[ xX]\] `?(PF\d+)`?', l)
+        if pf1:
+            por_grupo.setdefault((g_actual, pf1.group(1)), []).append(i)
+for (g, pf), ls in sorted(por_grupo.items()):
+    if len(ls) > 1:
+        avisos.append(f'{pf} abre {len(ls)} filas en el grupo {g} (líneas {", ".join(map(str, ls))}); '
+                      'si son partes del mismo ítem, se unen en una fila')
 
 # Grupos del resumen contra las secciones «## X.»
 resumen = set(re.findall(r'^\| \*\*([A-E])\*\* \|', '\n'.join(lineas), re.M))
