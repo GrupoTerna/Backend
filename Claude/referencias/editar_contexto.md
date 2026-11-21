@@ -8,4 +8,4 @@
   3. Correr `Consolidados de cambios/verificar_contexto.py` (debe decir «OK»).
   4. Recién entonces hacer el commit.
   - Si el `assert` falla, se vuelve a ubicar el texto en vez de insistir con otra variante.
-  - La fila de «Abiertos» que ya se resolvió se **quita** (no se deja tachada) y su resultado va como punto de la sección PF.
+  - La línea de `Pendientes.md` que ya se resolvió se **quita** (no se deja tachada) y su resultado va como punto de la sección PF.

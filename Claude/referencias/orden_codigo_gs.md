@@ -11,7 +11,7 @@
 - **Las constantes y variables globales** (`var`) quedan arriba del archivo, antes de las funciones. Al comienzo del archivo se deja un comentario con el índice del orden (partes y temas).
 - **Al reordenar un archivo existente no se cambia el código de ninguna función.** Antes de subir se comprueba: (a) que cada función quedó **idéntica y una sola vez**, (b) que se conservan las referencias `§` a `Contexto_Base_Web.md` de los comentarios, y (c) la sintaxis (`node --check` sobre una copia `.js`). Si el orden de ejecución es una **deducción** de Claude y no algo confirmado por la usuaria, se anota en el contexto.
 - **Los rangos de líneas** de la tabla «Mapa de bloques por .gs» de `Contexto_Base_Web.md` quedan desactualizados al reordenar; los ids `§Bxxx` de los comentarios siguen resolviendo. Se deja constancia en el contexto, pero no se rehacen los rangos.
-- **Cómo se aplica este orden a los `.gs` que ya existen** (el avance y lo que falta se consultan en «Abiertos» de `Contexto_Base_Web.md`, no aquí):
+- **Cómo se aplica este orden a los `.gs` que ya existen** (el avance y lo que falta se consultan en `Pendientes.md`, no aquí):
   1. **Por partes pequeñas, ejecutables dentro de una sesión gratuita:** un archivo por parte; si es muy grande, un tramo.
   2. **Cada parte se sube al terminar, según 0.2** (verificar, commit y push antes de seguir con la siguiente); nunca se acumulan varias partes sin subir, aunque se pueda hacer más trabajo.
   3. **Un commit por cada parte de trabajo** (nunca una sola subida para varias partes).
