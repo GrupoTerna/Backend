@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 19:42:16 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 20:06:42 */
 
 
 
@@ -122,7 +122,11 @@ var PASOS_RUNGUERRA = [
     catch (eCierreNuevos) { Logger.log('[PASOS_RUNGUERRA] _cerrarSemanaActualNuevos() falló: ' + eCierreNuevos.message); }
   },
   function () { return _runGuerraPasoRespaldoCsv_(); },
-  function () { return _runGuerraPasoCalentarCache_(); },
+  // PF537 (20-nov-2026): el paso único «Caché y publicaciones» se partió en cuatro, para que el motor mire el reloj entre una publicación y la siguiente (antes empezaba con ~134 s de tanda gastados y no se podía interrumpir; PF536 punto 5).
+  function () { return _runGuerraPasoCalentarGuerra_(); },
+  function () { return _runGuerraPasoPublicar_('roster', 'roster.json', CFG.RUNGUERRA_PUBLICAR_MARGEN_MIN_MS, function () { _publicarRosterEstatico_(); }); },
+  function () { return _runGuerraPasoPublicar_('home', 'home.json', CFG.RUNGUERRA_PUBLICAR_MARGEN_MIN_MS, function () { _publicarHomeEstatico_(); }); },
+  function () { return _runGuerraPasoPublicar_('torneos', 'torneos.json', CFG.RUNGUERRA_PUBLICAR_MARGEN_MIN_MS, function () { _publicarTorneosEstatico_(); }); },
 ];
 
 var NOMBRES_PASOS_RUNGUERRA = [
@@ -133,7 +137,10 @@ var NOMBRES_PASOS_RUNGUERRA = [
   'Hoja Pendientes: actualizar → hoja Pendientes al día',
   'Nuevos: cerrar la semana actual → semana de Nuevos cerrada si correspondía',
   'Respaldo CSV de Guerra: guardar la hoja Guerra en Backup_Guerra.csv → respaldo al día',
-  'Caché y publicaciones: calentar la guerra en vivo y publicar guerra, roster, home y torneos → caché caliente y archivos publicados',
+  'Caché y guerra.json: calcular el Dashboard, calentar la guerra en vivo y publicar guerra.json → caché caliente y guerra.json publicado',
+  'roster.json: publicar el roster → roster.json publicado',
+  'home.json: publicar la portada → home.json publicado',
+  'torneos.json: publicar los torneos → torneos.json publicado',
 ];
 
 var PASOS_RUNALL = [
@@ -1483,7 +1490,7 @@ function _iniciarRunGuerraPorTandas_(props, claveHora) {
     props.setProperty('RUNGUERRA_MARCA_PREVIA', marcaPrevia === null ? '' : marcaPrevia);
     props.setProperty('RUNGUERRA_ULTIMA_HORA', claveHora);
     props.setProperty('RUNGUERRA_PASO', '0');
-    ['RUNGUERRA_REINTENTO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO', 'RUNGUERRA_CALENTAR_INTENTOS'].forEach(function(clave) { props.deleteProperty(clave); });
+    ['RUNGUERRA_REINTENTO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO', 'RUNGUERRA_CALENTAR_INTENTOS', 'RUNGUERRA_PUBLICAR_INTENTOS_guerra', 'RUNGUERRA_PUBLICAR_INTENTOS_roster', 'RUNGUERRA_PUBLICAR_INTENTOS_home', 'RUNGUERRA_PUBLICAR_INTENTOS_torneos'].forEach(function(clave) { props.deleteProperty(clave); });
     _borrarTriggersDeContinuacion('_continuarRunGuerraCadena');
   } catch (e) {
     _liberarLockEjecucion();
@@ -1541,7 +1548,7 @@ function _limpiarCadenaRunGuerra_(props, restaurarMarca) {
     if (previa) props.setProperty('RUNGUERRA_ULTIMA_HORA', previa);
     else props.deleteProperty('RUNGUERRA_ULTIMA_HORA');
   }
-  ['RUNGUERRA_MARCA_PREVIA', 'RUNGUERRA_CALENTAR_INTENTOS', 'RUNGUERRA_PASO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_REINTENTO', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO'].forEach(function(clave) { props.deleteProperty(clave); });
+  ['RUNGUERRA_MARCA_PREVIA', 'RUNGUERRA_CALENTAR_INTENTOS', 'RUNGUERRA_PUBLICAR_INTENTOS_guerra', 'RUNGUERRA_PUBLICAR_INTENTOS_roster', 'RUNGUERRA_PUBLICAR_INTENTOS_home', 'RUNGUERRA_PUBLICAR_INTENTOS_torneos', 'RUNGUERRA_PASO', 'RUNGUERRA_PASO_NOMBRE', 'RUNGUERRA_REINTENTO', 'RUNGUERRA_TANDAS_PASO', 'RUNGUERRA_PROGRESO_PASO'].forEach(function(clave) { props.deleteProperty(clave); });
 }
 
 /** _liberarLockSiEsDeRunGuerra_() - PF311 parte B. Libera el candado solo si lo tiene runGuerra o su cadena (no pisa el de otra ejecución). */
@@ -1591,49 +1598,65 @@ function _runGuerraPasoRespaldoCsv_() {
 }
 
 /**
- * _runGuerraPasoCalentarCache_() - PF311 parte B. Paso «Caché y publicaciones» de la cadena RUNGUERRA: calienta el caché de la guerra en vivo y publica guerra.json, roster.json, home.json y torneos.json
- * (lo que hacía _runGuerraColaHoraria_()). Exige tiempo según lo que tardó la última vez (GUERRA_CALENTADO_ULT_MS, con 30 % de holgura, como mínimo el margen fijo y como máximo lo que cabe en una tanda
- * nueva). Si no hay tiempo o quedaron publicaciones sin hacer, devuelve false y el motor lo repite en la tanda siguiente; tras 2 repeticiones se deja para la próxima hora, para no encadenar tandas sin fin.
+ * _runGuerraPasoCalentarGuerra_() - PF537 (20-nov-2026). Primer paso de lo que antes era «Caché y publicaciones» (PF311 parte B) en la cadena RUNGUERRA: calcula el Dashboard, calienta el caché de la guerra en vivo y publica guerra.json.
+ * Las otras tres publicaciones (roster.json, home.json, torneos.json) ya no van aquí: son pasos propios (_runGuerraPasoPublicar_()). Exige 1 m 30 s de margen como mínimo, o lo que tardó la última vez por 1,5, con tope de lo que cabe en una tanda nueva.
  */
-function _runGuerraPasoCalentarCache_() {
+function _runGuerraPasoCalentarGuerra_() {
+  return _runGuerraPasoPublicar_('guerra', 'Caché y guerra.json', CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, function () {
+    var limiteMs = Date.now() + _msRestantesDeEjecucion_() - 45000;
+    _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG, limiteMs, true);
+    return !CALENTAR_OMITIO_PUBLICACION_;
+  });
+}
+
+/**
+ * _runGuerraPasoPublicar_(clave, nombre, margenMinMs, trabajo) - PF537 (20-nov-2026). Ejecuta UNA publicación de la cadena RUNGUERRA como paso propio. Antes las cuatro iban juntas en un solo paso que empezaba con unos 134 s de tanda gastados y no se podía interrumpir:
+ * el 17-nov roster.json tardó 169 s, home.json 107 s y el Dashboard 189 s con el mismo código, y la ejecución se cortó a los 361 s (6 veces del 14 al 19-nov, PF536 punto 5). Con un paso por publicación, el motor mira el reloj entre una y otra y manda la siguiente a una tanda nueva.
+ * Antes de empezar exige tiempo según lo que tardó la última vez que terminó bien (propiedad RUNGUERRA_PUBLICAR_ULT_MS_<clave>) por 1,5, y como mínimo `margenMinMs`, con tope de lo que cabe en una tanda nueva. Si no hay tiempo, o `trabajo` devuelve false (incompleto), devuelve false y el motor lo repite en la tanda siguiente;
+ * tras 2 repeticiones se deja para la próxima hora, para no encadenar tandas sin fin. Un error de la publicación se anota y también se deja para la próxima hora, como antes. [→ Contexto_Base_Web.md §PF537]
+ */
+function _runGuerraPasoPublicar_(clave, nombre, margenMinMs, trabajo) {
   var props = PropertiesService.getScriptProperties();
-  var intentos = Number(props.getProperty('RUNGUERRA_CALENTAR_INTENTOS')) || 0;
-  var msUltimo = Number(props.getProperty('GUERRA_CALENTADO_ULT_MS')) || 0;
-  var msNecesarios = Math.min(Math.max(CFG.RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS, Math.round(msUltimo * 1.3)), CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 60000);
+  var claveIntentos = 'RUNGUERRA_PUBLICAR_INTENTOS_' + clave;
+  var claveUlt = 'RUNGUERRA_PUBLICAR_ULT_MS_' + clave;
+  var intentos = Number(props.getProperty(claveIntentos)) || 0;
+  var msUltimo = Number(props.getProperty(claveUlt)) || 0;
+  var msNecesarios = Math.min(Math.max(margenMinMs, Math.round(msUltimo * 1.5)), CFG.PLATAFORMA_LIMITE_EJECUCION_MS - 60000);
   var quedaMs = _msRestantesDeEjecucion_();
   if (quedaMs < msNecesarios) {
     if (intentos >= 2) {
-      props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
-      Logger.log('[runGuerra] Caché y publicaciones: sin tiempo tras ' + (intentos + 1) + ' tandas. Se dejan para la próxima hora.');
+      props.deleteProperty(claveIntentos);
+      Logger.log('[runGuerra] ' + nombre + ': sin tiempo tras ' + (intentos + 1) + ' tandas. Se deja para la próxima hora.');
       return true;
     }
-    props.setProperty('RUNGUERRA_CALENTAR_INTENTOS', String(intentos + 1));
-    Logger.log('[runGuerra] Caché y publicaciones: quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan unos ' + Math.round(msNecesarios / 1000) + ' s. Se hace en la próxima tanda.');
-    _anotarProgresoPaso_('Caché y publicaciones: 0 de 1 calentamientos', 0);
+    props.setProperty(claveIntentos, String(intentos + 1));
+    Logger.log('[runGuerra] ' + nombre + ': quedan ' + Math.round(quedaMs / 1000) + ' s y se necesitan unos ' + Math.round(msNecesarios / 1000) + ' s (la última vez tardó ' + Math.round(msUltimo / 1000) + ' s). Se hace en la próxima tanda.');
+    _anotarProgresoPaso_(nombre + ': 0 de 1 publicaciones', 0);
     return false;
   }
-  var tCalentar = Date.now();
+  var t = Date.now();
+  var completo = true;
   try {
-    _calentarCacheGuerraEnVivo_(WEB_GUERRA_VIVO_TTL_CALENTADO_FUERA_SEG, tCalentar + quedaMs - 45000);
-  } catch (eCalentar) {
-    Logger.log('[runGuerra] El calentamiento del caché falló: ' + eCalentar.message + '. Se reintenta en la próxima hora.');
-    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+    completo = trabajo() !== false;
+  } catch (eTrabajo) {
+    Logger.log('[runGuerra] ' + nombre + ': falló: ' + eTrabajo.message + '. Se reintenta en la próxima hora.');
+    props.deleteProperty(claveIntentos);
     return true;
   }
-  var msCalentar = Date.now() - tCalentar;
-  Logger.log('[runGuerra] Calentamiento del caché terminado en ' + Math.round(msCalentar / 1000) + ' s' + (CALENTAR_OMITIO_PUBLICACION_ ? ' (quedaron publicaciones sin hacer por falta de tiempo)' : '') + '.');
-  if (!CALENTAR_OMITIO_PUBLICACION_) {
-    try { props.setProperty('GUERRA_CALENTADO_ULT_MS', String(msCalentar)); } catch (eGuardaUlt) { /* solo una referencia */ }
-    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
+  var ms = Date.now() - t;
+  Logger.log('[runGuerra] ' + nombre + ' terminado en ' + Math.round(ms / 1000) + ' s' + (completo ? '' : ' (quedó incompleto por falta de tiempo)') + '.');
+  if (completo) {
+    try { props.setProperty(claveUlt, String(ms)); } catch (eUlt) { /* solo una referencia */ }
+    props.deleteProperty(claveIntentos);
     return true;
   }
   if (intentos >= 2) {
-    props.deleteProperty('RUNGUERRA_CALENTAR_INTENTOS');
-    Logger.log('[runGuerra] Quedaron publicaciones sin hacer tras ' + (intentos + 1) + ' tandas. Se dejan para la próxima hora.');
+    props.deleteProperty(claveIntentos);
+    Logger.log('[runGuerra] ' + nombre + ': quedó incompleto tras ' + (intentos + 1) + ' tandas. Se deja para la próxima hora.');
     return true;
   }
-  props.setProperty('RUNGUERRA_CALENTAR_INTENTOS', String(intentos + 1));
-  _anotarProgresoPaso_('Publicaciones del caché: incompletas, 0 de 1 calentamientos', 0);
+  props.setProperty(claveIntentos, String(intentos + 1));
+  _anotarProgresoPaso_(nombre + ': incompleto, 0 de 1 publicaciones', 0);
   return false;
 }
 
@@ -2835,6 +2858,9 @@ var CFG = {
 
   // FIX (02-sep-2026): runGuerra() (00_Main.gs) es monolítica — a diferencia [→ Contexto_Base_Web.md §01B054]
   RUNGUERRA_SYNC_CSV_MARGEN_MIN_MS: 90 * 1000, // 1m30s de margen mínimo antes del límite duro
+
+  // PF537 (20-nov-2026): margen mínimo para empezar cada una de las publicaciones roster.json, home.json y torneos.json de la cadena RUNGUERRA (cada una es un paso propio). En el registro de octubre tardaban 15 a 35 s; el 17-nov llegaron a 107 y 169 s, por eso además se exige lo que tardó la última vez por 1,5. [→ Contexto_Base_Web.md §PF537]
+  RUNGUERRA_PUBLICAR_MARGEN_MIN_MS: 40 * 1000, // 40s
 
   // PF143 (21-oct-2026): el respaldo CSV y el calentamiento del caché de runGuerra() corren en la continuación _continuarRunGuerra(). [→ Contexto_Base_Web.md §PF143]
   RUNGUERRA_COLA_REINTENTOS_MAX: 5,
@@ -21726,10 +21752,15 @@ function _continuarGenerarIndiceClanesExternos() {
 function _generarIndiceClanesExternosUnaCorrida_() {
   var inicio = Date.now();
   var ahoraTxt = Utilities.formatDate(new Date(), 'America/Lima', 'dd/MM/yyyy HH:mm');
+  // §PF537 (20-nov-2026): tiempos por tramo. Las 4 pasadas cortadas a los 361 s del 17 y 18-nov no dejaron ninguna línea propia (§PF536 punto 6): sin esto no se sabe qué tramo se pasó del tiempo.
+  var seg = function () { return Math.round((Date.now() - inicio) / 1000); };
+  var marca = function (texto, desde) { Logger.log('[IndiceClanes]   ' + texto + ' en ' + Math.round((Date.now() - desde) / 1000) + ' s (la pasada lleva ' + seg() + ' s).'); };
 
   // 1) Lectura de los JSON individuales (el avance va a Indice_Clanes_Externos_Parcial.json, nunca al índice completo).
+  var tCarga = Date.now();
   var estado = _indiceClanesCargarParcial_();
   var continuaba = !!estado;
+  Logger.log('[IndiceClanes]   Avance guardado: ' + (estado ? (estado.lecturaCompleta === true ? 'la lectura de jugadores ya terminó' : Object.keys(estado.procesados).length + ' jugadores ya leídos') : 'no hay, se empieza de cero') + ' (cargado en ' + Math.round((Date.now() - tCarga) / 1000) + ' s).');
   var listos = 0;
   if (estado && estado.lecturaCompleta === true) {
     // §PF510: la lectura ya terminó en una corrida anterior: no se vuelve a listar la carpeta de los JSON individuales (más de 1 000 archivos, tiempo perdido en cada continuación).
@@ -21737,9 +21768,11 @@ function _generarIndiceClanesExternosUnaCorrida_() {
     estado.actualizado = ahoraTxt;
   } else {
     var carpeta = DriveApp.getFolderById(DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL);
+    var tLista = Date.now();
     var archivos = _getHistorialGuerraDriveIndexPorTag(carpeta);
     var tags = Object.keys(archivos).sort();
     if (!tags.length) throw new Error('No se encontró ningún JSON individual de RoyaleAPI en Drive: no se genera nada para no pisar el índice anterior.');
+    marca('Carpeta de JSON individuales listada: ' + tags.length + ' jugadores', tLista);
     if (!estado) {
       estado = _indiceClanesVacio_();
       estado.generado = ahoraTxt;
@@ -21747,11 +21780,13 @@ function _generarIndiceClanesExternosUnaCorrida_() {
     }
 
     var hechosAhora = 0;
+    var tLectura = Date.now();
     for (var i = 0; i < tags.length; i++) {
       var tag = tags[i];
       if (estado.procesados[tag]) continue;
       if (Date.now() - inicio > INDICE_CLANES_PRESUPUESTO_MS) break;
       var registros = null;
+      var tLeer = Date.now();
       try {
         var historial = JSON.parse(archivos[tag].getBlob().getDataAsString('UTF-8'));
         registros = (historial && historial.registros) ? historial.registros : [];
@@ -21759,17 +21794,22 @@ function _generarIndiceClanesExternosUnaCorrida_() {
         Logger.log('[IndiceClanes] No se pudo leer el JSON de ' + tag + ': ' + eLeer.message);
         estado.ilegibles.push(tag);
       }
+      if (Date.now() - tLeer > 15000) Logger.log('[IndiceClanes]   La lectura del JSON de ' + tag + ' tardó ' + Math.round((Date.now() - tLeer) / 1000) + ' s.');
       if (registros) _indiceClanesAgregar_(estado, tag, registros);
       estado.procesados[tag] = true;
       hechosAhora++;
+      if (hechosAhora % 250 === 0) Logger.log('[IndiceClanes]   Lectura de jugadores: ' + hechosAhora + ' en esta pasada (la pasada lleva ' + seg() + ' s).');
     }
 
     for (var t = 0; t < tags.length; t++) if (estado.procesados[tags[t]]) listos++;
     estado.actualizado = ahoraTxt;
     estado.jugadoresLeidos = listos;
 
+    marca('Lectura de jugadores: ' + hechosAhora + ' leídos ahora, ' + listos + ' de ' + tags.length + ' en total', tLectura);
     if (listos < tags.length) {
+      var tGuardarLect = Date.now();
       _indiceClanesGuardarParcial_(estado);
+      marca('Avance de la lectura guardado', tGuardarLect);
       Logger.log('[IndiceClanes] INCOMPLETO: ' + listos + ' de ' + tags.length + ' jugadores leídos (' + hechosAhora + ' en esta corrida' + (continuaba ? ', continuando el avance guardado' : '') + '). La siguiente corrida continúa donde se quedó (ver el registro de continuación); los archivos de clan y el índice anterior no se tocaron.');
       return false;
     }
@@ -21777,25 +21817,35 @@ function _generarIndiceClanesExternosUnaCorrida_() {
   }
 
   // 2) Fusión de cada clan con su archivo de Clanes_Externos (solo los clanes cuya firma cambió).
+  var tFusion = Date.now();
   var res = _clanesExternosEscribirPendientes_(estado, inicio, ahoraTxt);
+  marca('Archivos de clan: ' + res.creados + ' creados, ' + res.actualizados + ' actualizados, ' + res.sinCambios + ' sin cambios, ' + res.pendientes + ' pendientes', tFusion);
   if (res.pendientes > 0) {
+    var tGuardarFus = Date.now();
     _indiceClanesGuardarParcial_(estado);
+    marca('Avance de los archivos de clan guardado', tGuardarFus);
     Logger.log('[IndiceClanes] INCOMPLETO: los ' + listos + ' jugadores ya están leídos; faltan ' + res.pendientes + ' de ' + res.total + ' archivos de clan (en esta corrida: ' + res.creados + ' creados, ' + res.actualizados + ' actualizados, ' + res.sinCambios + ' sin cambios' + (res.fallos ? ', ' + res.fallos + ' con error' : '') + '). La siguiente corrida continúa donde se quedó (ver el registro de continuación).');
     return false;
   }
 
   // 3) Todo fusionado: se reemplaza el respaldo (índice y CSV), se actualizan las alertas y se retira el avance.
+  var tCierre = Date.now();
   var legado = _indiceClanesLegadoDe_(estado);
   _guardarIndiceClanes_(legado);
+  marca('Cierre: índice completo guardado', tCierre); tCierre = Date.now();
   _saveCSVToDrive(INDICE_CLANES_CSV, _encodeCSV(_indiceClanesAFilasCsv_(legado)));
+  marca('Cierre: respaldo en CSV guardado', tCierre); tCierre = Date.now();
   _resumenClanesGuardar_(_resumenClanesArmar_(legado)); // §PF378 (19-nov-2026): fuente de la tarjeta «Clanes externos»
+  marca('Cierre: resumen de clanes guardado', tCierre); tCierre = Date.now();
   res.firmas.ultimaCompleta = ahoraTxt;
   _clanesExternosFirmasGuardar_(res.firmas);
   _clanesExternosListoCache_ = ahoraTxt;
   _indiceClanesBorrarParcial_();
+  marca('Cierre: firmas guardadas y avance retirado', tCierre); tCierre = Date.now();
   // §PF375: con el índice recién completo se actualizan las alertas de clanes sospechosos; si falla, el índice ya quedó guardado. §PF378: las alertas leen los archivos de clan que acaban de quedar completos (no el respaldo).
   try { _alertasClanesActualizar_('índice'); }
   catch (eAlertas) { Logger.log('[AlertasClanes] No se pudieron actualizar tras generar el índice: ' + eAlertas.message); }
+  marca('Cierre: alertas de clanes sospechosos actualizadas', tCierre);
   Logger.log('[IndiceClanes] COMPLETO: ' + listos + ' jugadores leídos, ' + legado.totalClanes + ' clanes externos' + (estado.ilegibles.length ? ', ' + estado.ilegibles.length + ' JSON ilegibles' : '') + '. Archivos de clan (' + CLANES_EXTERNOS_CARPETA + ' en Otros): ' + res.creados + ' creados, ' + res.actualizados + ' actualizados, ' + res.sinCambios + ' sin cambios' + (res.ilegiblesApartados ? ', ' + res.ilegiblesApartados + ' ilegibles apartados' : '') + '. Respaldo: ' + INDICE_CLANES_JSON + ' (Otros) y ' + INDICE_CLANES_CSV + '.');
   return true;
 }
@@ -21815,14 +21865,17 @@ function _indiceClanesCorrerProgramado_() {
   } catch (eSeg) {
     Logger.log('[IndiceClanes] No se pudo dejar el activador de seguridad: ' + eSeg.message);
   }
+  var tPasada = Date.now();
+  Logger.log('[IndiceClanes] Pasada ' + (n + 1) + ' de como máximo ' + INDICE_CLANES_CONT_MAX + ': empieza a las ' + Utilities.formatDate(new Date(), 'America/Lima', 'HH:mm:ss') + ' (hora de Lima).'); // §PF537: deja constancia aunque la plataforma corte la pasada
   try {
     completo = _generarIndiceClanesExternosUnaCorrida_() === true;
   } catch (e) {
-    Logger.log('[IndiceClanes] La corrida programada falló: ' + e.message + '. La próxima corrida semanal sigue donde quedó.');
+    Logger.log('[IndiceClanes] La corrida programada falló tras ' + Math.round((Date.now() - tPasada) / 1000) + ' s: ' + e.message + '. La próxima corrida semanal sigue donde quedó.');
     props.deleteProperty(INDICE_CLANES_CONT_PROP);
     _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
     return;
   }
+  Logger.log('[IndiceClanes] Pasada ' + (n + 1) + ' terminó en ' + Math.round((Date.now() - tPasada) / 1000) + ' s: ' + (completo ? 'índice completo.' : 'índice incompleto.'));
   if (completo) {
     _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT);
     Logger.log('[IndiceClanes] Corrida programada: índice completo tras ' + (n + 1) + (n === 0 ? ' corrida.' : ' corridas.'));
@@ -22276,6 +22329,8 @@ function _clanesExternosEscribirPendientes_(estado, inicio, ahoraTxt) {
   var existentes = Object.keys(firmas.clanes).length;
   var mapa = (pendientes.length > CLANES_EXTERNOS_LISTAR_DESDE && existentes <= CLANES_EXTERNOS_LISTAR_MAX_EXISTENTES) ? _clanesExternosListar_(carpeta, CLANES_EXTERNOS_LISTAR_LIMITE_MS) : null;
   var sinGuardar = 0;
+  var totalPendientes = pendientes.length;
+  Logger.log('[IndiceClanes]   Archivos de clan: ' + totalPendientes + ' por fusionar' + (mapa ? ', carpeta listada' : ', cada archivo se busca por nombre') + ' (la pasada lleva ' + Math.round((Date.now() - inicio) / 1000) + ' s).'); // §PF537
   for (var i = 0; i < pendientes.length; i++) {
     if (Date.now() - inicio > INDICE_CLANES_PRESUPUESTO_MS) break;
     if (res.fallos >= CLANES_EXTERNOS_FALLOS_MAX) break;
@@ -22315,7 +22370,10 @@ function _clanesExternosEscribirPendientes_(estado, inicio, ahoraTxt) {
       firmas.clanes[tag] = nuevas[tag];
       res.pendientes--;
       sinGuardar++;
-      if (sinGuardar >= 200) { _clanesExternosFirmasGuardar_(firmas); sinGuardar = 0; }
+      if (sinGuardar >= 200) {
+        _clanesExternosFirmasGuardar_(firmas); sinGuardar = 0;
+        Logger.log('[IndiceClanes]   Archivos de clan: ' + (totalPendientes - res.pendientes) + ' de ' + totalPendientes + ' hechos en esta pasada (la pasada lleva ' + Math.round((Date.now() - inicio) / 1000) + ' s).'); // §PF537
+      }
     } catch (eClan) {
       res.fallos++;
       Logger.log('[IndiceClanes] No se pudo guardar el archivo del clan ' + tag + ': ' + eClan.message);
@@ -64866,7 +64924,8 @@ function _calentarHayTiempoParaPublicar_(limiteMs, nombre) {
   return false;
 }
 
-function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs) {
+// PF537 (20-nov-2026): `soloGuerra` en true calcula el Dashboard, calienta el caché y publica solo guerra.json; roster.json, home.json y torneos.json los publica cada uno su propio paso de la cadena RUNGUERRA (_runGuerraPasoPublicar_(), 00_Main.gs). Sin ese tercer argumento hace lo de siempre (cuatro publicaciones). [→ Contexto_Base_Web.md §PF537]
+function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs, soloGuerra) {
   var t0 = Date.now();
   CALENTAR_OMITIO_PUBLICACION_ = false;
   var ttl = Number(ttlSeg) || WEB_GUERRA_VIVO_TTL_SEG;
@@ -64878,6 +64937,10 @@ function _calentarCacheGuerraEnVivo_(ttlSeg, limiteMs) {
     _diagGuerraVivo_('[WebGuerraEnVivo] datos del dashboard calculados en ' + (Date.now() - t0) + 'ms');
     var ok = _webCacheGrandeGuardar_(WEB_GUERRA_VIVO_KEY, datos, ttl);
     if (_calentarHayTiempoParaPublicar_(limiteMs, 'guerra.json')) try { _publicarGuerraEstatico_(datos); } catch (ePub) { _diagGuerraVivo_('[GuerraEstatico] error inesperado (no afecta al bot): ' + ePub); } // NUEVO 08-oct-2026: copia pública en GitHub, ver 39_Publicar_Guerra.gs
+    if (soloGuerra === true) {
+      _diagGuerraVivo_('[WebGuerraEnVivo] caché CALENTADA por el bot (solo guerra.json) en ' + (Date.now() - t0) + 'ms, TTL ' + ttl + ' s' + (ok ? '' : ' (NO se pudo guardar)'));
+      return ok;
+    }
     if (_calentarHayTiempoParaPublicar_(limiteMs, 'roster.json')) try { _publicarRosterEstatico_(); } catch (eRos) { _diagGuerraVivo_('[RosterEstatico] error inesperado (no afecta al bot): ' + eRos); }
     if (_calentarHayTiempoParaPublicar_(limiteMs, 'home.json')) try { _publicarHomeEstatico_(); } catch (eHome) { _diagGuerraVivo_('[HomeEstatico] error inesperado (no afecta al bot): ' + eHome); }
     if (_calentarHayTiempoParaPublicar_(limiteMs, 'torneos.json')) try { _publicarTorneosEstatico_(); } catch (eTor) { _diagGuerraVivo_('[TorneosEstatico] error inesperado (no afecta al bot): ' + eTor); }
