@@ -37,25 +37,12 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos 
 
 ### A3. Nuevos, reenumeración y migraciones
 
-- [ ] `PF243 / PF249` — Etapa A: el cálculo de «cuenta como nuevo» por tag ya está en el backend (0 diferencias en 178 comparaciones) y el cruce de `Correcciones_Nuevos.csv` contra `Correcciones_Guerra.csv` ya se hizo (`§PF543`: 14 747 de 14 753 coinciden; los 6 casos y las 1 589 filas sin `ClanTag` quedaron decididos, sin corregir). Falta quitar el `esNuevo` de Tampermonkey (lo decide la usuaria, que pidió dejarlo pendiente hasta contrastar con los JSON) y los casos C.
-- [ ] `PF250` — Etapa A (4) y (5): registro de contradicciones entre filas (hoy solo existe la comparación con el perfil, `§PF302`) y la corrida de correcciones completas para reemplazar filas sin enlace.
-- [ ] `PF247` — Plan sin terminar: (1) traer de RoyaleAPI el historial anterior a T1 (en curso con los perfiles); (3) `ejecutarReenumeracionSugerida()` con la fecha que salga. El paso (2) ya está en código.
-- [ ] `PF249 / PF250` — Etapa C: la reenumeración (`PASOS_REENUMERAR_TEMPORADAS`, `47_Migraciones.gs`, 31 pasos) ya cubre casi todo; falta probarla en Apps Script real (sección B) y confirmar si queda alguna hoja con temporada interna fuera de la lista.
-- [ ] `PF253` — (a) Opción B para quien sale de los clanes Terna y regresa: programada (`§PF314`), puede cambiar tras contrastar con los JSON. (b) Temporada interna en `Historial_A/D` y `Comentarios`: columnas, ubicación y filas antiguas por confirmar. (c) River Race en «Nuevos» y `Correcciones_Guerra.csv` como valor provisional que siempre reemplazan Logs, Analytics o perfil (sin código).
-- [ ] `PF252` — (a) Condiciones para las correcciones completas (`§PF252` punto 1): faltan «sin enlace» y «sin explicación» y los topes por combinación posible. (b) Contradicciones entre filas: programada (`§PF313`) y vista en real el 4-nov; la usuaria pidió no cerrarla hasta contrastar con los JSON. (c) Migración activos/inactivos de `Correcciones_Guerra.csv`: solo criterios guardados, se retoma al terminar la corrección.
-- [ ] `PF251` — Evaluar si conviene separar `Correcciones_Guerra.csv` en activos e inactivos con un archivo de tags, y lo mismo para Directorio e Inactivos: después de las etapas A y C, midiendo antes.
-- [ ] `PF270` — Si la reenumeración corrió sin el paso de informes de `§PF270`, hay que renombrar a mano 9 informes (`REENUM_DELTA_MESES` ya se borró; `§PF270` punto 4). Confirmar si hace falta.
+Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de prueba (B7) o de vigilancia (D).
 
-### A4. Otros
+### A4. Programar lo que pediste
 
-- [ ] `PF130` — Carpetas `API` y `Fankit`: solo `badges/API` (1 079 archivos) y `cards/API` (128) traen imágenes; las otras 5 tienen solo `LEEME.txt`. Falta decidir qué subcarpetas abarca, correr la función del Generador (programada el 19-oct, sin correr) y dar al token acceso al repo `Web`. 27 insignias dan 404 en el CDN (`§PF130`, `§PF309`).
-- [ ] `PF285` — Migrar el contexto del frontend y del `CHANGELOG.md` de `Web` de a bloques chicos (ver «Registro del traslado»).
 - [ ] `PF286` — Cambio de rango: faltan (3) completar filas nuevas de `CR_Lista` hechas a mano y (5) revisar otros ids que la reenumeración no actualiza; pedidos nuevos del punto 17 (modal con el historial de cambios de rango por jugador; notas por columna en las hojas) y la pregunta del punto 25 (e). Lo programado está sin probar (sección B).
-- [ ] `PF377` — Panel de `admin.html` en tres tarjetas: partes 1 y 2 hechas (`Web` `ff25e46` y `cdbabf1`); falta que la usuaria revise cintas, rótulos y pastillas.
-- [ ] `PF378` — Parte 3: cuando la usuaria confirme que todo coincide, retirar `Indice_Clanes_Externos.json`, `.csv` y el código que los arma (`_cargarIndiceClanes_`, `_guardarIndiceClanes_`, `_indiceClanesLegadoDe_`, `_indiceClanesAFilasCsv_`). Antes: subir el código de `b545575`, correr `generarResumenClanesExternos()` y probar la tarjeta «Clanes externos».
-- [ ] `PF018` — Rendimiento de `guerra.html`: TBT mediano de 1 817 ms en móvil simulado (Lighthouse, 21-oct, 4 clanes × 50 jugadores inventados). Sin probar: no construir el `<tbody>` de los clanes ocultos y ejecutar `fitOneLine()` solo sobre lo visible. No se sabe cuántos jugadores tiene hoy cada clan en producción.
-- [ ] `PF242` — Contrastar `Temporada Supercell` de T6 en adelante con `Cache_Seasons.json` cuando Supercell agregue T6 (2026-10) a `/locations/global/seasons`. Esperar.
-- [ ] `Bloques históricos` — Preguntas que viven en `Contexto_Base_Web_Detalle.md` (leídas el 17-oct, sin contrastar con Apps Script): `01B108` fuente de cofres y arenas; `05B001` borrar una Fecha a propósito; `07B001` `PeriodIndex` o día de guerra en la hoja; `08B001` regla «OMITIDO» de la corrida ligera; `09B082` orden de filas de `Backup_Cofres.csv`; `09B107` tope de 3 h (lo puso Claude); `17B005` dos casos de «Demoler + runAll»; `24B001` movimientos del 18/09 en `Historial_I/S` (la comprobación de `Fecha` ya existe); `26B001` punto G vs. casos A/B/C/D; `31B001` `_refrescarCardsRows()` y `nivelAppAjustado()`; `37B003` avisos aceptados; `38B001` cuentas ajenas con ceros; `42B002` hora de la última escritura de la hoja Guerra; «Notas de la parte 1» (dónde vive la documentación de players y contactos).
+- [ ] `PF285` — Migrar el contexto del frontend y del `CHANGELOG.md` de `Web` de a bloques chicos (ver «Registro del traslado»).
 
 ---
 
@@ -96,6 +83,7 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 
 ### B4. Cadenas por tandas, activadores y sincronización
 
+- [ ] `PF130` — Correr `carpetasApiJuntoAFankit()` (proyecto **Generador**, `11_Imagenes_API.gs`) y dar al token acceso al repo `Web`. El 21-nov-2026 el conector de Drive no encuentra ninguna carpeta `API` ni `Fankit`, así que la función no se ha corrido. 27 insignias dan 404 en el CDN (`§PF130`, `§PF309`).
 - [ ] `PF080` — (b) Probar que `_mig_etiquetarCarpetaClan` anota una sola vez cada línea de «Ignorados» (`05_Migrador_Formato.gs`, línea 264).
 - [ ] `PF144` — Probar en Apps Script que el segundo `Control` de una hora no liste Drive (`[TorneosMed] índice de currentriverrace ... tomado de la caché`), que el primero baje de los 17–52 s medidos, y que un archivo `currentriverrace` nuevo aparezca tras el relistado.
 - [ ] `PF150` — Aviso de «pull pendiente» del Generador: probarlo en Apps Script real (`subirGeneradorDesdeGithub()` primero, luego `descargarGenerador()`). Filtro por carpeta y primera vez sin referencia: ya decididos (ver `PF150`).
@@ -156,6 +144,8 @@ Antes de cualquiera: `subirBaseDesdeGithub()` (proyecto **Generador**, archivo `
 
 ### B7 y B8. Reenumeración, migraciones y cambio de rango
 
+- [ ] `PF270` — Si la reenumeración corrió sin el paso de informes de `§PF270`, hay que renombrar a mano 9 informes (`REENUM_DELTA_MESES` ya se borró; `§PF270` punto 4). Confirmar si hace falta.
+- [ ] `PF247` — Correr `ejecutarReenumeracionSugerida()` (`47_Migraciones.gs`) con la fecha que salga. El historial anterior a T1 ya se trajo con los perfiles (`Correcciones_Guerra.csv` llega a T-47).
 - [ ] `PF249 / PF250 / PF254–PF256` — Reenumeración de temporadas (`PASOS_REENUMERAR_TEMPORADAS`, `47_Migraciones.gs`): sin prueba en Apps Script real (`§PF470` punto 9).
 - [ ] `PF258` — Probar en una copia el paso de informes de `runReenumerarTemporadas('AAAA-MM-DD')` (2 o 3 informes de `CSV/Informes` y `CSV/Tampermonkey`, uno con BOM, uno con columna `ID`, y una segunda corrida que no sume dos veces).
 - [ ] `PF268 / PF269 / PF270 / PF271` — El paso nuevo de reenumeración corre solo al final de la cadena (o con `reanudarReenumerarTemporadas()`); falta confirmar que corrió. Informes (`§PF270`) sin probar en Apps Script real; `JSON/Guerra` (`§PF271`, script local) falta correrlo con el CSV nuevo. Progreso por paso (`§PF269` punto 5, commit `7e38f68`): sin probar.
@@ -288,6 +278,10 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 
 ## D. Vigilar o esperar un evento
 
+- [ ] `PF378` — Retirar `Indice_Clanes_Externos.json`, `.csv` y su código (`_cargarIndiceClanes_`, `_guardarIndiceClanes_`, `_indiceClanesLegadoDe_`, `_indiceClanesAFilasCsv_`, usados aún como respaldo en `15_DeteccionInfiltrados.gs`) solo cuando la tarjeta «Clanes externos» lleve varios días sin usar el respaldo. La tarjeta ya se comprobó en real el 18-nov (`§PF508` a `§PF510`).
+- [ ] `PF018` — Rendimiento de `guerra.html` (TBT de 1 817 ms con datos inventados): no se programa nada hasta medir con los jugadores reales de cada clan.
+- [ ] `PF242` — Contrastar `Temporada Supercell` de T6 en adelante con `Cache_Seasons.json` cuando Supercell agregue T6 (2026-10) a `/locations/global/seasons`.
+- [ ] `PF251` / `PF252` (c) — Separar `Correcciones_Guerra.csv` (15 MB) en activos e inactivos solo si `generarGuerraDesglose()` o `runGuerra` se cortan por tiempo (`§PF546`); mientras tanto no se migra.
 - [ ] `PF160` — Volver a medir las filas de `Correcciones_Guerra.csv` cuyo «clan + Externo» no iguala a RoyaleAPI con el mismo criterio de `§PF499` punto 11, cuando termine la corrección completa. Decidido: no se crean filas en la hoja (`§PF499` punto 12).
 - [ ] `PF441` — Las 2 filas «Revisar» de T27 S3 (`#8YCLY8CRU` y `#U8G029GUQ`, del jueves 19-nov) se cierran solas como «No vigente» al pasar la semana, como las 45 de T24 a T27 S1 (`§PF477` punto 8; `#U8G029GUQ` es cuenta de apoyo, punto 9).
 - [ ] `PF145` — `runGuerraRapidoProgramado` terminó «Completada» con 22 s de margen el 21-oct; vigilar si empieza a cortarse (12:47 → 182,4 s, sin continuación).
@@ -306,6 +300,7 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 
 ## E. Acciones de la usuaria
 
+- [ ] `PF377`: revisar el panel de `admin.html` en tres tarjetas (partes 1 y 2 hechas, `Web` `ff25e46` y `cdbabf1`): cintas, rótulos y pastillas.
 - [ ] **Revocar el token fine-grained de GitHub y borrar `Claude.txt`** al terminar la tanda (el token quedó escrito en esta conversación; no se copia aquí).
 - [ ] **Purga en Soporte de GitHub** de los commits viejos con celulares: tras la reescritura del historial (28-oct) siguen accesibles por su hash y por `refs/pull/*/head` (`§PF288` punto 3). Tratar esos números como expuestos.
 - [ ] **Confirmar o revertir las decisiones de Claude** del 17-nov (`§PF499` puntos 2, 3, 4, 5 y 8) y del 20-nov (`§PF542`, `§PF543`, `§PF544`, `§PF545`); no se ejecutó nada con ellas que no se pueda deshacer.
