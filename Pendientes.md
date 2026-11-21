@@ -24,21 +24,15 @@
 
 ## A. Falta programar o decidir
 
-### A1. Corrección de guerra: esperan la comparación con los JSON (`§PF303`, decisión del 30-oct-2026: sin código hasta que termine esa comparación)
+### A1. Corrección de guerra: la espera por la comparación con los JSON terminó (`§PF548`)
 
-- [ ] `PF046` — Completar T5 y la fila de T3 con el Log del clan principal; el Log de la T133 y de otros clanes; por qué las dos filas de ceros no se reparan.
-- [ ] `PF072` — Qué escribir en las filas reconstruidas de los 174 casos con ataques por día determinados (¿`Fame` y `Barcos` por día?) y la regla de los 24 casos sin filas.
-- [ ] `PF120` — (a) Sobrante y topes de 16 ataques y 3 600 medallas: el reparto ya está en las tres ramas de `18_CorreccionGuerra.gs` (`§PF122`); falta decidir River Race y las semanas con filas de menos. (b) Los 24 casos sin filas con totales: ¿regla de domingo a jueves de `§PF119`? (c) Conflictos del cruce con los JSON: quedan C, D y E, y el origen de F. (d) Propuesta de reparto de domingo a jueves (`propuesta_topes.csv`): 8 casos de revisión y 13 bajadas del fame acumulado.
-- [ ] `PF123` — Cotejo del JSON de guerra: confirmar el criterio de completar el domingo solo con registros cerrados y decidir qué hacer con los 163 `json_mas_no_resuelve`.
-- [ ] `PF182` — 62 casos de «hoja menor que el perfil» y 4 de actividad Terna sin fila: contrastar primero con CurrentRiverRace (lo de `Correcciones_Guerra_2.csv` ya no aplica).
-- [ ] `PF183` — Regla del clan terminado (ataques del domingo sin fame): confirmada por la usuaria, **sin código**; ni `_repartoDomingoSinClanTag_()`, ni `_decidirCorreccionConClanTag_()` (`18_`), ni `_decidirCierreFameBarcosDia_()` (`17_`) nombran el cruce de meta (contrastado el 31-oct, `§PF310`). Decidir qué se escribe en los 12 casos y en los 4 con ataques tardíos.
-- [ ] `PF233` — Pegar las tablas de RoyaleAPI de los 7 tags que faltan y decidir los 77 casos que quedan (detalle en `§PF233`).
-- [ ] `PF234` — Correr «Corrección de jugadores elegidos» (el botón ya existe) con los 28 tags de los 115 casos de «revisar a mano»; decidir los 22 con perfil igual a un solo clan.
+Decididos por Claude el 21-nov-2026 con los archivos y el código (reversibles). Queda esto:
+
+- [ ] `PF234` — Correr «Corrección de jugadores elegidos» (el botón ya existe) con los 28 tags de los 115 casos de «revisar a mano» (`§PF233`). Es acción tuya en Tampermonkey; ya no es decisión.
 
 ### A2. Corrección de guerra: casos y decisiones abiertas
 
 - [ ] `PF160` — Punto (8): mirar uno por uno los casos donde «clanes + Externo» no iguala a RoyaleAPI (3 + 131 + 47; `§PF499` puntos 11 y 12). Lo demás de `§PF160` está decidido (`§PF491`) o hecho; falta solo su prueba en Apps Script (sección B).
-- [ ] `PF355` — (1) 3 872 filas de `Backup_Guerra.csv` con `Clan` vacío (todas «Reconstruido», sin `Clan_Tag`): decidir qué se hace (`§PF518` punto 6). (2) Cerrado en código por `§PF533`.
 - [ ] `PF356` — Confirmar en RoyaleAPI la semana T7 S1 `#VY0UJ82PV` (`§PF357` punto 10 b). Lo demás de `PF356` quedó cerrado (`§PF544`).
 - [ ] `PF439` — (2) Decidir si la posible pérdida de un ataque al cierre del domingo (200 puntos en Grupo乂Terna™) justifica algo (`§PF439` punto 4).
 - [ ] `PF441` — Quedan 2 filas «Revisar» de T27 S3 (`#8YCLY8CRU` y `#U8G029GUQ`, ambas del jueves 19-nov; `§PF545` punto 8), la lista `revisarManual` (2) y confirmar en la hoja `Guerra` real que lo guardado por Tampermonkey sobrevive a `runGuerra` (4). Las otras filas se cerraron solas como «No vigente».
