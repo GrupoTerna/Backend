@@ -749,7 +749,9 @@ function informeBattlelogContraGuerra() {
 /**
  * generarGuerraDesglose() — §PF437 fase 2 (9-nov-2026). MANUAL (se corre desde el editor de Apps Script). Escribe Guerra_Desglose.csv: una fila por jugador, semana de guerra y clan Terna (etapa «Guerra»), con los días J, V, S y D en bloques (formato ancho, §PF442),
  * con los ataques por puntuación (duelo, PvP y barco, ganados y perdidos, y sin fame), la fuente del desglose, la consistencia (con el battlelog y, desde §PF445 d, con los rangos de los JSON) y la cobertura de la mejor captura. Lee Backup_Guerra.csv
- * y Backup_Battlelogs.csv y, para la cobertura, las capturas JSON a través de Battlelog_Capturas.csv (que solo abre los JSON nuevos). No toca la hoja Guerra, no corrige nada y NO pide nada a la API.
+ * y Backup_Battlelogs.csv y, para la cobertura, las capturas JSON a través de Battlelog_Capturas.csv (que solo abre los JSON nuevos). No corrige nada y NO pide nada a la API.
+ * Desde el 21-nov-2026 (§PF437 F3) escribe además la columna «Comprobada» de la hoja Guerra (solo esa columna; _gdsEscribirComprobadasEnHoja_): «Valores + Battlelog» en las filas cuyo día salió comprobado y cuyos valores siguen
+ * iguales a los de Backup_Guerra.csv con que se comprobó; las marcas que ya no valen se quitan. Si esa escritura falla, el CSV de desglose ya quedó escrito y solo se avisa.
  * Si se acaba el tiempo de lectura de capturas (GDS_PRESUPUESTO_CAPTURAS_MS), escribe lo que tiene, avisa cuántas quedaron sin leer y se vuelve a correr hasta que diga 0. [→ Contexto_Base_Web.md §PF437]
  */
 function generarGuerraDesglose() {
@@ -814,6 +816,8 @@ function generarGuerraDesglose() {
   if (!res.filas.length) { Logger.log(etiqueta + ' No salió ninguna fila (' + c.filasLeidas + ' leídas de Backup_Guerra.csv, ' + c.noGuerra + ' fuera de la etapa Guerra, ' + c.clanAjeno + ' de clan ajeno, ' + c.sinClanTag + ' sin ClanTag); no se escribe ' + GDS_CSV_NOMBRE + '.'); return; }
   for (i = 0; i < res.filas.length; i++) res.filas[i][0] = i + 1;
   _saveCSVToDrive(GDS_CSV_NOMBRE, _encodeCSV([GDS_HEADERS].concat(res.filas)));
+  // §PF437 F3: la columna «Comprobada» de la hoja Guerra (solo esa columna). Si falla, el desglose ya está escrito.
+  try { _gdsEscribirComprobadasEnHoja_(res.marcas, tagPorNombre); } catch (eCompr) { Logger.log(etiqueta + ' AVISO: no se pudo actualizar la columna Comprobada de la hoja Guerra (' + (eCompr.message || eCompr) + ').'); }
   // §PF480: los días donde el battlelog contradice la hoja van a Revision_Guerra.csv (Tipo «Contradicción», Estado «Pendiente»). Si falla, el desglose ya quedó escrito y solo se avisa.
   var revReg = { nuevas: 0, actualizadas: 0, sinCambio: 0 };
   try { revReg = _registrarRevisionGuerra_(c.revisiones); } catch (eRev) { Logger.log(etiqueta + ' AVISO: no se pudo anotar en ' + REVISION_GUERRA_CSV + ' (' + eRev.message + ').'); }
@@ -6371,6 +6375,103 @@ function _gdsComprobadaDia_(fuente, consistencia) {
 }
 
 /**
+ * _gdsNumGuerra_(v) — §PF437 F3 (21-nov-2026). Función pura. Número de una celda de la hoja Guerra o de Backup_Guerra.csv (quita comas de miles); 0 si está vacía o no es un número.
+ */
+function _gdsNumGuerra_(v) {
+  var s = String(v === undefined || v === null ? '' : v).replace(/,/g, '').trim();
+  if (s === '') return 0;
+  var n = Number(s);
+  return isNaN(n) ? 0 : n;
+}
+
+/**
+ * _gdsClaveFilaGuerra_(f, tagPorNombre) — §PF437 F3. Función pura. Clave de identidad de UNA fila de la hoja Guerra o de Backup_Guerra.csv: Tag del jugador, Tag del clan, temporada, semana y PeriodIndex.
+ * El Tag del clan sale de Clan_Tag y, si falta, del nombre del clan con tagPorNombre (igual que _gdsConstruirFilas_). '' si no se puede saber el clan.
+ */
+function _gdsClaveFilaGuerra_(f, tagPorNombre) {
+  var clanTag = _blgNormalizarTag_(f[GC.CLAN_TAG - 1]);
+  if (!clanTag) clanTag = _blgNormalizarTag_((tagPorNombre || {})[String(f[GC.CLAN - 1] || '').trim()]);
+  var tag = _blgNormalizarTag_(f[GC.TAG - 1]);
+  if (!clanTag || !tag) return '';
+  return [tag, clanTag, String(f[GC.TEMPORADA - 1]).trim(), String(f[GC.SEMANA - 1]).trim(), String(_gdsNumGuerra_(f[GC.PERIOD_IDX - 1]))].join('│');
+}
+
+/**
+ * _gdsFirmaValoresGuerra_(f) — §PF437 F3. Función pura. Firma de los valores de una fila (AtaquesHoy, AtaquesSemana, Fame y Barcos): la marca «Comprobada» solo vale mientras la firma de la hoja sea la misma que la del Backup_Guerra.csv con que se comprobó.
+ */
+function _gdsFirmaValoresGuerra_(f) {
+  return [GC.ATAQUES_HOY, GC.ATAQUES_SEM, GC.FAME, GC.BARCOS].map(function (c) { return String(_gdsNumGuerra_(f[c - 1])); }).join('|');
+}
+
+/**
+ * _gdsPlanComprobadasGuerra_(marcas, filasHoja, tagPorNombre) — §PF437 F3 (21-nov-2026). Función pura (no lee ni escribe nada). Calcula el contenido de la columna «Comprobada» de la hoja Guerra.
+ * marcas = lista que devuelve _gdsConstruirFilas_ ({ clave, estado, firma } por cada día con fila en Backup_Guerra.csv); filasHoja = las filas de la hoja (sin el encabezado), de GUERRA_TOTAL_COLS columnas.
+ * Una fila de la hoja queda con «Valores + Battlelog» solo si su clave tiene una marca con ese estado Y su firma de valores es igual a la de la marca; en cualquier otro caso queda vacía (una marca vieja
+ * que ya no vale se quita). Un texto distinto en la celda (ni vacío ni «Valores + Battlelog») no se toca y se cuenta aparte. Devuelve { columna: [valor por fila], puestas, quitadas, igual, noCoinciden, ajenas }:
+ * puestas = vacías que pasan a comprobadas; quitadas = comprobadas que ya no valen; igual = sin cambio; noCoinciden = filas con marca pero con otros valores que el backup (se quedan sin marca); ajenas = celdas con otro texto.
+ */
+function _gdsPlanComprobadasGuerra_(marcas, filasHoja, tagPorNombre) {
+  var porClave = {}, i;
+  for (i = 0; i < marcas.length; i++) {
+    var m = marcas[i];
+    if (!m || !m.clave) continue;
+    if (porClave[m.clave] === undefined || m.estado) porClave[m.clave] = m;   // si la clave se repite, gana la que está comprobada
+  }
+  var res = { columna: [], puestas: 0, quitadas: 0, igual: 0, noCoinciden: 0, ajenas: 0 };
+  for (i = 0; i < filasHoja.length; i++) {
+    var f = filasHoja[i];
+    var actual = String(f[GC.COMPROBADA - 1] === undefined || f[GC.COMPROBADA - 1] === null ? '' : f[GC.COMPROBADA - 1]).trim();
+    if (actual !== '' && actual !== GUERRA_COMPROBADA_BATTLELOG) { res.columna.push(f[GC.COMPROBADA - 1]); res.ajenas++; continue; }
+    var deseado = '';
+    if (String(f[GC.ETAPA - 1]).trim() === 'Guerra') {
+      var marca = porClave[_gdsClaveFilaGuerra_(f, tagPorNombre)];
+      if (marca && marca.estado) {
+        if (marca.firma === _gdsFirmaValoresGuerra_(f)) deseado = marca.estado;
+        else res.noCoinciden++;
+      }
+    }
+    res.columna.push(deseado);
+    if (deseado === actual) res.igual++;
+    else if (deseado) res.puestas++;
+    else res.quitadas++;
+  }
+  return res;
+}
+
+/**
+ * _gdsEscribirComprobadasEnHoja_(marcas, tagPorNombre) — §PF437 F3 (21-nov-2026). Escribe SOLO la columna «Comprobada» (GC.COMPROBADA) de la hoja Guerra con el plan de _gdsPlanComprobadasGuerra_. No toca ninguna otra columna,
+ * no corrige valores y no pide nada a la API. La marca llega a Backup_Guerra.csv con el siguiente respaldo de la hoja (_syncGuerraCSV). Con candado; si la hoja cambió de tamaño mientras se calculaba, no escribe y avisa.
+ * Devuelve true si la hoja quedó con la columna al día (o no había nada que cambiar); false si no se escribió.
+ */
+function _gdsEscribirComprobadasEnHoja_(marcas, tagPorNombre) {
+  var etiqueta = '[Guerra Desglose]';
+  if (_bloquearSiReenumerando_('generarGuerraDesglose (columna Comprobada)')) return false;
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log(etiqueta + ' Comprobada: no se pudo obtener el candado (hay otra escritura en curso). La hoja Guerra no se tocó; vuelve a correr la función.'); return false; }
+  try {
+    var sh = _getSs().getSheetByName(CFG.SHEETS.GUERRA);
+    if (!sh) { Logger.log(etiqueta + ' Comprobada: no existe la hoja Guerra.'); return false; }
+    if (!_asegurarEstructuraGuerra_(sh)) { Logger.log(etiqueta + ' Comprobada: la estructura de la hoja Guerra no es la esperada; no se escribe la columna.'); return false; }
+    var lastRow = sh.getLastRow();
+    if (lastRow < 2) { Logger.log(etiqueta + ' Comprobada: la hoja Guerra no tiene filas de datos.'); return true; }
+    var n = lastRow - 1;
+    var filasHoja = sh.getRange(2, 1, n, GUERRA_TOTAL_COLS).getValues();
+    var plan = _gdsPlanComprobadasGuerra_(marcas, filasHoja, tagPorNombre);
+    var detalle = plan.puestas + ' puesta(s), ' + plan.quitadas + ' quitada(s), ' + plan.igual + ' sin cambio, ' + plan.noCoinciden + ' fila(s) con marca pero con valores distintos a los del backup (quedan sin marca), ' + plan.ajenas + ' celda(s) con otro texto (no se tocan)';
+    if (!plan.puestas && !plan.quitadas) { Logger.log(etiqueta + ' Comprobada en la hoja Guerra: ya estaba al día (' + detalle + ').'); return true; }
+    if (sh.getLastRow() !== lastRow) { Logger.log(etiqueta + ' Comprobada: la hoja Guerra cambió de tamaño mientras se calculaba (' + lastRow + ' → ' + sh.getLastRow() + ' filas); no se escribe. Vuelve a correr la función.'); return false; }
+    sh.getRange(2, GC.COMPROBADA, n, 1).setValues(plan.columna.map(function (v) { return [v]; }));
+    Logger.log(etiqueta + ' Comprobada escrita en la hoja Guerra (columna ' + GC.COMPROBADA + '): ' + detalle + '. Llega a Backup_Guerra.csv con el siguiente respaldo de la hoja.');
+    return true;
+  } catch (e) {
+    Logger.log(etiqueta + ' Comprobada: error al escribir la columna (' + (e.message || e) + '). Los demás datos no se tocaron.');
+    return false;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * _gdsIndiceComprobadas_(parsed) — §PF437 F4. Función pura. A partir de Guerra_Desglose.csv ya leído con _parseCSV (encabezado + filas) arma { 'temporada|semana|TAG|CLANTAG': [J, V, S, D] }
  * con el estado de «J Comprobada» … «D Comprobada» de cada fila. Un CSV viejo sin esas columnas, o vacío, da {}.
  */
@@ -6451,6 +6552,7 @@ function _gdsConstruirFilas_(filas, opciones) {
     semanasJugador: 0, diasSalida: 0, variosDias: 0, comprobadas: 0, contradichosJson: 0, sinLimites: 0, ambiguasUbicadas: 0, ambiguasPendientes: 0, porFuente: {}, porCobertura: {},
     revisiones: []   // §PF480: días donde el battlelog contradice la hoja Guerra, en el formato de _registrarRevisionGuerra_ (las anota generarGuerraDesglose)
   };
+  var marcas = [];   // §PF437 F3: una por cada día con fila: { clave, estado, firma }; las usa _gdsPlanComprobadasGuerra_ para llenar la columna «Comprobada» de la hoja Guerra
 
   // Una sola pasada: (temporada, semana, jugador) -> clan -> día -> fila con mayor PeriodIndex.
   var grupos = {}, orden = [];
@@ -6567,6 +6669,7 @@ function _gdsConstruirFilas_(filas, opciones) {
           ataquesAcum: fila[GC.ATAQUES_SEM - 1], barcosAcum: fila[GC.BARCOS - 1], fameAcum: fila[GC.FAME - 1],
           cobertura: cob
         });
+        marcas.push({ clave: _gdsClaveFilaGuerra_(fila, tagPorNombre), estado: _gdsComprobadaDia_(des.fuente, consistencia), firma: _gdsFirmaValoresGuerra_(fila) });   // §PF437 F3
         ultimo = fila;   // el último día con fila da el nombre del jugador y del clan
         cuenta.diasSalida++;
         cuenta.porFuente[des.fuente] = (cuenta.porFuente[des.fuente] || 0) + 1;
@@ -6588,7 +6691,7 @@ function _gdsConstruirFilas_(filas, opciones) {
     if (p.tag !== q.tag) return p.tag < q.tag ? -1 : 1;
     return p.clanTag < q.clanTag ? -1 : (p.clanTag > q.clanTag ? 1 : 0);
   });
-  return { ok: true, filas: salida.map(function (e) { return e.fila; }), cuenta: cuenta };
+  return { ok: true, filas: salida.map(function (e) { return e.fila; }), cuenta: cuenta, marcas: marcas };
 }
 
 /**
