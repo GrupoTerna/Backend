@@ -419,6 +419,9 @@ function _pintarEncabezadosNuevos(sh) {
     .setBorder(true, true, true, true, true, true,
                COLOR_BORDE_HEADER, SpreadsheetApp.BorderStyle.SOLID);
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
+
+  // 21-nov-2026 (PF286, punto 17 b): notas de columna en los encabezados fijos; no pisa las puestas a mano.
+  _aplicarNotasColumnasHoja_(sh, _definicionNotasColumnas_()[CFG.SHEETS.NUEVOS], _filaEncabezadoNotas_(CFG.SHEETS.NUEVOS));
 }
 
 /**
