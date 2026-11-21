@@ -1,0 +1,47 @@
+name: Pendientes - Verificación
+
+# Solo valida; nunca hace commits. Los AVISOS no fallan el job (se miran a mano);
+# los ERRORES (filas cortadas con «…», marcadas como hechas, repetidas, resumen
+# de grupos que no coincide) sí lo fallan.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Pendientes.md"
+      - "Contexto_Base_Web.md"
+      - "Consolidados de cambios/verificar_pendientes.py"
+      - "Consolidados de cambios/estado_subidas.py"
+      - ".github/workflows/pendientes-ci.yml"
+  pull_request:
+    paths:
+      - "Pendientes.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pendientes-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verificar Pendientes.md
+        run: python3 -I "Consolidados de cambios/verificar_pendientes.py"
+
+      - name: Estado de las subidas a Apps Script (informativo)
+        if: always()
+        run: |
+          {
+            echo '### Estado de las subidas'
+            echo '```'
+            python3 -I "Consolidados de cambios/estado_subidas.py" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
