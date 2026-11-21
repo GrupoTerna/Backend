@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 15:03:25 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 16:28:38 */
 
 
 
@@ -4179,7 +4179,7 @@ function repararBordesSAsistencia() {
 
 /**
  * aplicarNotasColumnas() — proyecto Base, archivo 02_Setup_Hojas.gs. [→ Contexto_Base_Web.md §PF286]
- * Escribe, en el encabezado de cada columna de las hojas que figuran en _definicionNotasColumnas_(), una nota que dice qué es la columna, quién la escribe y si se puede editar. Hoy cubre Historial_A/D, Pendientes y Mensajes.
+ * Escribe, en el encabezado de cada columna de las hojas que figuran en _definicionNotasColumnas_(), una nota que dice qué es la columna, quién la escribe y si se puede editar. Hoy cubre Historial_A/D, Pendientes, Mensajes, Nuevos y Control (estas dos últimas con los encabezados en la fila 3; una hoja ya existente recibe sus notas al correr esta función). Calendario no tiene notas porque es una cuadrícula sin encabezados por columna.
  * Es idempotente y no toca datos. Una nota que ya tenga el encabezado y NO empiece con «[Sistema] » se considera puesta a mano y se conserva; las del sistema se actualizan si cambió el texto. Si el encabezado de una columna no es el esperado, esa columna se omite y queda en el registro.
  * También la llama setupAllSheets() (por _setupAscensosSheet), así que las notas vuelven solas si se recrea la hoja. Se puede correr aparte, sin ejecutar todo el setup.
  */
@@ -4189,7 +4189,7 @@ function aplicarNotasColumnas() {
   Object.keys(defs).forEach(function (nombreHoja) {
     var sh = ss.getSheetByName(nombreHoja);
     if (!sh) { Logger.log('[Notas] No existe la hoja «' + nombreHoja + '»; se omite.'); return; }
-    var r = _aplicarNotasColumnasHoja_(sh, defs[nombreHoja]);
+    var r = _aplicarNotasColumnasHoja_(sh, defs[nombreHoja], _filaEncabezadoNotas_(nombreHoja));
     Logger.log('[Notas] ' + nombreHoja + ': ' + r.escritas + ' escrita(s), ' + r.iguales + ' ya estaban igual, ' +
       r.conservadas + ' puesta(s) a mano conservada(s), ' + r.omitidas + ' omitida(s) por encabezado distinto.');
   });
@@ -4367,6 +4367,8 @@ function _setupControl(ss) {
   if (sh.getLastRow() === 0 || sh.getRange(1,1).getValue() === '') {
     _buildControlHeaders(sh);
   }
+  // 21-nov-2026 (PF286, punto 17 b): notas de columna; no pisa las puestas a mano.
+  _aplicarNotasColumnasHoja_(sh, _definicionNotasColumnas_()[CFG.SHEETS.CONTROL], _filaEncabezadoNotas_(CFG.SHEETS.CONTROL));
   Logger.log('[Setup] Control OK');
 }
 
@@ -5322,16 +5324,80 @@ function _definicionNotasColumnas_() {
     { col: MC.CLAN_TAG, enc: 'Clan_Tag',
       texto: 'Tag del clan de la columna Clan. Queda vacío en el Chat General y en lo que no es un clan Terna. El clan se identifica por este Tag, no por el nombre.' }
   ];
+
+  // Nuevos (21-nov-2026): encabezados en la fila 3. Contrastado con 14_Nuevos_RoyaleAPI.gs (_refrescarColumnasFijasNuevos_Paso2_ColumnasFijas, _aplicarImportacionNuevos, _renumerarNuevos) y 11_DirectorioSheet.gs (_leerDirectorioFisicoComoDC).
+  var delDir = ' Se copia del Directorio en cada refresco de la hoja si el Tag está en el Directorio; un cambio a mano se pierde, así que edítalo en el Directorio.';
+  defs[CFG.SHEETS.NUEVOS] = [
+    { col: NC.NUM, enc: 'N°',
+      texto: 'Número de fila. Lo reasigna el sistema (1, 2, 3…) cada vez que importa, purga o reordena la hoja, así que cambia con el tiempo. No lo edites.' },
+    { col: NC.TAG, enc: 'Tag',
+      texto: 'Tag de la cuenta, con #. Lo escribe el sistema al crear la fila, con lo que envía Tampermonkey o con las correcciones de guerra, y después se conserva. Es la clave con que se busca la fila: no lo edites.' },
+    { col: NC.NOMBRE, enc: 'Nombre', texto: 'Nombre de la cuenta.' + delDir },
+    { col: NC.NOM_MULTI, enc: 'Nom_Multi', texto: 'Nombre de multicuenta. Puede quedar vacío.' + delDir },
+    { col: NC.NIVEL, enc: 'Nivel',
+      texto: 'Nivel de la cuenta. Sale de la hoja Players (dato de la API de Clash Royale) a través del Directorio. Puede quedar vacío si Players no tiene la cuenta. Un cambio a mano se pierde.' },
+    { col: NC.COPAS, enc: 'Copas',
+      texto: 'Copas (trofeos) de la cuenta. Sale de la hoja Players (API de Clash Royale) a través del Directorio. Puede quedar vacío si Players no tiene la cuenta. Un cambio a mano se pierde.' },
+    { col: NC.V_GUERRA, enc: 'V_Guerra',
+      texto: 'Victorias de guerra de clanes de la cuenta. Sale de la hoja Players (API de Clash Royale) a través del Directorio. Puede quedar vacío si no hay dato. Un cambio a mano se pierde.' },
+    { col: NC.INACTIVIDAD, enc: 'Días inactivo',
+      texto: 'Días desde la última conexión de la cuenta. Los calcula el Directorio con la API de Clash Royale; aquí solo se copian. Puede quedar vacío. Un cambio a mano se pierde.' },
+    { col: NC.CELULAR, enc: 'Celular',
+      texto: 'Celular de la cuenta, solo dígitos.' + delDir + ' Puede quedar vacío.' },
+    { col: NC.ROYALE_API, enc: 'RoyaleAPI',
+      texto: 'Enlace «Link» al perfil de la cuenta en RoyaleAPI, armado con el Tag. El sistema lo vuelve a escribir en cada refresco e importación; un cambio a mano se pierde.' },
+    { col: NC.CLAN, enc: 'Clan',
+      texto: 'Clan actual de la cuenta, copiado del Directorio. No es el clan de cada semana del historial: ese está en la columna Clan de cada bloque de fecha. Con esta columna se ordena la hoja y se colorean las filas. Puede quedar vacío si la cuenta no está en el Directorio.' }
+  ];
+
+  // Control (21-nov-2026): encabezados en la fila 3. Contrastado con updateControlSheet(), _asegurarColumnasClanTagEstadoControl_(), _calcAlerta() y _evaluarRequisitosAscenso() (22_ControlCalendario.gs, 11_DirectorioSheet.gs).
+  var ctl = ' Control se borra y se reescribe entera en cada corrida: para cambiar el dato edita la hoja de origen, no esta.';
+  defs[CFG.SHEETS.CONTROL] = [
+    { col: 1, enc: 'N°', texto: 'Número de fila. Se reinicia en cada corrida.' + ctl },
+    { col: 2, enc: 'Tag', texto: 'Tag de la cuenta, tomado del Directorio. Se repite en cada fila del jugador si tiene registros en más de un clan Terna.' },
+    { col: 3, enc: 'Nombre', texto: 'Nombre de la cuenta, tomado del Directorio.' },
+    { col: 4, enc: 'Nom_Multi', texto: 'Nombre de multicuenta. Se escribe a mano en el Directorio; aquí solo se copia. Puede quedar vacío.' },
+    { col: 5, enc: 'Clan',
+      texto: 'Clan de los registros de esa fila. Si el jugador tiene registros en varios clanes Terna hay una fila por clan: la del clan actual va primero (Estado «Activo») y las demás quedan como «Inactivo».' },
+    { col: 6, enc: 'Rango', texto: 'Rango de la cuenta en el clan, tomado del Directorio (dato de la API de Clash Royale). Es el rango que usa la columna Ascenso. Puede quedar vacío.' },
+    { col: 7, enc: 'Iniciales', texto: '«Sí» si el nombre de la cuenta empieza con el prefijo de los clanes Terna; «No» si no. Lo calcula el Directorio.' },
+    { col: 8, enc: 'Celular', texto: 'Celular de la cuenta, solo dígitos. Se escribe a mano en el Directorio; aquí solo se copia. Puede quedar vacío.' },
+    { col: 9, enc: 'Nivel', texto: 'Nivel de la cuenta (API de Clash Royale y hoja Players). Queda vacío si no hay dato.' },
+    { col: 10, enc: 'Copas', texto: 'Copas (trofeos) de la cuenta según la API del clan. Queda en 0 si no hay dato.' },
+    { col: 11, enc: 'V_Guerra', texto: 'Victorias de guerra de clanes de la cuenta (API de Clash Royale, con respaldo en Players). Puede quedar vacío si ninguna fuente tiene el dato.' },
+    { col: 12, enc: 'Permiso', texto: 'Sí o No. Se escribe a mano en el Directorio; aquí solo se copia. Puede quedar vacío.' },
+    { col: 13, enc: 'Días inactivo',
+      texto: 'Días desde la última conexión de la cuenta, calculados con la API de Clash Royale. Vale 999 si la API no entregó la última conexión. Se repite igual en todas las filas del jugador.' },
+    { col: 14, enc: 'Alerta',
+      texto: 'La calcula el Directorio y puede juntar varias: «Candidato a expulsión» (cuenta activa con 3 o más días de inactividad), «Reactivado» (estaba inactiva y volvió a estar activa) y «Pendiente» (falta el celular o las Iniciales están en «No»). Queda vacía si no aplica ninguna.' },
+    { col: 15, enc: 'Ataques pendientes',
+      texto: 'Vale «Si» (sin tilde) solo en día de guerra y solo en la fila activa del jugador, cuando tiene menos de 4 ataques hoy (se toma el mayor entre la API y la hoja Guerra). En las demás filas y fuera de los días de guerra queda vacía.' },
+    { col: 16, enc: 'Ascenso',
+      texto: 'Solo se evalúa a Miembros y Veteranos (en los demás rangos queda vacío). «Sí» si la cuenta cumple a la vez los requisitos de ataques, de puntaje promedio y de barcos que define el sistema; «No» si incumple alguno o faltan datos. Se repite igual en todas las filas del jugador.' },
+    { col: CONTROL_COL_CLAN_TAG, enc: 'Clan_Tag',
+      texto: 'Tag del clan de esa fila. El clan se identifica por este Tag, no por el nombre.' },
+    { col: CONTROL_COL_ESTADO, enc: 'Estado',
+      texto: '«Activo» si el clan de la fila es el clan actual del jugador en el Directorio; «Inactivo» en las demás filas del jugador (clanes donde tuvo registros y ya no está).' }
+  ];
   return defs;
 }
 
 /**
- * _aplicarNotasColumnasHoja_(sh, notas) [→ Contexto_Base_Web.md §PF286]
- * Escribe en la fila 1 de `sh` las notas de `notas` (ver _definicionNotasColumnas_()) con UNA lectura y, solo si algo cambió, UNA escritura de toda la fila de notas (por eso es barata dentro de setupAllSheets()).
+ * _filaEncabezadoNotas_(nombreHoja) [→ Contexto_Base_Web.md §PF286]
+ * Fila donde están los encabezados de la hoja, que es donde van las notas de columna: 3 en Nuevos y en Control (las filas 1 y 2 son el título combinado), 1 en las demás.
+ */
+function _filaEncabezadoNotas_(nombreHoja) {
+  return (nombreHoja === CFG.SHEETS.NUEVOS || nombreHoja === CFG.SHEETS.CONTROL) ? 3 : 1;
+}
+
+/**
+ * _aplicarNotasColumnasHoja_(sh, notas, fila) [→ Contexto_Base_Web.md §PF286]
+ * Escribe en la fila `fila` (1 si no se indica; 3 en Nuevos y Control, ver _filaEncabezadoNotas_()) de `sh` las notas de `notas` (ver _definicionNotasColumnas_()) con UNA lectura y, solo si algo cambió, UNA escritura de toda la fila de notas (por eso es barata dentro de setupAllSheets()).
  * Reglas por columna: (1) si el encabezado no es el esperado (`enc`), se omite y se avisa en el registro, para no poner la nota en otra columna si alguien movió columnas; (2) si la celda no tiene nota o la nota empieza con NOTA_COLUMNA_PREFIJO_, se escribe/actualiza; (3) si tiene una nota sin ese prefijo, es de la usuaria y se conserva. Las columnas fuera de la lista no se tocan.
  * Devuelve { escritas, iguales, conservadas, omitidas }.
  */
-function _aplicarNotasColumnasHoja_(sh, notas) {
+function _aplicarNotasColumnasHoja_(sh, notas, fila) {
+  fila = fila || 1; // 21-nov-2026: Nuevos y Control tienen los encabezados en la fila 3
   var res = { escritas: 0, iguales: 0, conservadas: 0, omitidas: 0 };
   if (!sh || !notas || !notas.length) return res;
 
@@ -5340,7 +5406,7 @@ function _aplicarNotasColumnasHoja_(sh, notas) {
   ancho = Math.min(ancho, sh.getMaxColumns());
   if (ancho < 1) return res;
 
-  var rango = sh.getRange(1, 1, 1, ancho);
+  var rango = sh.getRange(fila, 1, 1, ancho);
   var encabezados = rango.getValues()[0];
   var actuales = rango.getNotes()[0];
   var nuevas = actuales.slice();
@@ -18606,6 +18672,9 @@ function _pintarEncabezadosNuevos(sh) {
     .setBorder(true, true, true, true, true, true,
                COLOR_BORDE_HEADER, SpreadsheetApp.BorderStyle.SOLID);
   sh.getRange(1, 1, 2, 3).setBorder(false, false, false, false, false, false);
+
+  // 21-nov-2026 (PF286, punto 17 b): notas de columna en los encabezados fijos; no pisa las puestas a mano.
+  _aplicarNotasColumnasHoja_(sh, _definicionNotasColumnas_()[CFG.SHEETS.NUEVOS], _filaEncabezadoNotas_(CFG.SHEETS.NUEVOS));
 }
 
 /**
