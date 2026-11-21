@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 18:47:29 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 19:00:25 */
 
 
 
@@ -30087,6 +30087,7 @@ var REVISION_GUERRA_ENCABEZADO = ['N°', 'Fecha', 'Temporada', 'Semana', 'Tag', 
 // §PF313 (PF307 punto 4, §PF253 punto 1): registro de contradicciones entre filas de Correcciones_Guerra.csv. [→ Contexto_Base_Web.md §PF313]
 var CGW_CONTRADICCION_TIPO = 'Contradicción';      // columna «Tipo» de Revision_Guerra.csv
 var CGW_CONTRADICCION_ESTADO = 'Pendiente';        // columna «Estado» de lo que no se resolvió solo
+var CGW_CASOC_MAX_REVISION = 100;                   // §PF534: tope de filas del caso C que van a Revision_Guerra.csv por corrida (si Tampermonkey fallara de forma sistemática, no se inunda); lo demás solo cuenta y se registra en el log
 var CGW_CONTRADICCIONES_MAX_LINEAS = 200;          // tope de líneas que viajan en la respuesta (el resto solo cuenta)
 var CGW_MIN_JUGADORES_COBERTURA = 5;               // §PF436: un día cuenta como «cubierto» para un clan si hay al menos 5 jugadores distintos con fila real ese día; con menos se toma como un día sin registro (la ausencia de un jugador no prueba nada)
 var CGW_MAX_ATAQUES_SIN_FAME = 4;                 // §PF357: clan que cruzó la meta el domingo: el domingo no da fame: cuentan todos sus ataques (máximo 4) o ninguno (decisión de la usuaria, 4-nov-2026)
@@ -32686,6 +32687,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
   var clavesIgualesClan = []; // §PF240: filas de Log/Analytics (con ClanTag) iguales a las ya guardadas: no se reescriben, pero cuentan para el aviso «revisar a mano»
   var contradicciones = [], contradiccionesTotal = 0, contradiccionesSinPisar = 0; // §PF313: registro de contradicciones de esta corrida (líneas topadas; el total cuenta todas)
   var revisionContradicciones = []; // §PF313: lo que no se resuelve solo va también a Revision_Guerra.csv (Estado pendiente)
+  // §PF534 (caso C de §PF253 punto 1): fila de perfil SIN enlace de clan (clanPerfil vacío) cuyo clanPerfilNombre es el nombre de un clan Terna. Por definición se reconoce por nombre: la celda no trae Tag.
+  var nombresTernaCasoC = {}, casoCTotal = 0;
+  try { _getNombresClanesTernaOrdenados().forEach(function (nT) { var kT = String(nT || '').trim().toLowerCase(); if (kT) nombresTernaCasoC[kT] = true; }); } // clan-por-nombre-ok: caso C = nombre de Terna sin enlace (no hay Tag que comparar)
+  catch (eNomC) { Logger.log('[CorreccionGuerra] Caso C: no se pudieron leer los nombres de los clanes Terna (' + (eNomC.message || eNomC) + '); el caso C no se evalúa en esta corrida.'); }
   var memoPosible = {}; // §PF313: memoria de _cgwSemanaEsPosible_() para no repetir cálculos en un lote grande
   var indiceAtaqueTerna = _cgwIndiceAtaqueTerna_(mapa, correcciones, _getTemporadaOffsetRoyaleApi()); // §PF343
   var cacheJsonTerna = {}, contradiccionesExternasIgnoradas = 0; // §PF343
@@ -32772,7 +32777,8 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     //  · D: dos fuentes del mismo nivel que discrepan en la misma clave (Log contra Analytics): se conserva lo guardado.
     //  · B: valores que no caben en ninguna combinación posible de ataques, fame y barcos: si ya había otro valor, se conserva; si no había, se guarda y se avisa.
     // El caso A (misma clave, valores distintos, fuentes de distinto nivel o la misma fuente que actualiza) se aplica como siempre y solo deja la línea.
-    // El caso C (clan con nombre de Terna sin enlace) y la comparación Correcciones_Nuevos contra Correcciones_Guerra siguen pendientes (§PF313).
+    //  · C (§PF534): fila de perfil sin enlace de clan cuyo nombre es el de un clan Terna: con valor previo distinto no se pisa; sin valor previo se guarda; en ambos casos va a Revision_Guerra.csv.
+    // Correcciones_Nuevos contra Correcciones_Guerra ya existe aparte: compararNuevosConGuerraInforme() (§PF329, se corre a mano).
     var fuenteEntrante = _cgwFuenteDeFila_(clanTag, c.fuente, null);
     var fuenteGuardada = existente ? _cgwFuenteDeFila_(clanTag, '', existente) : '';
     var etiquetaConflicto = 'T' + temporadaPropia + ' semana ' + semana + ' ' + tag + ' (' + (clanTag || 'perfil') + ')';
@@ -32782,10 +32788,12 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     var mismoNivelDiscrepa = !!(existente && valoresDistintos && clanTag !== '' && fuenteGuardada !== 'desconocida' &&
       fuenteEntrante !== 'desconocida' && fuenteGuardada !== fuenteEntrante);
     var yaGuardadaIgual = !!(existente && !valoresDistintos); // reintento por Implementación «No»: el valor ya estaba, no es un conflicto nuevo
+    var nombreCasoC = String(c.clanPerfilNombre || '').trim();
+    var casoC = !!(clanTag === '' && !_normalizarClanTagCorreccion(c.clanPerfil) && nombreCasoC && nombresTernaCasoC[nombreCasoC.toLowerCase()] === true && !yaGuardadaIgual); // clan-por-nombre-ok: caso C = nombre de Terna sin enlace
     // §PF357: antes de decir «no cabe» se prueba el caso del clan que cruzó la meta el domingo (hasta 4 ataques sin fame; _cgwSemanaPosibleClanTerminado_).
     var sinFameG = yaGuardadaIgual ? 0 : _cgwSemanaPosibleClanTerminado_(ataquesSemana, fame, barcosFinal, memoPosible);
     var noCabeSemana = !yaGuardadaIgual && sinFameG < 0;
-    var hayConflicto = mismoNivelDiscrepa || noCabeSemana || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'));
+    var hayConflicto = mismoNivelDiscrepa || noCabeSemana || casoC || (valoresDistintos && !(clanTag === '' && fuenteGuardada === 'perfil' && fuenteEntrante === 'perfil'));
     // §PF343 (2-nov-2026, regla de la usuaria): la fila del perfil de un clan que NO es Terna solo genera contradicción si hay registro de que el jugador hizo al
     // menos un ataque esa semana en algún clan Terna (Log, Analytics o River Race). Sin ese registro se ignora: el valor se aplica como siempre, sin línea de conflicto
     // ni fila en Revision_Guerra.csv. [→ Contexto_Base_Web.md §PF343]
@@ -32809,6 +32817,12 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
       } else if (noCabeSemana) {
         decision = 'no cabe en ninguna semana posible: se guarda porque no había otro valor y va a Revision_Guerra.csv';
         motivoRev = 'Valor que no cabe en una semana posible (' + (clanTag || 'perfil') + ')';
+      } else if (casoC) {
+        casoCTotal++;
+        decision = (existente && valoresDistintos)
+          ? 'clan de Terna sin enlace (' + nombreCasoC + '): no se pisa, queda lo guardado y va a Revision_Guerra.csv'
+          : 'clan de Terna sin enlace (' + nombreCasoC + '): se guarda porque no había otro valor y va a Revision_Guerra.csv';
+        if (casoCTotal <= CGW_CASOC_MAX_REVISION) motivoRev = 'Clan de Terna sin enlace (' + nombreCasoC + ')';
       } else {
         decision = 'gana el valor de ahora';
       }
@@ -32822,7 +32836,7 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
           detalle: (existente ? 'antes ' + textoAntesC + '; ' : '') + 'ahora ' + textoAhoraC + '; ' + decision, estado: CGW_CONTRADICCION_ESTADO
         });
       }
-      if (mismoNivelDiscrepa || (noCabeSemana && existente && valoresDistintos)) {
+      if (mismoNivelDiscrepa || (noCabeSemana && existente && valoresDistintos) || (casoC && existente && valoresDistintos)) {
         contradiccionesSinPisar++;
         if (clanTag !== '') clavesIgualesClan.push(clave); // sigue contando para el aviso «revisar a mano»
         continue;
@@ -32957,8 +32971,10 @@ function _aplicarCorreccionesGuerraImpl(correcciones) {
     resultado.contradicciones = contradicciones;
     resultado.contradiccionesTotal = contradiccionesTotal;
     resultado.contradiccionesSinPisar = contradiccionesSinPisar;
+    if (casoCTotal) resultado.casoCSinEnlace = casoCTotal; // §PF534
     if (resultadoRevision) resultado.revisionContradicciones = resultadoRevision;
     if (avisoRevision) resultado.avisoRevision = avisoRevision;
+    if (casoCTotal > CGW_CASOC_MAX_REVISION) Logger.log('[CorreccionGuerra] Caso C: ' + casoCTotal + ' fila(s) de clan Terna sin enlace; solo las primeras ' + CGW_CASOC_MAX_REVISION + ' fueron a Revision_Guerra.csv (¿falla de lectura de Tampermonkey?).');
     Logger.log('[CorreccionGuerra] Contradicciones: ' + contradiccionesTotal + ' (' + contradiccionesSinPisar + ' sin pisar). ' +
       contradicciones.slice(0, 20).join(' | ') + (contradicciones.length > 20 ? ' | … (ver la respuesta del endpoint)' : ''));
   }
@@ -34273,7 +34289,13 @@ function _reconstruirSemanaDesdeCero(fuente, temporadaPropia, semana, tag, valor
   // 17-nov-2026 (§PF355 (2)): un clanNombre que empieza por # es un tag que _resolverNombreClan() devolvio por no conocer el clan (cache vacia y fuera del respaldo); se trata como vacio, igual que nombreDesdeTag.
   var clanNombreOpciones = String(opciones.clanNombre || '').trim();
   if (clanNombreOpciones.charAt(0) === '#') clanNombreOpciones = '';
-  var clanReconstruccion = String(clanNombreOpciones || nombreDesdeTag || datosJugador.clan || '').trim();
+  // 20-nov-2026 (§PF502 punto 9 c, hueco latente de §PF355 (2)): si el Tag viene informado pero su nombre no se pudo resolver, el clan del Directorio solo sirve cuando su Tag coincide con el recibido;
+  // si no, la fila saldria con el nombre de un clan y el Tag de otro. Sin Tag informado, o con nombre ya resuelto, todo queda como antes.
+  var clanDirectorioReconstruccion = String(datosJugador.clan || '').trim();
+  if (clanDirectorioReconstruccion && clanTagReconstruccion && !clanNombreOpciones && !nombreDesdeTag) {
+    if (_normalizarClanTagCorreccion(_getClanTagByName(clanDirectorioReconstruccion)) !== clanTagReconstruccion) clanDirectorioReconstruccion = ''; // clan-por-nombre-ok: el Directorio solo guarda el nombre del clan; se usa para comprobar que su Tag coincide con el recibido, nunca para decidir
+  }
+  var clanReconstruccion = String(clanNombreOpciones || nombreDesdeTag || clanDirectorioReconstruccion || '').trim();
   if (!clanTagReconstruccion && clanReconstruccion) clanTagReconstruccion = String(_getClanTagByName(clanReconstruccion) || '').trim().toUpperCase();
   if (!clanReconstruccion) {
     opciones.sinClanReconstruccion = true;
