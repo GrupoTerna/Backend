@@ -297,5 +297,6 @@ Antes: publicar `Web` (la versión de `sw.js` vigente; las versiones que nombrab
 - [ ] **Purga en Soporte de GitHub** de los commits viejos con celulares: tras la reescritura del historial (28-oct) siguen accesibles por su hash y por `refs/pull/*/head` (`§PF288` punto 3). Tratar esos números como expuestos.
 - [ ] **Confirmar o revertir las decisiones de Claude** del 17-nov (`§PF499` puntos 2, 3, 4, 5 y 8) y del 20-nov (`§PF542`, `§PF543`, `§PF544`, `§PF545`); no se ejecutó nada con ellas que no se pueda deshacer.
 - [ ] `PF532`: confirmar la lectura de «con cuántas medallas nos podrían alcanzar» (punto 1 de `§PF532`).
+- [ ] **Reinstalar la skill `md`** desde `Claude/SKILL.md` (rev. 13, con la regla de mover filas entre grupos de este archivo).
 - [ ] `PF123`: mover a mano a `Informes` el archivo `Completar_DomingoDesdeJsonRoyaleApi` con marca `2026-10-18 22.26.35` (quedó en la raíz de `CSV`).
 
