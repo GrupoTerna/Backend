@@ -177,26 +177,26 @@ Ninguno.
 | `_aplicarCorreccionesGuerra` | función | 18_CorreccionGuerra.gs | 2649 | Contexto_Base_Web.md §18B099 |
 | `_aplicarCorreccionesGuerraImpl` | función | 18_CorreccionGuerra.gs | 2662 |  |
 | `_aplicarCorreccionOverlayAFuente_` | función | 18_CorreccionGuerra.gs | 3177 | Contexto_Base_Web.md §18B021 |
-| `_aplicarDropdownAdminSLista` | función | 26_Torneos_Core.gs | 5460 | Contexto_Base_Web.md §26B208 |
-| `_aplicarDropdownAdminTLista` | función | 26_Torneos_Core.gs | 5272 | Contexto_Base_Web.md §26B195 |
+| `_aplicarDropdownAdminSLista` | función | 26_Torneos_Core.gs | 5522 | Contexto_Base_Web.md §26B208 |
+| `_aplicarDropdownAdminTLista` | función | 26_Torneos_Core.gs | 5334 | Contexto_Base_Web.md §26B195 |
 | `_aplicarDropdownAutorVetados` | función | 13_Inactivos_Vetados.gs | 649 | Contexto_Base_Web.md §13B030 |
-| `_aplicarDropdownClanSLista` | función | 26_Torneos_Core.gs | 5493 | Contexto_Base_Web.md §26B209 |
+| `_aplicarDropdownClanSLista` | función | 26_Torneos_Core.gs | 5555 | Contexto_Base_Web.md §26B209 |
 | `_aplicarDropdownEstadoCRLista` | función | 02_Setup_Hojas.gs | 920 | Contexto_Base_Web.md §02B079 |
-| `_aplicarDropdownEstadoSLista` | función | 26_Torneos_Core.gs | 5408 | Contexto_Base_Web.md §26B204 |
-| `_aplicarDropdownEstadoTLista` | función | 26_Torneos_Core.gs | 5332 | Contexto_Base_Web.md §26B198 |
-| `_aplicarDropdownId2SLista` | función | 26_Torneos_Core.gs | 5385 | Contexto_Base_Web.md §26B203 |
-| `_aplicarDropdownMiembroActivoSLista` | función | 26_Torneos_Core.gs | 5421 | Contexto_Base_Web.md §26B205 |
-| `_aplicarDropdownMiembroActivoTLista` | función | 26_Torneos_Core.gs | 5346 | Contexto_Base_Web.md §26B200 |
-| `_aplicarDropdownReaccionSLista` | función | 26_Torneos_Core.gs | 5434 | Contexto_Base_Web.md §26B206 |
-| `_aplicarDropdownReaccionTLista` | función | 26_Torneos_Core.gs | 5359 | Contexto_Base_Web.md §26B201 |
+| `_aplicarDropdownEstadoSLista` | función | 26_Torneos_Core.gs | 5470 | Contexto_Base_Web.md §26B204 |
+| `_aplicarDropdownEstadoTLista` | función | 26_Torneos_Core.gs | 5394 | Contexto_Base_Web.md §26B198 |
+| `_aplicarDropdownId2SLista` | función | 26_Torneos_Core.gs | 5447 | Contexto_Base_Web.md §26B203 |
+| `_aplicarDropdownMiembroActivoSLista` | función | 26_Torneos_Core.gs | 5483 | Contexto_Base_Web.md §26B205 |
+| `_aplicarDropdownMiembroActivoTLista` | función | 26_Torneos_Core.gs | 5408 | Contexto_Base_Web.md §26B200 |
+| `_aplicarDropdownReaccionSLista` | función | 26_Torneos_Core.gs | 5496 | Contexto_Base_Web.md §26B206 |
+| `_aplicarDropdownReaccionTLista` | función | 26_Torneos_Core.gs | 5421 | Contexto_Base_Web.md §26B201 |
 | `_aplicarDropdownsAdministradores` | función | 11_DirectorioSheet.gs | 1617 |  |
 | `_aplicarDropdownsDirectorio` | función | 11_DirectorioSheet.gs | 1469 |  |
 | `_aplicarDropdownsInactivos` | función | 13_Inactivos_Vetados.gs | 193 |  |
 | `_aplicarDropdownsVetados` | función | 13_Inactivos_Vetados.gs | 640 | Contexto_Base_Web.md §13B027 |
-| `_aplicarDropdownTagTor2TLista` | función | 26_Torneos_Core.gs | 5306 | Contexto_Base_Web.md §26B197 |
+| `_aplicarDropdownTagTor2TLista` | función | 26_Torneos_Core.gs | 5368 | Contexto_Base_Web.md §26B197 |
 | `_aplicarDropdownTipoCRLista` | función | 02_Setup_Hojas.gs | 900 | Contexto_Base_Web.md §02B078 |
-| `_aplicarDropdownWhatsappSLista` | función | 26_Torneos_Core.gs | 5447 | Contexto_Base_Web.md §26B207 |
-| `_aplicarDropdownWhatsappTLista` | función | 26_Torneos_Core.gs | 5372 | Contexto_Base_Web.md §26B202 |
+| `_aplicarDropdownWhatsappSLista` | función | 26_Torneos_Core.gs | 5509 | Contexto_Base_Web.md §26B207 |
+| `_aplicarDropdownWhatsappTLista` | función | 26_Torneos_Core.gs | 5434 | Contexto_Base_Web.md §26B202 |
 | `_aplicarFiltroEnFilaHeader` | función | 04_Formato_Comun.gs | 730 | Contexto_Base_Web.md §04B015 |
 | `_aplicarFiltroFila2` | función | 02_Setup_Hojas.gs | 868 | Contexto_Base_Web.md §02B064 |
 | `_aplicarFiltroFila3` | función | 02_Setup_Hojas.gs | 884 | Contexto_Base_Web.md §02B065 |
@@ -205,18 +205,18 @@ Ninguno.
 | `_aplicarFmtCondicionalGuerra` | función | 17_GuerraSheet.gs | 6342 |  |
 | `_aplicarFmtCondicionalGuerraLogs` | función | 17_GuerraSheet.gs | 3925 |  |
 | `_aplicarFormatoCondicionalAscensos` | función | 24_Historial_Ascensos.gs | 993 | Contexto_Base_Web.md §24B041 |
-| `_aplicarFormatoCondicionalAsistenciaPorId_` | función | 26_Torneos_Core.gs | 5224 | Contexto_Base_Web.md §26B132 |
+| `_aplicarFormatoCondicionalAsistenciaPorId_` | función | 26_Torneos_Core.gs | 5286 | Contexto_Base_Web.md §26B132 |
 | `_aplicarFormatoCondicionalClan` | función | 10_ClanSheet.gs | 178 |  |
 | `_aplicarFormatoCondicionalDirectorio` | función | 11_DirectorioSheet.gs | 1504 | Contexto_Base_Web.md §11B100 |
 | `_aplicarFormatoCondicionalIndice` | función | 03_Indice_Sheet.gs | 258 | Contexto_Base_Web.md §03B014 |
 | `_aplicarFormatoCondicionalMensajes` | función | 30_Mensajes.gs | 1104 |  |
 | `_aplicarFormatoCondicionalPlayers` | función | 12_Players_Links.gs | 70 | Contexto_Base_Web.md §12B006 |
-| `_aplicarFormatoCondicionalSAporSorteo` | función | 26_Torneos_Core.gs | 5215 | Contexto_Base_Web.md §PF286 |
-| `_aplicarFormatoCondicionalTAporTorneo` | función | 26_Torneos_Core.gs | 5210 | Contexto_Base_Web.md §26B132 |
+| `_aplicarFormatoCondicionalSAporSorteo` | función | 26_Torneos_Core.gs | 5277 | Contexto_Base_Web.md §PF286 |
+| `_aplicarFormatoCondicionalTAporTorneo` | función | 26_Torneos_Core.gs | 5272 | Contexto_Base_Web.md §26B132 |
 | `_aplicarFormatoFilaAscenso` | función | 24_Historial_Ascensos.gs | 974 | Contexto_Base_Web.md §24B039 |
 | `_aplicarFormatoMilesGuerra_` | función | 17_GuerraSheet.gs | 103 |  |
-| `_aplicarFormatoMilesHoja_` | función | 26_Torneos_Core.gs | 5001 |  |
-| `_aplicarFormatoMilesListas_` | función | 26_Torneos_Core.gs | 5017 |  |
+| `_aplicarFormatoMilesHoja_` | función | 26_Torneos_Core.gs | 5063 |  |
+| `_aplicarFormatoMilesListas_` | función | 26_Torneos_Core.gs | 5079 |  |
 | `_aplicarFuncionesMultiSelect` | función | 11_DirectorioSheet.gs | 1651 | Contexto_Base_Web.md §11B107 |
 | `_aplicarHeaderDosFilas` | función | 02_Setup_Hojas.gs | 746 | Contexto_Base_Web.md §02B059 |
 | `_aplicarHeaderTresFilas` | función | 02_Setup_Hojas.gs | 798 | Contexto_Base_Web.md §02B062 |
@@ -228,7 +228,7 @@ Ninguno.
 | `_aplicarPisoDiario` | función | 18_CorreccionGuerra.gs | 4149 | Contexto_Base_Web.md §18B075 |
 | `_aplicarRegistroEnFilasHistorialGuerraGrupal` | función | 20_HistorialGuerraJugador.gs | 715 | Contexto_Base_Web.md §PF068 |
 | `_aplicarRepartoDomingoSinClanTagAFuente_` | función | 18_CorreccionGuerra.gs | 4879 | Contexto_Base_Web.md §18B020 |
-| `_aplicarResolucionesTorneo` | función | 26_Torneos_Core.gs | 2670 | Contexto_Base_Web.md §26B267 |
+| `_aplicarResolucionesTorneo` | función | 26_Torneos_Core.gs | 2732 | Contexto_Base_Web.md §26B267 |
 | `_aplicarSubindiceEncabezados` | función | 04_Formato_Comun.gs | 612 | Contexto_Base_Web.md §04B012 |
 | `_aplicarTablasYGridlines` | función | 04_Formato_Comun.gs | 651 |  |
 | `_aplicarTagsSinPerfil_` | función | 20_HistorialGuerraJugador.gs | 2010 | Contexto_Base_Web.md §PF507 |
@@ -246,7 +246,7 @@ Ninguno.
 | `_armarFilasPerfilWebParaTags` | función | 36_PerfilWeb.gs | 102 |  |
 | `_armarFilasProgresoEventos` | función | 35_ProgresoEventos.gs | 91 | Contexto_Base_Web.md §35B003 |
 | `_armarFilasProgresoEventosParaTags` | función | 35_ProgresoEventos.gs | 108 |  |
-| `_armarHeaderIdx` | función | 01_Config_Global.gs | 1441 | Contexto_Base_Web.md §01B151 |
+| `_armarHeaderIdx` | función | 01_Config_Global.gs | 1443 | Contexto_Base_Web.md §01B151 |
 | `_asegurarBloquesParaFechas` | función | 14_Nuevos_RoyaleAPI.gs | 1420 | Contexto_Base_Web.md §14B117 |
 | `_asegurarColumnaClanTagAlertasHG_` | función | 20_HistorialGuerraJugador.gs | 1608 |  |
 | `_asegurarColumnaClanTagControl2_` | función | 23_Control2_GuerraSemanal.gs | 541 |  |
@@ -266,7 +266,7 @@ Ninguno.
 | `_auditarPisoEnFuente` | función | 18_CorreccionGuerra.gs | 4405 | Contexto_Base_Web.md §18B082 |
 | `_auditarReconstruccionesGuerraSospechosas` | función | 18_CorreccionGuerra.gs | 1290 | Contexto_Base_Web.md §18B088 |
 | `_autocorregirAtaqueDiaAnteriorDecksUsed` | función | 17_GuerraSheet.gs | 2891 | Contexto_Base_Web.md §17B153 |
-| `_autogenerarParCRListaSiCorrespondeInicioTemporada` | función | 26_Torneos_Core.gs | 3026 | Contexto_Base_Web.md §26B024 |
+| `_autogenerarParCRListaSiCorrespondeInicioTemporada` | función | 26_Torneos_Core.gs | 3088 | Contexto_Base_Web.md §26B024 |
 | `_avanzarEstado` | función | 44_BotWhatsApp.gs | 275 | Contexto_Base_Web.md §44B016 |
 | `_avisarDiferenciasNivelCards` | función | 31_Cards_Mazos.gs | 1406 | Contexto_Base_Web.md §31B061 |
 | `_avisarFilasGuerraRepetidas_` | función | 17_GuerraSheet.gs | 5980 |  |
@@ -275,7 +275,7 @@ Ninguno.
 | `_avisarRevisionNivelesCards` | función | 31_Cards_Mazos.gs | 1450 | Contexto_Base_Web.md §31B062 |
 | `_BACKUP_OMITIR_CHECK_CLAVES_` | global | 05_Backup_CSV.gs | 26 | Contexto_Base_Web.md §PF286 |
 | `_barcosCumplenRequisito` | función | 28_Torneos_Docs.gs | 942 | Contexto_Base_Web.md §28B088 |
-| `_barcosDeRequisitos_` | función | 26_Torneos_Core.gs | 4227 | Contexto_Base_Web.md §PF099 |
+| `_barcosDeRequisitos_` | función | 26_Torneos_Core.gs | 4289 | Contexto_Base_Web.md §PF099 |
 | `_blgBucketsDelDia_` | función | 18_CorreccionGuerra.gs | 5551 |  |
 | `_blgBucketVacio_` | función | 18_CorreccionGuerra.gs | 5513 |  |
 | `_blgClasificarBatallaGuerra_` | función | 18_CorreccionGuerra.gs | 5432 | Contexto_Base_Web.md §18B040 |
@@ -306,8 +306,8 @@ Ninguno.
 | `_blhFilasParaHoja_` | función | 07_Battlelogs_Hoja.gs | 150 | Contexto_Base_Web.md §07B007 |
 | `_blhHoraLima_` | función | 07_Battlelogs_Hoja.gs | 180 | Contexto_Base_Web.md §07B008 |
 | `_bloquearSiReenumerando_` | función | 00_Main.gs | 1964 |  |
-| `_bloqueDescensoDesdeSemanasCompletas` | función | 26_Torneos_Core.gs | 3501 | Contexto_Base_Web.md §26B057 |
-| `_bloqueParaAutogeneracionCRLista` | función | 26_Torneos_Core.gs | 2935 | Contexto_Base_Web.md §26B023 |
+| `_bloqueDescensoDesdeSemanasCompletas` | función | 26_Torneos_Core.gs | 3563 | Contexto_Base_Web.md §26B057 |
+| `_bloqueParaAutogeneracionCRLista` | función | 26_Torneos_Core.gs | 2997 | Contexto_Base_Web.md §26B023 |
 | `_blsBorrarProgreso_` | función | 06_Battlelogs_Siembra.gs | 480 |  |
 | `_blsCargarProgreso_` | función | 06_Battlelogs_Siembra.gs | 424 |  |
 | `_blsCelda_` | función | 06_Battlelogs_Siembra.gs | 379 |  |
@@ -330,14 +330,14 @@ Ninguno.
 | `_blsSembrarConCandado_` | función | 06_Battlelogs_Siembra.gs | 77 |  |
 | `_bordesDatosSAsistencia_` | función | 02_Setup_Hojas.gs | 1041 |  |
 | `_borrarDuplicadasClanConTagGuerra_` | función | 17_GuerraSheet.gs | 4753 | Contexto_Base_Web.md §PF355 |
-| `_borrarFilasAsistenciaPorId` | función | 26_Torneos_Core.gs | 2256 | Contexto_Base_Web.md §26B255 |
+| `_borrarFilasAsistenciaPorId` | función | 26_Torneos_Core.gs | 2318 | Contexto_Base_Web.md §26B255 |
 | `_borrarFilasTemporadaMalEtiquetadaGuerra_` | función | 17_GuerraSheet.gs | 4893 | Contexto_Base_Web.md §PF468 |
 | `_borrarProgresoBattlelogChests` | función | 09_API_ClashRoyale.gs | 1489 | Contexto_Base_Web.md §09B076 |
 | `_borrarProgresoClanes` | función | 09_API_ClashRoyale.gs | 2363 | Contexto_Base_Web.md §09B110 |
 | `_borrarProgresoPlayers` | función | 09_API_ClashRoyale.gs | 2716 | Contexto_Base_Web.md §09B127 |
 | `_borrarProgresoRestaurarNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 792 | Contexto_Base_Web.md §14B014 |
 | `_borrarTriggersDeContinuacion` | función | 00_Main.gs | 2027 |  |
-| `_borrarTriggersPorHandler` | función | 26_Torneos_Core.gs | 1014 | Contexto_Base_Web.md §26B136 |
+| `_borrarTriggersPorHandler` | función | 26_Torneos_Core.gs | 1076 | Contexto_Base_Web.md §26B136 |
 | `_buildBattlelogFilename` | función | 09_API_ClashRoyale.gs | 1521 | Contexto_Base_Web.md §09B078 |
 | `_buildCacheFilename` | función | 09_API_ClashRoyale.gs | 3283 | Contexto_Base_Web.md §09B149 |
 | `_buildCacheSuffix` | función | 09_API_ClashRoyale.gs | 3296 | Contexto_Base_Web.md §09B150 |
@@ -347,7 +347,7 @@ Ninguno.
 | `_buildPlayerFilename` | función | 09_API_ClashRoyale.gs | 3688 | Contexto_Base_Web.md §09B160 |
 | `_buildPrefijoTSP_` | función | 09_API_ClashRoyale.gs | 3262 | Contexto_Base_Web.md §09B146 |
 | `_buscarArchivoDelPeriodo_` | función | 09_API_ClashRoyale.gs | 3208 | Contexto_Base_Web.md §PF074 |
-| `_buscarArchivoEnPlantillas` | función | 01_Config_Global.gs | 756 | Contexto_Base_Web.md §01B117 |
+| `_buscarArchivoEnPlantillas` | función | 01_Config_Global.gs | 758 | Contexto_Base_Web.md §01B117 |
 | `_buscarBloquePorFechaNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1404 | Contexto_Base_Web.md §14B062 |
 | `_buscarCorreccionDomingo_` | función | 17_GuerraSheet.gs | 5595 | Contexto_Base_Web.md §PF047 |
 | `_buscarDatosJugadorParaReconstruccion` | función | 18_CorreccionGuerra.gs | 2625 | Contexto_Base_Web.md §18B077 |
@@ -359,11 +359,11 @@ Ninguno.
 | `_buscarIndiceHijo` | función | 27_Torneos_Sorteos_Requisitos.gs | 351 | Contexto_Base_Web.md §27B013 |
 | `_buscarIndiceHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 1510 | Contexto_Base_Web.md §PF040 |
 | `_buscarInfiltrado` | función | 15_DeteccionInfiltrados.gs | 216 | Contexto_Base_Web.md §15B008 |
-| `_buscarInfoOrganizadorPorNomMulti` | función | 26_Torneos_Core.gs | 1455 | Contexto_Base_Web.md §26B188 |
+| `_buscarInfoOrganizadorPorNomMulti` | función | 26_Torneos_Core.gs | 1517 | Contexto_Base_Web.md §26B188 |
 | `_buscarPasoDeCadenaPorMarca_` | función | 00_Main.gs | 2402 |  |
 | `_buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_` | función | 47_Migraciones.gs | 963 |  |
 | `_buscarTraduccionCartaPorNombre` | función | 32_Insignias.gs | 270 | Contexto_Base_Web.md §32B012 |
-| `_CACHE_IDS_PLANTILLAS_MEMORIA_` | global | 01_Config_Global.gs | 661 | Contexto_Base_Web.md §01B115 |
+| `_CACHE_IDS_PLANTILLAS_MEMORIA_` | global | 01_Config_Global.gs | 663 | Contexto_Base_Web.md §01B115 |
 | `_CACHE_RIVALES_` | global | 15_DeteccionInfiltrados.gs | 889 |  |
 | `_cacheClanesParaRivales_` | función | 15_DeteccionInfiltrados.gs | 890 |  |
 | `_cacheDiferenciaNivelPorRareza` | global | 31_Cards_Mazos.gs | 21 | Contexto_Base_Web.md §31B014 |
@@ -377,14 +377,14 @@ Ninguno.
 | `_calcularGridControl2_` | función | 23_Control2_GuerraSemanal.gs | 458 |  |
 | `_calcularGridControl_` | función | 22_ControlCalendario.gs | 69 |  |
 | `_calcularInicioRachaGuerraPorTag` | función | 11_DirectorioSheet.gs | 969 | Contexto_Base_Web.md §11B068 |
-| `_calcularMesEfectivoRealDeHoy` | función | 01_Config_Global.gs | 1042 | Contexto_Base_Web.md §01B137 |
-| `_calcularPropuestasCambioRango` | función | 26_Torneos_Core.gs | 3573 | Contexto_Base_Web.md §26B062 |
+| `_calcularMesEfectivoRealDeHoy` | función | 01_Config_Global.gs | 1044 | Contexto_Base_Web.md §01B137 |
+| `_calcularPropuestasCambioRango` | función | 26_Torneos_Core.gs | 3635 | Contexto_Base_Web.md §26B062 |
 | `_calcularReparacionAtaquesHoy_` | función | 17_GuerraSheet.gs | 4176 | Contexto_Base_Web.md §17B161 |
 | `_calcularReparacionDesdeJSON_` | función | 17_GuerraSheet.gs | 5150 | Contexto_Base_Web.md §17B164 |
 | `_calcularReparacionDomingoDesdeCorrecciones_` | función | 17_GuerraSheet.gs | 5613 | Contexto_Base_Web.md §PF047 |
 | `_calcularReparacionFamaDomingo_` | función | 17_GuerraSheet.gs | 5415 | Contexto_Base_Web.md §PF031 y §PF045 |
-| `_calcularSemanaTorneo` | función | 26_Torneos_Core.gs | 3844 |  |
-| `_calcularTemporadaParaFecha` | función | 26_Torneos_Core.gs | 3832 |  |
+| `_calcularSemanaTorneo` | función | 26_Torneos_Core.gs | 3906 |  |
+| `_calcularTemporadaParaFecha` | función | 26_Torneos_Core.gs | 3894 |  |
 | `_calentarCacheGuerraEnVivo_` | función | 37_Web_API.gs | 5568 | Contexto_Base_Web.md §PF537 |
 | `_calentarHayTiempoParaPublicar_` | función | 37_Web_API.gs | 5558 |  |
 | `_camposExtraInactivos` | función | 13_Inactivos_Vetados.gs | 148 | Contexto_Base_Web.md §13B015 |
@@ -530,7 +530,7 @@ Ninguno.
 | `_claveSemanaClan_` | función | 15_DeteccionInfiltrados.gs | 1425 | Contexto_Base_Web.md §PF378 |
 | `_clCelda` | función | 33_CaminoLeyendas.gs | 97 |  |
 | `_clCsvMemo` | función | 33_CaminoLeyendas.gs | 175 |  |
-| `_clearBg` | función | 01_Config_Global.gs | 1300 |  |
+| `_clearBg` | función | 01_Config_Global.gs | 1302 |  |
 | `_clearEstadoUsuario` | función | 44_BotWhatsApp.gs | 442 |  |
 | `_clLiga` | función | 33_CaminoLeyendas.gs | 199 |  |
 | `_clNumero` | función | 33_CaminoLeyendas.gs | 180 |  |
@@ -546,10 +546,10 @@ Ninguno.
 | `_colLetra` | función | 03_Indice_Sheet.gs | 295 | Contexto_Base_Web.md §03B015 |
 | `_colSet` | función | 05_Backup_CSV.gs | 2117 | Contexto_Base_Web.md §05B104 |
 | `_colsMilesDeHoja_` | función | 05_Backup_CSV.gs | 2124 | Contexto_Base_Web.md §PF286 |
-| `_combinarFechaHora` | función | 26_Torneos_Core.gs | 3947 | Contexto_Base_Web.md §26B279 |
+| `_combinarFechaHora` | función | 26_Torneos_Core.gs | 4009 | Contexto_Base_Web.md §26B279 |
 | `_combinarHeaderDosFilas` | función | 05_Backup_CSV.gs | 1842 | Contexto_Base_Web.md §05B078 |
 | `_combinarHeaderTresFilas` | función | 05_Backup_CSV.gs | 1875 | Contexto_Base_Web.md §05B081 |
-| `_comentarioCRAutogenerado_` | función | 26_Torneos_Core.gs | 3018 |  |
+| `_comentarioCRAutogenerado_` | función | 26_Torneos_Core.gs | 3080 |  |
 | `_comoFechaComparable` | función | 17_GuerraSheet.gs | 6400 | Contexto_Base_Web.md §17B185 |
 | `_compararFilasIndice` | función | 03_Indice_Sheet.gs | 318 | Contexto_Base_Web.md §03B016 |
 | `_compararInactivosConCSV` | función | 05_Backup_CSV.gs | 2392 | Contexto_Base_Web.md §05B062 |
@@ -587,16 +587,16 @@ Ninguno.
 | `_construirOffsetsPorClave` | función | 18_CorreccionGuerra.gs | 2590 | Contexto_Base_Web.md §18B073 |
 | `_construirReglasClanesNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1076 | Contexto_Base_Web.md §14B036 |
 | `_construirReglasSemanaActualNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1033 | Contexto_Base_Web.md §14B065 |
-| `_construirSemanasCsvDesdeIsos` | función | 26_Torneos_Core.gs | 3854 | Contexto_Base_Web.md §26B250 |
+| `_construirSemanasCsvDesdeIsos` | función | 26_Torneos_Core.gs | 3916 | Contexto_Base_Web.md §26B250 |
 | `_construirVentanasMembresiaTernaPorTag` | función | 18_CorreccionGuerra.gs | 4446 | Contexto_Base_Web.md §18B084 |
 | `_contarFilasGuerraFaltantesDesdeCSV_` | función | 17_GuerraSheet.gs | 5947 |  |
 | `_contarFilasSinFechaRespaldable` | función | 05_Backup_CSV.gs | 2319 | Contexto_Base_Web.md §05B115 |
-| `_contarParesCRListaEnSemana` | función | 26_Torneos_Core.gs | 2867 | Contexto_Base_Web.md §26B017 |
+| `_contarParesCRListaEnSemana` | función | 26_Torneos_Core.gs | 2929 | Contexto_Base_Web.md §26B017 |
 | `_contarParticipantesConDatoDeGuerra_` | función | 17_GuerraSheet.gs | 2847 | Contexto_Base_Web.md §PF430 |
 | `_contarRegistrosTexto_` | función | 05_Backup_CSV.gs | 1557 | Contexto_Base_Web.md §PF290 |
 | `_contarSemanasGuerraTerna` | función | 14_Nuevos_RoyaleAPI.gs | 938 | Contexto_Base_Web.md §14B066 |
-| `_contarSorteosEnSemana` | función | 26_Torneos_Core.gs | 3899 | Contexto_Base_Web.md §26B251 |
-| `_contarTorneosEnSemana` | función | 26_Torneos_Core.gs | 3883 |  |
+| `_contarSorteosEnSemana` | función | 26_Torneos_Core.gs | 3961 | Contexto_Base_Web.md §26B251 |
+| `_contarTorneosEnSemana` | función | 26_Torneos_Core.gs | 3945 |  |
 | `_contarTorneosPorTagEnSemanas` | función | 28_Torneos_Docs.gs | 1012 | Contexto_Base_Web.md §28B089 |
 | `_contarTorneosPorTagEnTemporada` | función | 28_Torneos_Docs.gs | 990 |  |
 | `_conteoArchivosAgotadoAvisado_` | global | 05_Backup_CSV.gs | 65 |  |
@@ -627,7 +627,7 @@ Ninguno.
 | `_corregirCampoAcumuladoConDistribucion` | función | 18_CorreccionGuerra.gs | 4064 | Contexto_Base_Web.md §18B118 |
 | `_corregirCampoDiarioConDistribucion` | función | 18_CorreccionGuerra.gs | 3994 | Contexto_Base_Web.md §18B114 |
 | `_corregirFechaGuerraLogs_` | función | 17_GuerraSheet.gs | 4030 |  |
-| `_corregirLinkTorneoYaRegistrado` | función | 26_Torneos_Core.gs | 4671 | Contexto_Base_Web.md §26B304 |
+| `_corregirLinkTorneoYaRegistrado` | función | 26_Torneos_Core.gs | 4733 | Contexto_Base_Web.md §26B304 |
 | `_corregirTemporadaEnCSV` | función | 17_GuerraSheet.gs | 6569 | Contexto_Base_Web.md §17B191 |
 | `_corregirTemporadaEnGuerra` | función | 17_GuerraSheet.gs | 6440 |  |
 | `_corregirTemporadaEnGuerraLogs` | función | 17_GuerraSheet.gs | 6501 |  |
@@ -643,9 +643,9 @@ Ninguno.
 | `_corridaCambioRangoVacia_` | función | 24_Historial_Ascensos.gs | 1191 |  |
 | `_corridaDePar_` | función | 24_Historial_Ascensos.gs | 1294 | Contexto_Base_Web.md §PF286 |
 | `_costoSubirNivel` | función | 31_Cards_Mazos.gs | 1265 | Contexto_Base_Web.md §31B055 |
-| `_creadorTorneoEnClanTerna_` | función | 26_Torneos_Core.gs | 1722 | Contexto_Base_Web.md §PF078 |
+| `_creadorTorneoEnClanTerna_` | función | 26_Torneos_Core.gs | 1784 | Contexto_Base_Web.md §PF078 |
 | `_crearActivador_` | función | 08_Activadores.gs | 110 |  |
-| `_crearDocReconstruibleSiFalta` | función | 01_Config_Global.gs | 855 | Contexto_Base_Web.md §01B125 |
+| `_crearDocReconstruibleSiFalta` | función | 01_Config_Global.gs | 857 | Contexto_Base_Web.md §01B125 |
 | `_crearHistorialGuerraVacio` | función | 20_HistorialGuerraJugador.gs | 542 |  |
 | `_crearJsonGrupalVacio_` | función | 20_HistorialGuerraJugador.gs | 823 |  |
 | `_crearLectorDiaJSONGuerra_` | función | 17_GuerraSheet.gs | 5225 | Contexto_Base_Web.md §17B166 |
@@ -688,25 +688,25 @@ Ninguno.
 | `_cruceMetaTagDe_` | función | 22_ControlCalendario.gs | 1074 |  |
 | `_cruceNormTemporada_` | función | 22_ControlCalendario.gs | 1065 |  |
 | `_CSV_MEM_` | global | 05_Backup_CSV.gs | 58 |  |
-| `_CSV_SUBCARPETAS_MEM_` | global | 01_Config_Global.gs | 681 |  |
-| `_csvBuscarArchivo_` | función | 01_Config_Global.gs | 1388 |  |
+| `_CSV_SUBCARPETAS_MEM_` | global | 01_Config_Global.gs | 683 |  |
+| `_csvBuscarArchivo_` | función | 01_Config_Global.gs | 1390 |  |
 | `_csvCacheBorrar_` | función | 05_Backup_CSV.gs | 1289 |  |
 | `_csvCacheGet_` | función | 05_Backup_CSV.gs | 1253 |  |
 | `_csvCacheKey_` | función | 05_Backup_CSV.gs | 1251 |  |
 | `_csvCachePut_` | función | 05_Backup_CSV.gs | 1275 |  |
-| `_csvDestinoDe_` | función | 01_Config_Global.gs | 1366 |  |
+| `_csvDestinoDe_` | función | 01_Config_Global.gs | 1368 |  |
 | `_csvEscapeCampo` | función | 05_Backup_CSV.gs | 2688 | Contexto_Base_Web.md §05B118 |
 | `_csvEscritosEnEjecucion_` | global | 05_Backup_CSV.gs | 73 |  |
 | `_csvEscritosTs_` | global | 05_Backup_CSV.gs | 75 |  |
-| `_csvInformesSubDe_` | función | 01_Config_Global.gs | 1358 | Contexto_Base_Web.md §PF185 |
-| `_csvSubcarpetaDe_` | función | 01_Config_Global.gs | 1316 |  |
+| `_csvInformesSubDe_` | función | 01_Config_Global.gs | 1360 | Contexto_Base_Web.md §PF185 |
+| `_csvSubcarpetaDe_` | función | 01_Config_Global.gs | 1318 |  |
 | `_ctsCorregir_` | función | 48_Herramientas_Debug.gs | 978 |  |
 | `_ctsLista_` | función | 48_Herramientas_Debug.gs | 965 |  |
 | `_ctxPorClanDesdeDatos_` | función | 09_API_ClashRoyale.gs | 3422 | Contexto_Base_Web.md §09B156 |
 | `_cuentasConVariosClanesEnOverlay_` | función | 18_CorreccionGuerra.gs | 2509 |  |
 | `_cumpleAtaquesSemanaActual` | función | 28_Torneos_Docs.gs | 779 | Contexto_Base_Web.md §28B053 |
 | `_cumpleAtaquesTorneoClan` | función | 28_Torneos_Docs.gs | 801 | Contexto_Base_Web.md §28B055 |
-| `_cumpleRequisitoCR` | función | 26_Torneos_Core.gs | 3336 | Contexto_Base_Web.md §26B044 |
+| `_cumpleRequisitoCR` | función | 26_Torneos_Core.gs | 3398 | Contexto_Base_Web.md §26B044 |
 | `_CW_CATALOGO_MEMO` | global | 39_CartasWeb.gs | 11 |  |
 | `_DASH_MEMO` | global | 38_Web_Endpoints.gs | 48 | Contexto_Base_Web.md §38B109 |
 | `_DASH_T` | global | 38_Web_Endpoints.gs | 51 | Contexto_Base_Web.md §38B113 |
@@ -722,27 +722,27 @@ Ninguno.
 | `_decidirNuevosDeFilas_` | función | 14_Nuevos_RoyaleAPI.gs | 2001 |  |
 | `_decidirPropuestaCRRealizada_` | función | 24_Historial_Ascensos.gs | 1590 | Contexto_Base_Web.md §PF286 |
 | `_decidirRellamadaPaso_` | función | 00_Main.gs | 2357 | Contexto_Base_Web.md §PF292 |
-| `_derivarClanClanTagDesdeTagOrg` | función | 26_Torneos_Core.gs | 1550 | Contexto_Base_Web.md §26B194 |
-| `_desactivarGridlines` | función | 01_Config_Global.gs | 1432 |  |
+| `_derivarClanClanTagDesdeTagOrg` | función | 26_Torneos_Core.gs | 1612 | Contexto_Base_Web.md §26B194 |
+| `_desactivarGridlines` | función | 01_Config_Global.gs | 1434 |  |
 | `_descargarBattlelogYCofresParaTodos` | función | 09_API_ClashRoyale.gs | 1345 | Contexto_Base_Web.md §09B069 |
 | `_describirActivador_` | función | 08_Activadores.gs | 129 |  |
 | `_desgloseBarcosPorDia` | función | 17_GuerraSheet.gs | 2801 | Contexto_Base_Web.md §17B149 |
-| `_destinoRangoCR` | función | 26_Torneos_Core.gs | 3346 |  |
-| `_detalleRequisitoCR` | función | 26_Torneos_Core.gs | 3372 | Contexto_Base_Web.md §26B046 |
+| `_destinoRangoCR` | función | 26_Torneos_Core.gs | 3408 |  |
+| `_detalleRequisitoCR` | función | 26_Torneos_Core.gs | 3434 | Contexto_Base_Web.md §26B046 |
 | `_detectarMulticuentas` | función | 11_DirectorioSheet.gs | 746 |  |
-| `_determinarOrganizador` | función | 26_Torneos_Core.gs | 1389 |  |
-| `_diaClaveOrden_` | función | 26_Torneos_Core.gs | 5056 | Contexto_Base_Web.md §PF286 |
+| `_determinarOrganizador` | función | 26_Torneos_Core.gs | 1451 |  |
+| `_diaClaveOrden_` | función | 26_Torneos_Core.gs | 5118 | Contexto_Base_Web.md §PF286 |
 | `_diagGuerraVivo_` | función | 38_Web_Endpoints.gs | 3269 |  |
 | `_diagnosticoGuerraDia` | función | 49_Diagnostico_Domingo.gs | 32 |  |
 | `_diagnosticoRangosPorDia_` | función | 18_CorreccionGuerra.gs | 3873 | Contexto_Base_Web.md §PF488 punto 10 |
 | `_diaGuerraGuardadoRiverRace_` | función | 19_CorreccionRiverRace.gs | 750 |  |
 | `_diaLimaDe_` | función | 17_GuerraSheet.gs | 3965 |  |
 | `_diarioDesdeAcumuladoGuerra_` | función | 37_Web_API.gs | 2830 | Contexto_Base_Web.md §37B262C |
-| `_DIAS_ES` | global | 01_Config_Global.gs | 655 | Contexto_Base_Web.md §01B111 |
+| `_DIAS_ES` | global | 01_Config_Global.gs | 657 | Contexto_Base_Web.md §01B111 |
 | `_diasOpcionalesClanSemana_` | función | 38_Web_Endpoints.gs | 2866 | Contexto_Base_Web.md §38B166 |
 | `_diferenciaNivelRareza` | función | 31_Cards_Mazos.gs | 345 | Contexto_Base_Web.md §31B020 |
 | `_digitosAEmojis` | función | 44_BotWhatsApp.gs | 655 | Contexto_Base_Web.md §44B028 |
-| `_DOCS_TORNEOS_SORTEOS_RECONSTRUIBLES` | global | 01_Config_Global.gs | 652 | Contexto_Base_Web.md §01B110 |
+| `_DOCS_TORNEOS_SORTEOS_RECONSTRUIBLES` | global | 01_Config_Global.gs | 654 | Contexto_Base_Web.md §01B110 |
 | `_docxFuenteArial_` | función | 37_Web_API.gs | 4997 |  |
 | `_DRIVE_CACHE_MEM` | global | 09_API_ClashRoyale.gs | 78 | Contexto_Base_Web.md §09B008 |
 | `_ejecutarPorTandas` | función | 00_Main.gs | 2141 |  |
@@ -762,7 +762,7 @@ Ninguno.
 | `_enviarMensajeWhatsApp` | función | 44_BotWhatsApp.gs | 173 |  |
 | `_enviarRespaldosMenuAPapelera` | función | 04_Formato_Comun.gs | 1076 | Contexto_Base_Web.md §04B029 |
 | `_enviarRespuestaBot` | función | 44_BotWhatsApp.gs | 226 | Contexto_Base_Web.md §44B014 |
-| `_esAdminEnDirectorioCR` | función | 26_Torneos_Core.gs | 3565 | Contexto_Base_Web.md §26B061 |
+| `_esAdminEnDirectorioCR` | función | 26_Torneos_Core.gs | 3627 | Contexto_Base_Web.md §26B061 |
 | `_esAdministrador` | función | 44_BotWhatsApp.gs | 489 | Contexto_Base_Web.md §44B022 |
 | `_escapeHtmlDash` | función | 38_Web_Endpoints.gs | 2097 | Contexto_Base_Web.md §38B190 |
 | `_esCartaTorre` | función | 31_Cards_Mazos.gs | 328 | Contexto_Base_Web.md §31B018 |
@@ -779,8 +779,8 @@ Ninguno.
 | `_escribirTSDEnFilaHoja_` | función | 24_Historial_Ascensos.gs | 468 | Contexto_Base_Web.md §PF267 |
 | `_esFechaValida` | función | 44_BotWhatsApp.gs | 1122 |  |
 | `_esHoraValida` | función | 44_BotWhatsApp.gs | 1127 |  |
-| `_esHoyPrimerDiaDeTemporada` | función | 26_Torneos_Core.gs | 2886 | Contexto_Base_Web.md §26B020 |
-| `_esMiembroVigenteEnClanesFamilia` | función | 26_Torneos_Core.gs | 3255 | Contexto_Base_Web.md §26B036 |
+| `_esHoyPrimerDiaDeTemporada` | función | 26_Torneos_Core.gs | 2948 | Contexto_Base_Web.md §26B020 |
+| `_esMiembroVigenteEnClanesFamilia` | función | 26_Torneos_Core.gs | 3317 | Contexto_Base_Web.md §26B036 |
 | `_esNuevoPorTagClan_` | función | 14_Nuevos_RoyaleAPI.gs | 1923 |  |
 | `_esPeriodoDeColiseo_` | función | 22_ControlCalendario.gs | 1259 | Contexto_Base_Web.md §22B055 |
 | `_esRespuestaVacia` | función | 44_BotWhatsApp.gs | 1049 |  |
@@ -789,7 +789,7 @@ Ninguno.
 | `_estiloArialDoc_` | función | 28_Torneos_Docs.gs | 1455 |  |
 | `_estimarPuestosColiseoRR_` | función | 17_GuerraSheet.gs | 2443 | Contexto_Base_Web.md §17B014 |
 | `_estimarPuestosDomingoRR_` | función | 17_GuerraSheet.gs | 2387 | Contexto_Base_Web.md §17B013 |
-| `_estuvoEnTernaEseJuevesCR_` | función | 26_Torneos_Core.gs | 3532 | Contexto_Base_Web.md §26B059 |
+| `_estuvoEnTernaEseJuevesCR_` | función | 26_Torneos_Core.gs | 3594 | Contexto_Base_Web.md §26B059 |
 | `_esUsuarioAutorizado` | función | 44_BotWhatsApp.gs | 480 | Contexto_Base_Web.md §44B021 |
 | `_etiquetaMesTemporada_` | función | 47_Migraciones.gs | 850 |  |
 | `_ETIQUETAS_ROL_CR_MIN` | global | 26_Torneos_Core.gs | 118 | Contexto_Base_Web.md §26B047 |
@@ -826,15 +826,15 @@ Ninguno.
 | `_excDiasTextoActual` | función | 55_Reparar_DiasConExceso.gs | 705 |  |
 | `_excDiasTextoPorDia` | función | 55_Reparar_DiasConExceso.gs | 711 |  |
 | `_excDiasVerificar` | función | 55_Reparar_DiasConExceso.gs | 778 |  |
-| `_existeParCRListaParaTemporada` | función | 26_Torneos_Core.gs | 2919 | Contexto_Base_Web.md §26B022 |
+| `_existeParCRListaParaTemporada` | función | 26_Torneos_Core.gs | 2981 | Contexto_Base_Web.md §26B022 |
 | `_exMiembrosDesdeIndice_` | función | 15_DeteccionInfiltrados.gs | 1371 | Contexto_Base_Web.md §PF369 |
 | `_explicarAltasCR_` | función | 24_Historial_Ascensos.gs | 1474 | Contexto_Base_Web.md §PF286 |
 | `_explicarBajasCR_` | función | 24_Historial_Ascensos.gs | 1503 | Contexto_Base_Web.md §PF286 |
 | `_explicarExcepcionalesCR_` | función | 24_Historial_Ascensos.gs | 1416 | Contexto_Base_Web.md §PF286 |
 | `_extraColsInactivosDesdeCsv` | función | 05_Backup_CSV.gs | 2360 | Contexto_Base_Web.md §05B061 |
 | `_extraerClanDeBattlelog` | función | 09_API_ClashRoyale.gs | 1504 | Contexto_Base_Web.md §09B079 |
-| `_extraerInfoOrganizador` | función | 26_Torneos_Core.gs | 1431 | Contexto_Base_Web.md §26B187 |
-| `_extraerIsosDesdeSemanasCsv` | función | 26_Torneos_Core.gs | 3869 | Contexto_Base_Web.md §26B298 |
+| `_extraerInfoOrganizador` | función | 26_Torneos_Core.gs | 1493 | Contexto_Base_Web.md §26B187 |
+| `_extraerIsosDesdeSemanasCsv` | función | 26_Torneos_Core.gs | 3931 | Contexto_Base_Web.md §26B298 |
 | `_extraerMensajeMeta` | función | 44_BotWhatsApp.gs | 82 | Contexto_Base_Web.md §44B010 |
 | `_extraerNombreCartaDeInsigniaMastery` | función | 32_Insignias.gs | 260 | Contexto_Base_Web.md §32B008 |
 | `_extraerValoresConLinksReales` | función | 05_Backup_CSV.gs | 1728 | Contexto_Base_Web.md §05B071 |
@@ -853,7 +853,7 @@ Ninguno.
 | `_fameTablaDia_` | función | 18_CorreccionGuerra.gs | 1570 | Contexto_Base_Web.md §18B005 |
 | `_fechaATemporadaSemana` | función | 14_Nuevos_RoyaleAPI.gs | 2678 | Contexto_Base_Web.md §14B121 |
 | `_fechaCorregidaGuerraLog_` | función | 17_GuerraSheet.gs | 4014 |  |
-| `_fechaInicioSemanasCR` | función | 26_Torneos_Core.gs | 3472 | Contexto_Base_Web.md §26B051 |
+| `_fechaInicioSemanasCR` | función | 26_Torneos_Core.gs | 3534 | Contexto_Base_Web.md §26B051 |
 | `_fechaLocalDeCelda_` | función | 47_Migraciones.gs | 2089 |  |
 | `_fechaPrimeraConsultaRR_` | función | 09_API_ClashRoyale.gs | 3485 |  |
 | `_fechaSorteoPorId_` | función | 28_Torneos_Docs.gs | 546 |  |
@@ -861,7 +861,7 @@ Ninguno.
 | `_fetchAllClanDataCached` | función | 09_API_ClashRoyale.gs | 3873 | Contexto_Base_Web.md §09B169 |
 | `_fetchClanesBasico` | función | 09_API_ClashRoyale.gs | 2070 | Contexto_Base_Web.md §09B092 |
 | `_fetchClanesBasicoSinApi` | función | 09_API_ClashRoyale.gs | 2209 | Contexto_Base_Web.md §09B109 |
-| `_fetchMembersTorneo` | función | 26_Torneos_Core.gs | 1649 | Contexto_Base_Web.md §26B238 |
+| `_fetchMembersTorneo` | función | 26_Torneos_Core.gs | 1711 | Contexto_Base_Web.md §26B238 |
 | `_fetchPlayersCached` | función | 09_API_ClashRoyale.gs | 3921 |  |
 | `_fetchPlayersData` | función | 09_API_ClashRoyale.gs | 2491 | Contexto_Base_Web.md §09B114 |
 | `_filaCoincideConLogCerrado_` | función | 17_GuerraSheet.gs | 2255 | Contexto_Base_Web.md §17B018 |
@@ -871,7 +871,7 @@ Ninguno.
 | `_filasEvaluadosCambioRango_` | función | 29_Docs_NoCalificados.gs | 707 |  |
 | `_filasPerfilPorTag_` | función | 14_Nuevos_RoyaleAPI.gs | 1961 |  |
 | `_filasTablaRequisitosRango_` | función | 25_Doc_AscensosDescensos.gs | 154 |  |
-| `_filtrarSemanasJugadasCR` | función | 26_Torneos_Core.gs | 3426 | Contexto_Base_Web.md §26B052 |
+| `_filtrarSemanasJugadasCR` | función | 26_Torneos_Core.gs | 3488 | Contexto_Base_Web.md §26B052 |
 | `_finalizarFormatoPendientes` | función | 17_GuerraSheet.gs | 6369 | Contexto_Base_Web.md §17B183 |
 | `_finalizarReenumeracion` | función | 47_Migraciones.gs | 1605 | Contexto_Base_Web.md §47B032 |
 | `_fmt` | función | 30_Mensajes.gs | 1213 |  |
@@ -886,8 +886,8 @@ Ninguno.
 | `_formatearValorPremioParaDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 591 | Contexto_Base_Web.md §27B018 |
 | `_formatFechaCanonica` | función | 05_Backup_CSV.gs | 1388 | Contexto_Base_Web.md §05B087 |
 | `_formatFechaHoraDocEs` | función | 28_Torneos_Docs.gs | 703 | Contexto_Base_Web.md §28B048 |
-| `_formatFechaLargaEs` | función | 01_Config_Global.gs | 935 | Contexto_Base_Web.md §01B130 |
-| `_formatHoraCanonica` | función | 26_Torneos_Core.gs | 3929 | Contexto_Base_Web.md §26B012 |
+| `_formatFechaLargaEs` | función | 01_Config_Global.gs | 937 | Contexto_Base_Web.md §01B130 |
+| `_formatHoraCanonica` | función | 26_Torneos_Core.gs | 3991 | Contexto_Base_Web.md §26B012 |
 | `_fusionarFilasPorMaximo` | función | 17_GuerraSheet.gs | 6412 | Contexto_Base_Web.md §17B186 |
 | `_fusionarGanadoresActaSorteo_` | función | 28_Torneos_Docs.gs | 1353 |  |
 | `_fusionarRegistroEnArrayHistorialGuerra` | función | 20_HistorialGuerraJugador.gs | 556 | Contexto_Base_Web.md §20B028 |
@@ -914,21 +914,21 @@ Ninguno.
 | `_gdsTriplesDia_` | función | 18_CorreccionGuerra.gs | 5933 |  |
 | `_gdsValoresHojaDeClan_` | función | 18_CorreccionGuerra.gs | 5887 | Contexto_Base_Web.md §PF445 |
 | `_gdsVariosDiasCabe_` | función | 18_CorreccionGuerra.gs | 5958 |  |
-| `_generarAsistenciaParaTorneo` | función | 26_Torneos_Core.gs | 2204 | Contexto_Base_Web.md §26B252 |
+| `_generarAsistenciaParaTorneo` | función | 26_Torneos_Core.gs | 2266 | Contexto_Base_Web.md §26B252 |
 | `_generarClaveAdmin` | función | 11_DirectorioSheet.gs | 1608 | Contexto_Base_Web.md §11B022 |
 | `_generarComentarioAscensoDefault` | función | 24_Historial_Ascensos.gs | 828 | Contexto_Base_Web.md §24B029 |
 | `_generarDashboardHtml` | función | 38_Web_Endpoints.gs | 1965 | Contexto_Base_Web.md §38B195 |
 | `_generarIndiceClanesExternosUnaCorrida_` | función | 15_DeteccionInfiltrados.gs | 1050 | Contexto_Base_Web.md §PF369, §PF378, §PF398 |
 | `_generarJsonContactos` | función | 38_Web_Endpoints.gs | 1880 | Contexto_Base_Web.md §38B102 |
-| `_generarParIdsCRLista` | función | 26_Torneos_Core.gs | 2847 | Contexto_Base_Web.md §26B016 |
+| `_generarParIdsCRLista` | función | 26_Torneos_Core.gs | 2909 | Contexto_Base_Web.md §26B016 |
 | `_generarUrlMazo2DesdeMapas` | función | 31_Cards_Mazos.gs | 1058 | Contexto_Base_Web.md §31B050 |
 | `_generarUrlMazo3DesdeMapas` | función | 31_Cards_Mazos.gs | 1129 | Contexto_Base_Web.md §PF051 |
 | `_generarUrlMazoDesdeMapas` | función | 31_Cards_Mazos.gs | 1046 | Contexto_Base_Web.md §31B049 |
-| `_getAdminFamilia_` | función | 01_Config_Global.gs | 1114 |  |
+| `_getAdminFamilia_` | función | 01_Config_Global.gs | 1116 |  |
 | `_getAgregadosAscensoPorTag` | función | 22_ControlCalendario.gs | 1580 | Contexto_Base_Web.md §22B070 |
 | `_getAportesInactivosSemanaActual` | función | 38_Web_Endpoints.gs | 3115 | Contexto_Base_Web.md §38B183 |
-| `_getAsistenciaFusionadaPorRaiz` | función | 26_Torneos_Core.gs | 2601 | Contexto_Base_Web.md §26B263 |
-| `_getAsistenciaTagsPorId` | función | 26_Torneos_Core.gs | 2310 |  |
+| `_getAsistenciaFusionadaPorRaiz` | función | 26_Torneos_Core.gs | 2663 | Contexto_Base_Web.md §26B263 |
+| `_getAsistenciaTagsPorId` | función | 26_Torneos_Core.gs | 2372 |  |
 | `_getAtaquesHoyCache` | función | 22_ControlCalendario.gs | 1673 |  |
 | `_getAtaquesHoyDeGuerra` | función | 17_GuerraSheet.gs | 2589 | Contexto_Base_Web.md §17B184 |
 | `_getAtaquesSemanaActualPorTag` | función | 28_Torneos_Docs.gs | 739 | Contexto_Base_Web.md §28B051 |
@@ -938,22 +938,22 @@ Ninguno.
 | `_getCardsFromCache` | función | 31_Cards_Mazos.gs | 690 | Contexto_Base_Web.md §31B038 |
 | `_getCarpetaParaClan` | función | 09_API_ClashRoyale.gs | 3083 | Contexto_Base_Web.md §09B144 |
 | `_getCarpetaSemana_` | función | 09_API_ClashRoyale.gs | 3186 |  |
-| `_getCarpetasPlantillas` | función | 01_Config_Global.gs | 740 | Contexto_Base_Web.md §01B114 |
+| `_getCarpetasPlantillas` | función | 01_Config_Global.gs | 742 | Contexto_Base_Web.md §01B114 |
 | `_getCelularesActualesPorTag` | función | 44_BotWhatsApp.gs | 903 | Contexto_Base_Web.md §44B036 |
-| `_getCelularesRespaldoManual_` | función | 01_Config_Global.gs | 1115 |  |
+| `_getCelularesRespaldoManual_` | función | 01_Config_Global.gs | 1117 |  |
 | `_getClanCache` | función | 09_API_ClashRoyale.gs | 2940 | Contexto_Base_Web.md §09B138 |
-| `_getClanesAdminTexto` | función | 01_Config_Global.gs | 1120 | Contexto_Base_Web.md §01B141 |
+| `_getClanesAdminTexto` | función | 01_Config_Global.gs | 1122 | Contexto_Base_Web.md §01B141 |
 | `_getClanesConflictoManual` | función | 15_DeteccionInfiltrados.gs | 950 | Contexto_Base_Web.md §15B004 |
 | `_getClanesRivalesTemporadaActual` | función | 15_DeteccionInfiltrados.gs | 912 | Contexto_Base_Web.md §15B003 |
 | `_getClanTagByName` | función | 38_Web_Endpoints.gs | 1954 | Contexto_Base_Web.md §38B194 |
-| `_getConfigMasRecienteCategoria` | función | 26_Torneos_Core.gs | 4038 | Contexto_Base_Web.md §26B220 |
+| `_getConfigMasRecienteCategoria` | función | 26_Torneos_Core.gs | 4100 | Contexto_Base_Web.md §26B220 |
 | `_getControlActivosGridPorTemporada` | función | 38_Web_Endpoints.gs | 2680 | Contexto_Base_Web.md §38B155 |
 | `_getControlTemporadaPorClan` | función | 38_Web_Endpoints.gs | 2923 | Contexto_Base_Web.md §38B167 |
 | `_getControlTemporadaPorTemporada` | función | 38_Web_Endpoints.gs | 2911 | Contexto_Base_Web.md §38B181 |
 | `_getControlTemporadaSelectores` | función | 38_Web_Endpoints.gs | 2887 | Contexto_Base_Web.md §38B180 |
 | `_getCsvDirMap` | función | 11_DirectorioSheet.gs | 494 |  |
-| `_getCsvFolder` | función | 01_Config_Global.gs | 1308 |  |
-| `_getCsvSubcarpeta_` | función | 01_Config_Global.gs | 1372 |  |
+| `_getCsvFolder` | función | 01_Config_Global.gs | 1310 |  |
+| `_getCsvSubcarpeta_` | función | 01_Config_Global.gs | 1374 |  |
 | `_getCtx` | función | 09_API_ClashRoyale.gs | 2967 | Contexto_Base_Web.md §09B139 |
 | `_getCuentasPorTelefono` | función | 44_BotWhatsApp.gs | 498 | Contexto_Base_Web.md §44B023 |
 | `_getDatosClanHoja` | función | 30_Mensajes.gs | 1139 | Contexto_Base_Web.md §30B031 |
@@ -963,73 +963,73 @@ Ninguno.
 | `_getDatosGuerraDesdeHojaParaControl` | función | 22_ControlCalendario.gs | 982 | Contexto_Base_Web.md §22B046 |
 | `_getDatosGuerraParaControl` | función | 22_ControlCalendario.gs | 956 | Contexto_Base_Web.md §22B045 |
 | `_getDiaActualYSeccionVigente` | función | 14_Nuevos_RoyaleAPI.gs | 1174 | Contexto_Base_Web.md §14B068 |
-| `_getDirectorioLookupPorTag` | función | 26_Torneos_Core.gs | 2270 |  |
+| `_getDirectorioLookupPorTag` | función | 26_Torneos_Core.gs | 2332 |  |
 | `_getEstadoUsuario` | función | 44_BotWhatsApp.gs | 433 |  |
 | `_getFechaMasRecienteTLista` | función | 28_Torneos_Docs.gs | 673 | Contexto_Base_Web.md §28B047 |
-| `_getFilaCRListaPorId` | función | 26_Torneos_Core.gs | 3133 | Contexto_Base_Web.md §26B027 |
+| `_getFilaCRListaPorId` | función | 26_Torneos_Core.gs | 3195 | Contexto_Base_Web.md §26B027 |
 | `_getFilasCompletasDirectorioPorTelefono` | función | 44_BotWhatsApp.gs | 537 | Contexto_Base_Web.md §44B025 |
 | `_getFilasDirectorioPorTelefono` | función | 44_BotWhatsApp.gs | 450 | Contexto_Base_Web.md §44B019 |
 | `_getFilasGuerraTemporadaParaControl_` | función | 22_ControlCalendario.gs | 1519 |  |
-| `_getFilaSListaPorId` | función | 26_Torneos_Core.gs | 2185 | Contexto_Base_Web.md §26B274 |
-| `_getFundadorCelular_` | función | 01_Config_Global.gs | 1113 |  |
+| `_getFilaSListaPorId` | función | 26_Torneos_Core.gs | 2247 | Contexto_Base_Web.md §26B274 |
+| `_getFundadorCelular_` | función | 01_Config_Global.gs | 1115 |  |
 | `_getGuerraPorClanParaRiverRace_` | función | 19_CorreccionRiverRace.gs | 584 |  |
 | `_getHistorialGuerraDriveIndexPorTag` | función | 20_HistorialGuerraJugador.gs | 516 | Contexto_Base_Web.md §20B030 |
 | `_getHistorialGuerraGrupalFolder` | función | 20_HistorialGuerraJugador.gs | 676 | Contexto_Base_Web.md §20B032 |
 | `_getHistorialGuerraGrupalJsonFolder_` | función | 20_HistorialGuerraJugador.gs | 702 | Contexto_Base_Web.md §PF321 |
-| `_getIdVigenteExtra` | función | 26_Torneos_Core.gs | 3987 | Contexto_Base_Web.md §26B223 |
-| `_getIdVigenteExtraCR` | función | 26_Torneos_Core.gs | 4004 | Contexto_Base_Web.md §26B224 |
-| `_getInactivosLookupPorTag` | función | 26_Torneos_Core.gs | 2292 | Contexto_Base_Web.md §26B257 |
+| `_getIdVigenteExtra` | función | 26_Torneos_Core.gs | 4049 | Contexto_Base_Web.md §26B223 |
+| `_getIdVigenteExtraCR` | función | 26_Torneos_Core.gs | 4066 | Contexto_Base_Web.md §26B224 |
+| `_getInactivosLookupPorTag` | función | 26_Torneos_Core.gs | 2354 | Contexto_Base_Web.md §26B257 |
 | `_getIndiceContenido` | función | 43_Menu_Dinamico.gs | 155 | Contexto_Base_Web.md §43B010 |
 | `_getInfoTemporada` | función | 38_Web_Endpoints.gs | 2577 | Contexto_Base_Web.md §38B148 |
 | `_getInsigniasDesdeCache` | función | 32_Insignias.gs | 184 | Contexto_Base_Web.md §32B020 |
 | `_getLogrosDesdeCache` | función | 34_Logros.gs | 106 | Contexto_Base_Web.md §34B002 |
-| `_getMapaCarpetaDestinoDocsReconstruibles` | función | 01_Config_Global.gs | 836 | Contexto_Base_Web.md §01B123 |
+| `_getMapaCarpetaDestinoDocsReconstruibles` | función | 01_Config_Global.gs | 838 | Contexto_Base_Web.md §01B123 |
 | `_getMapaCartasEs` | función | 32_Insignias.gs | 279 | Contexto_Base_Web.md §32B011 |
 | `_getMapaCruceMetaGuerraLogs_` | función | 22_ControlCalendario.gs | 1096 | Contexto_Base_Web.md §22B052 |
-| `_getMapaDocsReconstruibles` | función | 01_Config_Global.gs | 816 | Contexto_Base_Web.md §01B121 |
-| `_getMesEfectivo` | función | 01_Config_Global.gs | 989 | Contexto_Base_Web.md §01B133 |
+| `_getMapaDocsReconstruibles` | función | 01_Config_Global.gs | 818 | Contexto_Base_Web.md §01B121 |
+| `_getMesEfectivo` | función | 01_Config_Global.gs | 991 | Contexto_Base_Web.md §01B133 |
 | `_getMinGClanMaps` | función | 10_ClanSheet.gs | 203 | Contexto_Base_Web.md §10B009 |
 | `_getMinGClanMapsDash_` | función | 38_Web_Endpoints.gs | 2518 |  |
-| `_getMinTClanMaps` | función | 26_Torneos_Core.gs | 4218 | Contexto_Base_Web.md §26B277 |
+| `_getMinTClanMaps` | función | 26_Torneos_Core.gs | 4280 | Contexto_Base_Web.md §26B277 |
 | `_getMinTPorTagClan` | función | 27_Torneos_Sorteos_Requisitos.gs | 248 | Contexto_Base_Web.md §27B012 |
 | `_getNivel2` | función | 09_API_ClashRoyale.gs | 2840 | Contexto_Base_Web.md §09B133 |
 | `_getNombreClanDump` | función | 38_Web_Endpoints.gs | 2494 | Contexto_Base_Web.md §38B191 |
 | `_getNombresClanesOrdenados` | función | 30_Mensajes.gs | 1129 | Contexto_Base_Web.md §30B032 |
-| `_getNombresClanesTernaOrdenados` | función | 01_Config_Global.gs | 1140 | Contexto_Base_Web.md §01B142 |
+| `_getNombresClanesTernaOrdenados` | función | 01_Config_Global.gs | 1142 | Contexto_Base_Web.md §01B142 |
 | `_getNombresInsigniasConocidas` | función | 32_Insignias.gs | 351 | Contexto_Base_Web.md §32B023 |
 | `_getNombresLogrosConocidos` | función | 34_Logros.gs | 142 |  |
-| `_getNomMultiPorTag` | función | 26_Torneos_Core.gs | 1496 | Contexto_Base_Web.md §26B191 |
+| `_getNomMultiPorTag` | función | 26_Torneos_Core.gs | 1558 | Contexto_Base_Web.md §26B191 |
 | `_getOrCreateSheet` | función | 02_Setup_Hojas.gs | 136 | Contexto_Base_Web.md §02B011 |
 | `_getOrdenClanAscensos` | función | 24_Historial_Ascensos.gs | 737 | Contexto_Base_Web.md §24B025 |
 | `_getOrdenClanHoja` | función | 43_Menu_Dinamico.gs | 534 | Contexto_Base_Web.md §43B008 |
 | `_getOrdenExtra` | función | 43_Menu_Dinamico.gs | 498 | Contexto_Base_Web.md §43B007 |
 | `_getOrdenMensajesCategoria` | función | 30_Mensajes.gs | 1003 |  |
-| `_getParCRListaPorId` | función | 26_Torneos_Core.gs | 3206 | Contexto_Base_Web.md §26B032 |
+| `_getParCRListaPorId` | función | 26_Torneos_Core.gs | 3268 | Contexto_Base_Web.md §26B032 |
 | `_getParticipacionHoyGuerra` | función | 17_GuerraSheet.gs | 2619 | Contexto_Base_Web.md §17B194 |
-| `_getParticipantesFusionadosPorTorneo` | función | 26_Torneos_Core.gs | 2622 | Contexto_Base_Web.md §26B264 |
+| `_getParticipantesFusionadosPorTorneo` | función | 26_Torneos_Core.gs | 2684 | Contexto_Base_Web.md §26B264 |
 | `_getParticipantesGuerraTemporada_` | función | 38_Web_Endpoints.gs | 2818 |  |
 | `_getPlantillasParaMensajes` | función | 30_Mensajes.gs | 1015 | Contexto_Base_Web.md §30B037 |
 | `_getPlayerCache` | función | 09_API_ClashRoyale.gs | 2949 |  |
 | `_getPlayersDriveIndexPorTag` | función | 09_API_ClashRoyale.gs | 3700 | Contexto_Base_Web.md §09B162 |
-| `_getPromediosCRParaJugador` | función | 26_Torneos_Core.gs | 3275 | Contexto_Base_Web.md §26B037 |
-| `_getPropPrivada_` | función | 01_Config_Global.gs | 1101 |  |
-| `_getPropPrivadaJson_` | función | 01_Config_Global.gs | 1108 |  |
+| `_getPromediosCRParaJugador` | función | 26_Torneos_Core.gs | 3337 | Contexto_Base_Web.md §26B037 |
+| `_getPropPrivada_` | función | 01_Config_Global.gs | 1103 |  |
+| `_getPropPrivadaJson_` | función | 01_Config_Global.gs | 1110 |  |
 | `_getRangoFechasSemana` | función | 38_Web_Endpoints.gs | 2591 | Contexto_Base_Web.md §38B149 |
-| `_getRequisitosCambioRangoBloqueCategoria` | función | 26_Torneos_Core.gs | 3219 | Contexto_Base_Web.md §26B033 |
+| `_getRequisitosCambioRangoBloqueCategoria` | función | 26_Torneos_Core.gs | 3281 | Contexto_Base_Web.md §26B033 |
 | `_getRivalesYConflicto` | función | 15_DeteccionInfiltrados.gs | 854 | Contexto_Base_Web.md §15B006 |
 | `_getSemanasDeTemporada` | función | 25_Doc_AscensosDescensos.gs | 234 |  |
 | `_getSemanasTemporada` | función | 38_Web_Endpoints.gs | 2607 | Contexto_Base_Web.md §38B151 |
-| `_getSs` | función | 01_Config_Global.gs | 1413 |  |
+| `_getSs` | función | 01_Config_Global.gs | 1415 |  |
 | `_getSubcarpetaEndpoint_` | función | 09_API_ClashRoyale.gs | 3090 | Contexto_Base_Web.md §09B145 |
 | `_getTagsAdmin` | función | 09_API_ClashRoyale.gs | 2729 | Contexto_Base_Web.md §09B128 |
-| `_getTagsAdminPorNomMulti` | función | 26_Torneos_Core.gs | 1475 | Contexto_Base_Web.md §26B190 |
-| `_getTagsConAsistencia` | función | 26_Torneos_Core.gs | 2326 |  |
+| `_getTagsAdminPorNomMulti` | función | 26_Torneos_Core.gs | 1537 | Contexto_Base_Web.md §26B190 |
+| `_getTagsConAsistencia` | función | 26_Torneos_Core.gs | 2388 |  |
 | `_getTagsConPlayerCache` | función | 31_Cards_Mazos.gs | 871 | Contexto_Base_Web.md §31B041 |
 | `_getTagsConVGuerraVacia` | función | 09_API_ClashRoyale.gs | 2756 | Contexto_Base_Web.md §09B129 |
 | `_getTagsIngresosRecientes` | función | 09_API_ClashRoyale.gs | 2782 | Contexto_Base_Web.md §PF345 |
 | `_getTagsParaPartialMode` | función | 31_Cards_Mazos.gs | 652 |  |
 | `_getTagsSinPerfilJsonFolder_` | función | 20_HistorialGuerraJugador.gs | 1831 | Contexto_Base_Web.md §PF497 |
-| `_getTagsVistosEnGrupo` | función | 26_Torneos_Core.gs | 2828 | Contexto_Base_Web.md §26B273 |
+| `_getTagsVistosEnGrupo` | función | 26_Torneos_Core.gs | 2890 | Contexto_Base_Web.md §26B273 |
 | `_getTemporadaMostrarExtra` | función | 28_Torneos_Docs.gs | 718 | Contexto_Base_Web.md §28B076 |
 | `_getTemporadaOffsetRoyaleApi` | función | 18_CorreccionGuerra.gs | 2609 | Contexto_Base_Web.md §18B090 |
 | `_getTemporadaRoyaleApiDesdePropia` | función | 18_CorreccionGuerra.gs | 2618 | Contexto_Base_Web.md §18B091 |
@@ -1039,8 +1039,8 @@ Ninguno.
 | `_getTrofeosGuerraAcumuladosPorTagParaTemporada` | función | 28_Torneos_Docs.gs | 953 | Contexto_Base_Web.md §28B077 |
 | `_getTrofeosYAtaquesSemanalesPorTag` | función | 28_Torneos_Docs.gs | 811 | Contexto_Base_Web.md §28B079 |
 | `_getUltimaSemanaJugada` | función | 38_Web_Endpoints.gs | 2602 | Contexto_Base_Web.md §38B150 |
-| `_getUltimoParCRLista` | función | 26_Torneos_Core.gs | 2896 | Contexto_Base_Web.md §26B021 |
-| `_getUltimoRegistroTorneoOSorteo` | función | 26_Torneos_Core.gs | 4174 | Contexto_Base_Web.md §26B236 |
+| `_getUltimoParCRLista` | función | 26_Torneos_Core.gs | 2958 | Contexto_Base_Web.md §26B021 |
+| `_getUltimoRegistroTorneoOSorteo` | función | 26_Torneos_Core.gs | 4236 | Contexto_Base_Web.md §26B236 |
 | `_getValoresDiariosPorSemana` | función | 38_Web_Endpoints.gs | 2670 | Contexto_Base_Web.md §38B165 |
 | `_getValoresDiariosSelectores` | función | 38_Web_Endpoints.gs | 2636 | Contexto_Base_Web.md §38B153 |
 | `_getVGuerra` | función | 09_API_ClashRoyale.gs | 2827 | Contexto_Base_Web.md §09B132 |
@@ -1066,11 +1066,11 @@ Ninguno.
 | `_guardarJsonBusquedaNombreEnDrive` | función | 09_API_ClashRoyale.gs | 1889 | Contexto_Base_Web.md §09B090 |
 | `_guardarJsonClanesConsultaTemporalEnDrive` | función | 09_API_ClashRoyale.gs | 1868 | Contexto_Base_Web.md §09B089 |
 | `_guardarJsonClanesDesdeCaptura_` | función | 09_API_ClashRoyale.gs | 2404 | Contexto_Base_Web.md §PF091 |
-| `_guardarJsonTorneoEnDrive` | función | 26_Torneos_Core.gs | 1687 | Contexto_Base_Web.md §26B248 |
+| `_guardarJsonTorneoEnDrive` | función | 26_Torneos_Core.gs | 1749 | Contexto_Base_Web.md §26B248 |
 | `_guardarLogros2CSV` | función | 34_Logros.gs | 227 |  |
 | `_guardarLogrosCSV` | función | 34_Logros.gs | 123 |  |
-| `_guardarModoCSV` | función | 26_Torneos_Core.gs | 1769 | Contexto_Base_Web.md §26B244 |
-| `_guardarModoCSVSiHayNuevos` | función | 26_Torneos_Core.gs | 1807 | Contexto_Base_Web.md §26B247 |
+| `_guardarModoCSV` | función | 26_Torneos_Core.gs | 1831 | Contexto_Base_Web.md §26B244 |
+| `_guardarModoCSVSiHayNuevos` | función | 26_Torneos_Core.gs | 1869 | Contexto_Base_Web.md §26B247 |
 | `_guardarOverlayCorreccionesGuerra` | función | 18_CorreccionGuerra.gs | 2428 | Contexto_Base_Web.md §18B097 |
 | `_guardarPasoDeCadena_` | función | 00_Main.gs | 2395 |  |
 | `_guardarPendientesRiverRace` | función | 19_CorreccionRiverRace.gs | 697 | Contexto_Base_Web.md §19B020 |
@@ -1114,17 +1114,17 @@ Ninguno.
 | `_HISTORIAL_GUERRA_DRIVE_INDEX_POR_TAG` | global | 20_HistorialGuerraJugador.gs | 91 | Contexto_Base_Web.md §20B008 |
 | `_HISTORIAL_GUERRA_GRUPAL_CSV_MOVIDO` | global | 20_HistorialGuerraJugador.gs | 94 |  |
 | `_historialGuerraGrupalAlinearFilas_` | función | 20_HistorialGuerraJugador.gs | 1045 | Contexto_Base_Web.md §PF323 |
-| `_hojaConFilas_` | función | 01_Config_Global.gs | 1422 | Contexto_Base_Web.md §PF073 |
+| `_hojaConFilas_` | función | 01_Config_Global.gs | 1424 | Contexto_Base_Web.md §PF073 |
 | `_hojasConColumnaJugador` | función | 04_Formato_Comun.gs | 579 | Contexto_Base_Web.md §04B008 |
-| `_horaClaveOrden_` | función | 26_Torneos_Core.gs | 5062 |  |
+| `_horaClaveOrden_` | función | 26_Torneos_Core.gs | 5124 |  |
 | `_horaLimaCortaMs_` | función | 00_Main.gs | 858 |  |
 | `_horaLimaMensaje12h` | función | 09_API_ClashRoyale.gs | 3310 | Contexto_Base_Web.md §09B148 |
 | `_horaLimaNow` | función | 09_API_ClashRoyale.gs | 3303 | Contexto_Base_Web.md §09B147 |
-| `_horaStringADate` | función | 26_Torneos_Core.gs | 3916 | Contexto_Base_Web.md §26B011 |
-| `_hoyLimaSinHora` | función | 26_Torneos_Core.gs | 3826 | Contexto_Base_Web.md §26B249 |
-| `_idEventoCifras_` | función | 26_Torneos_Core.gs | 3806 |  |
-| `_idEventoConstruir_` | función | 26_Torneos_Core.gs | 3811 |  |
-| `_idEventoParsear_` | función | 26_Torneos_Core.gs | 3816 |  |
+| `_horaStringADate` | función | 26_Torneos_Core.gs | 3978 | Contexto_Base_Web.md §26B011 |
+| `_hoyLimaSinHora` | función | 26_Torneos_Core.gs | 3888 | Contexto_Base_Web.md §26B249 |
+| `_idEventoCifras_` | función | 26_Torneos_Core.gs | 3868 |  |
+| `_idEventoConstruir_` | función | 26_Torneos_Core.gs | 3873 |  |
+| `_idEventoParsear_` | función | 26_Torneos_Core.gs | 3878 |  |
 | `_idFilaGuerraCSV` | función | 17_GuerraSheet.gs | 6246 | Contexto_Base_Web.md §17B178 |
 | `_idGuerraDeFila_` | función | 17_GuerraSheet.gs | 5933 |  |
 | `_idSemanaInforme_` | función | 05_Backup_CSV.gs | 1168 | Contexto_Base_Web.md §PF242, §PF258 |
@@ -1158,7 +1158,7 @@ Ninguno.
 | `_insertarNuevosCandidatosOrdenadosPorClan` | función | 14_Nuevos_RoyaleAPI.gs | 2412 | Contexto_Base_Web.md §14B074 |
 | `_insertarParrafoEspaciador` | función | 28_Torneos_Docs.gs | 1121 | Contexto_Base_Web.md §28B074 |
 | `_INSIGNIAS_MAPA_CARTAS_MEMO` | global | 32_Insignias.gs | 15 | Contexto_Base_Web.md §32B010 |
-| `_instalarActivadorTorneoEnVivo` | función | 26_Torneos_Core.gs | 904 | Contexto_Base_Web.md §26B133 |
+| `_instalarActivadorTorneoEnVivo` | función | 26_Torneos_Core.gs | 966 | Contexto_Base_Web.md §26B133 |
 | `_invalidarCacheDiferenciaNivelPorRareza` | función | 31_Cards_Mazos.gs | 338 | Contexto_Base_Web.md §31B019 |
 | `_invalidarProgresoClanes` | función | 09_API_ClashRoyale.gs | 2341 | Contexto_Base_Web.md §09B104 |
 | `_jsonClanesDeEsteCheckpointYaEscritos_` | función | 09_API_ClashRoyale.gs | 2451 | Contexto_Base_Web.md §PF091 |
@@ -1171,7 +1171,7 @@ Ninguno.
 | `_jsonGrupalJuntarSemanas_` | función | 20_HistorialGuerraJugador.gs | 970 | Contexto_Base_Web.md §PF323 |
 | `_jsonGrupalOrdenar_` | función | 20_HistorialGuerraJugador.gs | 893 |  |
 | `_jsonGrupalReenumerarDoc_` | función | 20_HistorialGuerraJugador.gs | 950 | Contexto_Base_Web.md §PF322 |
-| `_juevesGuerraSemanaCR` | función | 26_Torneos_Core.gs | 3490 | Contexto_Base_Web.md §26B056 |
+| `_juevesGuerraSemanaCR` | función | 26_Torneos_Core.gs | 3552 | Contexto_Base_Web.md §26B056 |
 | `_leerAnchosColumnasGuardados` | función | 04_Formato_Comun.gs | 1097 | Contexto_Base_Web.md §04B067 |
 | `_leerArenaCSV` | función | 09_API_ClashRoyale.gs | 1790 | Contexto_Base_Web.md §09B084 |
 | `_leerBloquesFechaNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1332 | Contexto_Base_Web.md §14B079 |
@@ -1186,7 +1186,7 @@ Ninguno.
 | `_leerDirectorioDashboard_` | función | 38_Web_Endpoints.gs | 2444 | Contexto_Base_Web.md §38B111 |
 | `_leerDirectorioExistente` | función | 11_DirectorioSheet.gs | 631 |  |
 | `_leerDirectorioFisicoComoDC` | función | 11_DirectorioSheet.gs | 729 | Contexto_Base_Web.md §11B122 |
-| `_leerDirectorioParaOrganizadorCR_` | función | 26_Torneos_Core.gs | 2960 |  |
+| `_leerDirectorioParaOrganizadorCR_` | función | 26_Torneos_Core.gs | 3022 |  |
 | `_leerEntradasEstaticasDrive` | función | 43_Menu_Dinamico.gs | 269 | Contexto_Base_Web.md §43B017 |
 | `_leerEntradasIndiceGuardadoPorTipo` | función | 43_Menu_Dinamico.gs | 257 | Contexto_Base_Web.md §43B015 |
 | `_leerEntradasIndicePorTipo` | función | 43_Menu_Dinamico.gs | 247 | Contexto_Base_Web.md §43B011 |
@@ -1208,7 +1208,7 @@ Ninguno.
 | `_leerLogros2CSV` | función | 34_Logros.gs | 130 |  |
 | `_leerLogrosCSV` | función | 34_Logros.gs | 90 |  |
 | `_leerMapaCodigosClanContactos` | función | 38_Web_Endpoints.gs | 1947 | Contexto_Base_Web.md §38B101 |
-| `_leerModoCSV` | función | 26_Torneos_Core.gs | 1755 | Contexto_Base_Web.md §26B243 |
+| `_leerModoCSV` | función | 26_Torneos_Core.gs | 1817 | Contexto_Base_Web.md §26B243 |
 | `_leerNotasCalendario2PorSemana` | función | 22_ControlCalendario.gs | 1885 | Contexto_Base_Web.md §22B083 |
 | `_leerParesCRListaParaHistorial_` | función | 24_Historial_Ascensos.gs | 1669 | Contexto_Base_Web.md §PF286 |
 | `_leerPerfilWebCSV` | función | 36_PerfilWeb.gs | 76 | Contexto_Base_Web.md §36B003 |
@@ -1244,10 +1244,10 @@ Ninguno.
 | `_lineasResumenSorteoDoc_` | función | 28_Torneos_Docs.gs | 1438 |  |
 | `_listarCarpetasOrdenadas_` | función | 47_Migraciones.gs | 1573 |  |
 | `_listarMiembrosClanParaGestion` | función | 44_BotWhatsApp.gs | 918 | Contexto_Base_Web.md §44B037 |
-| `_listarSorteosDeHoy` | función | 26_Torneos_Core.gs | 4859 | Contexto_Base_Web.md §26B308 |
-| `_listarSorteosModificables` | función | 26_Torneos_Core.gs | 4883 | Contexto_Base_Web.md §PF108 |
-| `_listarTorneosDeHoy` | función | 26_Torneos_Core.gs | 4502 | Contexto_Base_Web.md §26B296 |
-| `_listarTorneosModificables` | función | 26_Torneos_Core.gs | 4531 | Contexto_Base_Web.md §PF099 |
+| `_listarSorteosDeHoy` | función | 26_Torneos_Core.gs | 4921 | Contexto_Base_Web.md §26B308 |
+| `_listarSorteosModificables` | función | 26_Torneos_Core.gs | 4945 | Contexto_Base_Web.md §PF108 |
+| `_listarTorneosDeHoy` | función | 26_Torneos_Core.gs | 4564 | Contexto_Base_Web.md §26B296 |
+| `_listarTorneosModificables` | función | 26_Torneos_Core.gs | 4593 | Contexto_Base_Web.md §PF099 |
 | `_loadCSVFromDrive` | función | 05_Backup_CSV.gs | 1180 |  |
 | `_loadHistorialGuerraGrupalCSV` | función | 20_HistorialGuerraJugador.gs | 664 |  |
 | `_logAvanceTanda_` | función | 00_Main.gs | 2117 |  |
@@ -1270,14 +1270,14 @@ Ninguno.
 | `_marcaDePasoDeCadena_` | función | 00_Main.gs | 2389 |  |
 | `_marcarEstadoLog_` | función | 17_GuerraSheet.gs | 2243 | Contexto_Base_Web.md §17B017 |
 | `_marcarOrigenCorregido` | función | 18_CorreccionGuerra.gs | 4168 | Contexto_Base_Web.md §18B076 |
-| `_marcarVistoEnGrupoVerificado` | función | 26_Torneos_Core.gs | 2807 | Contexto_Base_Web.md §26B272 |
+| `_marcarVistoEnGrupoVerificado` | función | 26_Torneos_Core.gs | 2869 | Contexto_Base_Web.md §26B272 |
 | `_marcaTiempoEvento_` | función | 47_Migraciones.gs | 1826 | Contexto_Base_Web.md §PF286 |
 | `_matchMiembroGestion` | función | 44_BotWhatsApp.gs | 940 | Contexto_Base_Web.md §44B039 |
 | `_matchOpcion` | función | 44_BotWhatsApp.gs | 763 | Contexto_Base_Web.md §44B032 |
 | `_maxOVacio` | función | 22_ControlCalendario.gs | 902 |  |
 | `_mergearCards2CSV` | función | 31_Cards_Mazos.gs | 470 | Contexto_Base_Web.md §31B029 |
 | `_MESES_ABREV_ES_` | global | 38_Web_Endpoints.gs | 61 |  |
-| `_MESES_ES` | global | 01_Config_Global.gs | 657 |  |
+| `_MESES_ES` | global | 01_Config_Global.gs | 659 |  |
 | `_MESES_ES_` | global | 38_Web_Endpoints.gs | 59 | Contexto_Base_Web.md §38B145 |
 | `_mezclarCartasEnMapa` | función | 31_Cards_Mazos.gs | 752 | Contexto_Base_Web.md §31B039 |
 | `_migrarColumnaPrestamoEnHoja` | función | 47_Migraciones.gs | 1773 |  |
@@ -1286,9 +1286,9 @@ Ninguno.
 | `_migrarNuevosAHistorico` | función | 14_Nuevos_RoyaleAPI.gs | 2494 | Contexto_Base_Web.md §14B124 |
 | `_migrarOrdenColumnasIndiceSiHaceFalta` | función | 03_Indice_Sheet.gs | 221 | Contexto_Base_Web.md §03B013 |
 | `_migrarTextoGuerraCsv_` | función | 05_Backup_CSV.gs | 1213 |  |
-| `_mismoDia` | función | 26_Torneos_Core.gs | 3960 |  |
-| `_modificarFechaHoraSorteo` | función | 26_Torneos_Core.gs | 4926 | Contexto_Base_Web.md §PF107 |
-| `_modificarFechaHoraTorneo` | función | 26_Torneos_Core.gs | 4580 | Contexto_Base_Web.md §PF105 |
+| `_mismoDia` | función | 26_Torneos_Core.gs | 4022 |  |
+| `_modificarFechaHoraSorteo` | función | 26_Torneos_Core.gs | 4988 | Contexto_Base_Web.md §PF107 |
+| `_modificarFechaHoraTorneo` | función | 26_Torneos_Core.gs | 4642 | Contexto_Base_Web.md §PF105 |
 | `_msFechaConHoraLima_` | función | 17_GuerraSheet.gs | 3951 |  |
 | `_msgBienvenida` | función | 44_BotWhatsApp.gs | 512 | Contexto_Base_Web.md §44B024 |
 | `_msgBienvenidaAdmin` | función | 44_BotWhatsApp.gs | 560 | Contexto_Base_Web.md §44B026 |
@@ -1332,7 +1332,7 @@ Ninguno.
 | `_nombreClanJsonGrupal_` | función | 20_HistorialGuerraJugador.gs | 814 |  |
 | `_nombreInformeExcluidoReenum_` | función | 47_Migraciones.gs | 1450 |  |
 | `_NOMBRES_CLAN_CHECKPOINT` | global | 38_Web_Endpoints.gs | 64 |  |
-| `_nombresOrganizadorTL_` | función | 26_Torneos_Core.gs | 1576 | Contexto_Base_Web.md §PF099 |
+| `_nombresOrganizadorTL_` | función | 26_Torneos_Core.gs | 1638 | Contexto_Base_Web.md §PF099 |
 | `_nombresVigentesClanes_` | función | 10_ClanSheet.gs | 244 | Contexto_Base_Web.md §PF503 |
 | `_normalizarClanTagContactos` | función | 38_Web_Endpoints.gs | 1942 | Contexto_Base_Web.md §38B100 |
 | `_normalizarClanTagCorreccion` | función | 18_CorreccionGuerra.gs | 2042 |  |
@@ -1341,13 +1341,13 @@ Ninguno.
 | `_normalizarFechaHoraListas_` | función | 47_Migraciones.gs | 2417 |  |
 | `_normalizarHoraActa_` | función | 28_Torneos_Docs.gs | 1424 |  |
 | `_normalizarHoraCelda_` | función | 47_Migraciones.gs | 2388 |  |
-| `_normalizarHoraSLista` | función | 26_Torneos_Core.gs | 1934 | Contexto_Base_Web.md §PF118 |
+| `_normalizarHoraSLista` | función | 26_Torneos_Core.gs | 1996 | Contexto_Base_Web.md §PF118 |
 | `_normalizarNombreClan_` | función | 09_API_ClashRoyale.gs | 3057 | Contexto_Base_Web.md §09B143 |
-| `_normalizarNombreSA_` | función | 26_Torneos_Core.gs | 2178 |  |
+| `_normalizarNombreSA_` | función | 26_Torneos_Core.gs | 2240 |  |
 | `_normalizarPeriodIndex_` | función | 09_API_ClashRoyale.gs | 3275 |  |
-| `_normalizarSiNoRequisito` | función | 26_Torneos_Core.gs | 4237 | Contexto_Base_Web.md §26B280 |
+| `_normalizarSiNoRequisito` | función | 26_Torneos_Core.gs | 4299 | Contexto_Base_Web.md §26B280 |
 | `_notaEndOfDayRankGuerraLogs_` | función | 17_GuerraSheet.gs | 2144 | Contexto_Base_Web.md §17B011 |
-| `_notaSemanasContadasCR` | función | 26_Torneos_Core.gs | 3557 |  |
+| `_notaSemanasContadasCR` | función | 26_Torneos_Core.gs | 3619 |  |
 | `_notaSinDatosGuerraCR_` | función | 24_Historial_Ascensos.gs | 1453 | Contexto_Base_Web.md §PF286 |
 | `_noticiasAscensos_` | función | 40_Web_Noticias.gs | 291 | Contexto_Base_Web.md §40B008 |
 | `_noticiasBarcos_` | función | 40_Web_Noticias.gs | 189 | Contexto_Base_Web.md §40B007 |
@@ -1363,7 +1363,7 @@ Ninguno.
 | `_noticiasSeccion_` | función | 40_Web_Noticias.gs | 88 |  |
 | `_noticiasSumarDias_` | función | 40_Web_Noticias.gs | 98 |  |
 | `_nuevosDesdeFilasPerfil_` | función | 14_Nuevos_RoyaleAPI.gs | 2020 |  |
-| `_numDesdeCeldaCSV_` | función | 01_Config_Global.gs | 1534 | Contexto_Base_Web.md §01B155 |
+| `_numDesdeCeldaCSV_` | función | 01_Config_Global.gs | 1536 | Contexto_Base_Web.md §01B155 |
 | `_numDesdeCeldaLogs_` | función | 17_GuerraSheet.gs | 3133 | Contexto_Base_Web.md §17B094 |
 | `_numOrNull` | función | 20_HistorialGuerraJugador.gs | 305 | Contexto_Base_Web.md §20B038 |
 | `_obtenerArenaCompletaDesdeCatalogo` | función | 37_Web_API.gs | 3141 | Contexto_Base_Web.md §37B287 |
@@ -1374,19 +1374,19 @@ Ninguno.
 | `_obtenerDatosSinCelular` | función | 30_Mensajes.gs | 471 |  |
 | `_obtenerDatosSinEtiqueta` | función | 30_Mensajes.gs | 486 |  |
 | `_obtenerFechaCierrePorTemporadaSemana` | función | 20_HistorialGuerraJugador.gs | 1736 | Contexto_Base_Web.md §20B044 |
-| `_obtenerFilasConFallbackCSV` | función | 01_Config_Global.gs | 1452 | Contexto_Base_Web.md §01B152 |
+| `_obtenerFilasConFallbackCSV` | función | 01_Config_Global.gs | 1454 | Contexto_Base_Web.md §01B152 |
 | `_obtenerListaCandidatosNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1612 | Contexto_Base_Web.md §14B081 |
 | `_obtenerListaCorreccionGuerra` | función | 18_CorreccionGuerra.gs | 3006 | Contexto_Base_Web.md §18B106 |
-| `_obtenerMapaPorTagConFallbackCSV` | función | 01_Config_Global.gs | 1521 | Contexto_Base_Web.md §01B154 |
+| `_obtenerMapaPorTagConFallbackCSV` | función | 01_Config_Global.gs | 1523 | Contexto_Base_Web.md §01B154 |
 | `_obtenerModoCompletoDesdeCatalogo` | función | 37_Web_API.gs | 3163 | Contexto_Base_Web.md §37B288 |
 | `_obtenerNomMultisAdmins` | función | 13_Inactivos_Vetados.gs | 668 | Contexto_Base_Web.md §13B028 |
 | `_obtenerNomMultisDistintos` | función | 11_DirectorioSheet.gs | 1755 | Contexto_Base_Web.md §11B109 |
 | `_obtenerOpcionesClanCategoria` | función | 44_BotWhatsApp.gs | 1234 | Contexto_Base_Web.md §44B042 |
-| `_obtenerOrganizadorFuenteTLista` | función | 26_Torneos_Core.gs | 1633 | Contexto_Base_Web.md §26B303 |
+| `_obtenerOrganizadorFuenteTLista` | función | 26_Torneos_Core.gs | 1695 | Contexto_Base_Web.md §26B303 |
 | `_obtenerPrestamoPorTag` | función | 30_Mensajes.gs | 527 | Contexto_Base_Web.md §30B035 |
 | `_obtenerTagsEnHojaNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1685 | Contexto_Base_Web.md §14B091 |
 | `_ocultarColumnaJugador` | función | 04_Formato_Comun.gs | 591 | Contexto_Base_Web.md §04B011 |
-| `_ocultarFilasTagsOcultos` | función | 01_Config_Global.gs | 1191 | Contexto_Base_Web.md §01B146 |
+| `_ocultarFilasTagsOcultos` | función | 01_Config_Global.gs | 1193 | Contexto_Base_Web.md §01B146 |
 | `_offDiaDesdeTimestamp` | función | 19_CorreccionRiverRace.gs | 739 | Contexto_Base_Web.md §19B023 |
 | `_offDiaFilaPendienteRiverRace_` | función | 19_CorreccionRiverRace.gs | 761 |  |
 | `_olvidarVetadoConfirmado` | función | 13_Inactivos_Vetados.gs | 737 | Contexto_Base_Web.md §13B033 |
@@ -1401,24 +1401,24 @@ Ninguno.
 | `_ordenarEntradasIndice` | función | 43_Menu_Dinamico.gs | 469 | Contexto_Base_Web.md §43B022 |
 | `_ordenarFichasSemanas_` | función | 47_Migraciones.gs | 2403 |  |
 | `_ordenarFilasCatalogoInsignias` | función | 32_Insignias.gs | 302 | Contexto_Base_Web.md §32B005 |
-| `_ordenarHojaPorFechaDesc_` | función | 26_Torneos_Core.gs | 5076 |  |
-| `_ordenarSAsistenciaPorFecha` | función | 26_Torneos_Core.gs | 5173 |  |
+| `_ordenarHojaPorFechaDesc_` | función | 26_Torneos_Core.gs | 5138 |  |
+| `_ordenarSAsistenciaPorFecha` | función | 26_Torneos_Core.gs | 5235 |  |
 | `_ordenarSemanasSorteoDoc` | función | 27_Torneos_Sorteos_Requisitos.gs | 394 |  |
-| `_ordenarSListaPorFecha` | función | 26_Torneos_Core.gs | 5156 | Contexto_Base_Web.md §PF286 |
-| `_ordenarTAsistenciaPorFecha` | función | 26_Torneos_Core.gs | 5165 | Contexto_Base_Web.md §PF286 |
-| `_ordenarTListaPorFecha` | función | 26_Torneos_Core.gs | 5141 | Contexto_Base_Web.md §26B172 |
-| `_ordenarYColorearSAsistencia_` | función | 26_Torneos_Core.gs | 5202 |  |
-| `_ordenarYFormatearListasYAsistencias_` | función | 26_Torneos_Core.gs | 5181 |  |
+| `_ordenarSListaPorFecha` | función | 26_Torneos_Core.gs | 5218 | Contexto_Base_Web.md §PF286 |
+| `_ordenarTAsistenciaPorFecha` | función | 26_Torneos_Core.gs | 5227 | Contexto_Base_Web.md §PF286 |
+| `_ordenarTListaPorFecha` | función | 26_Torneos_Core.gs | 5203 | Contexto_Base_Web.md §26B172 |
+| `_ordenarYColorearSAsistencia_` | función | 26_Torneos_Core.gs | 5264 |  |
+| `_ordenarYFormatearListasYAsistencias_` | función | 26_Torneos_Core.gs | 5243 |  |
 | `_ordenRango` | función | 30_Mensajes.gs | 702 | Contexto_Base_Web.md §30B008 |
 | `_ORDINALES_PUESTO_PREMIO` | global | 27_Torneos_Sorteos_Requisitos.gs | 38 | Contexto_Base_Web.md §27B020 |
 | `_origenGuerraEs_` | función | 17_GuerraSheet.gs | 2085 |  |
 | `_pad2_` | función | 09_API_ClashRoyale.gs | 3181 |  |
 | `_parseCSV` | función | 05_Backup_CSV.gs | 1305 |  |
-| `_parseFechaApiSupercell` | función | 26_Torneos_Core.gs | 1676 | Contexto_Base_Web.md §26B240 |
+| `_parseFechaApiSupercell` | función | 26_Torneos_Core.gs | 1738 | Contexto_Base_Web.md §26B240 |
 | `_parseFechaISONuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1597 | Contexto_Base_Web.md §14B095 |
-| `_parseHoraCanonica` | función | 26_Torneos_Core.gs | 3937 | Contexto_Base_Web.md §26B013 |
+| `_parseHoraCanonica` | función | 26_Torneos_Core.gs | 3999 | Contexto_Base_Web.md §26B013 |
 | `_parseRequisitosParticipantes` | función | 28_Torneos_Docs.gs | 1196 | Contexto_Base_Web.md §28B064 |
-| `_parseSemanasSorteo` | función | 26_Torneos_Core.gs | 3969 | Contexto_Base_Web.md §26B221 |
+| `_parseSemanasSorteo` | función | 26_Torneos_Core.gs | 4031 | Contexto_Base_Web.md §26B221 |
 | `_parseSpanishDate` | función | 05_Backup_CSV.gs | 1331 |  |
 | `_parseStringDate` | función | 11_DirectorioSheet.gs | 1365 |  |
 | `_pasoMedianocheDiaGuerra_` | función | 30_Mensajes.gs | 724 | Contexto_Base_Web.md §PF457 |
@@ -1433,8 +1433,8 @@ Ninguno.
 | `_planAlinearAsistencia_` | función | 47_Migraciones.gs | 2241 |  |
 | `_planIdsEventoLista_` | función | 47_Migraciones.gs | 1848 | Contexto_Base_Web.md §PF286 |
 | `_planificarMarcadoRealizadoCR_` | función | 24_Historial_Ascensos.gs | 1634 | Contexto_Base_Web.md §PF286 |
-| `_planificarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4803 | Contexto_Base_Web.md §26B312 |
-| `_planificarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4431 | Contexto_Base_Web.md §26B293 |
+| `_planificarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4865 | Contexto_Base_Web.md §26B312 |
+| `_planificarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4493 | Contexto_Base_Web.md §26B293 |
 | `_planNombreClanEnFilas_` | función | 10_ClanSheet.gs | 282 | Contexto_Base_Web.md §PF503 |
 | `_planRenombrarCarpetasClan_` | función | 09_API_ClashRoyale.gs | 3121 | Contexto_Base_Web.md §PF502 |
 | `_PLAYERS_DRIVE_INDEX_POR_TAG` | global | 09_API_ClashRoyale.gs | 155 | Contexto_Base_Web.md §09B018 |
@@ -1475,7 +1475,7 @@ Ninguno.
 | `_pronosticoTechoDePozo` | función | 21_Pronostico_Guerra.gs | 393 | Contexto_Base_Web.md §21B012 |
 | `_pronosticoTechoRestante` | función | 21_Pronostico_Guerra.gs | 427 | Contexto_Base_Web.md §21B005 |
 | `_pronosticoYaHizoDuelo` | función | 21_Pronostico_Guerra.gs | 454 | Contexto_Base_Web.md §21B007 |
-| `_propPrivadaCache_` | global | 01_Config_Global.gs | 671 | Contexto_Base_Web.md §PF048 |
+| `_propPrivadaCache_` | global | 01_Config_Global.gs | 673 | Contexto_Base_Web.md §PF048 |
 | `_protegerSoloAdvertencia` | función | 02_Setup_Hojas.gs | 148 | Contexto_Base_Web.md §02B018 |
 | `_proyectarInactivos` | función | 13_Inactivos_Vetados.gs | 159 | Contexto_Base_Web.md §13B016 |
 | `_proyectarLinksIdentidad` | función | 12_Players_Links.gs | 92 | Contexto_Base_Web.md §12B007 |
@@ -1483,7 +1483,7 @@ Ninguno.
 | `_publicarGuerraEstatico_` | función | 50_Publicar_Guerra.gs | 74 |  |
 | `_publicarHomeEstatico_` | función | 52_Publicar_Home.gs | 61 |  |
 | `_publicarRosterEstatico_` | función | 51_Publicar_Roster.gs | 57 |  |
-| `_publicarTorneosDesdeTick_` | función | 26_Torneos_Core.gs | 990 |  |
+| `_publicarTorneosDesdeTick_` | función | 26_Torneos_Core.gs | 1052 |  |
 | `_publicarTorneosEstatico_` | función | 53_Publicar_Torneos.gs | 89 |  |
 | `_puestoEstimadoWebDesdeFila_` | función | 17_GuerraSheet.gs | 3116 | Contexto_Base_Web.md §17B092 |
 | `_puestoMedallasDiaPorClan_` | función | 30_Mensajes.gs | 607 | Contexto_Base_Web.md §PF532 |
@@ -1562,12 +1562,12 @@ Ninguno.
 | `_registrarPrimeraConsultaDesdeCaptura_` | función | 09_API_ClashRoyale.gs | 2379 | Contexto_Base_Web.md §PF091 |
 | `_registrarPrimeraConsultaRR_` | función | 09_API_ClashRoyale.gs | 3463 |  |
 | `_registrarPropuestasCRListaEnHistorial` | función | 24_Historial_Ascensos.gs | 861 | Contexto_Base_Web.md §24B033 |
-| `_registrarResolucionSorteo` | función | 26_Torneos_Core.gs | 1957 | Contexto_Base_Web.md §26B275 |
-| `_registrarResolucionTorneo` | función | 26_Torneos_Core.gs | 2733 | Contexto_Base_Web.md §26B270 |
+| `_registrarResolucionSorteo` | función | 26_Torneos_Core.gs | 2019 | Contexto_Base_Web.md §26B275 |
+| `_registrarResolucionTorneo` | función | 26_Torneos_Core.gs | 2795 | Contexto_Base_Web.md §26B270 |
 | `_registrarRevisionGuerra_` | función | 18_CorreccionGuerra.gs | 3234 | Contexto_Base_Web.md §18B022 |
-| `_registrarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4718 | Contexto_Base_Web.md §26B310 |
+| `_registrarSorteoDesdeBot` | función | 26_Torneos_Core.gs | 4780 | Contexto_Base_Web.md §26B310 |
 | `_registrarTagsSinPerfil_` | función | 20_HistorialGuerraJugador.gs | 1896 | Contexto_Base_Web.md §PF497 |
-| `_registrarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4282 | Contexto_Base_Web.md §26B283 |
+| `_registrarTorneoDesdeBot` | función | 26_Torneos_Core.gs | 4344 | Contexto_Base_Web.md §26B283 |
 | `_registrarVetadoConfirmado` | función | 13_Inactivos_Vetados.gs | 691 | Contexto_Base_Web.md §13B032 |
 | `_registroHistorialGuerraAFilaGrupal` | función | 20_HistorialGuerraJugador.gs | 784 | Contexto_Base_Web.md §20B042 |
 | `_reglaCondFmtAscenso` | función | 22_ControlCalendario.gs | 1698 |  |
@@ -1585,7 +1585,7 @@ Ninguno.
 | `_renombrarDocFormatoAntiguo` | función | 43_Menu_Dinamico.gs | 353 | Contexto_Base_Web.md §43B006 |
 | `_renombrarHojasHistorialLegacy` | función | 04_Formato_Comun.gs | 964 | Contexto_Base_Web.md §04B025 |
 | `_renumerarNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 890 | Contexto_Base_Web.md §14B109 |
-| `_reordenarCRListaPorFecha` | función | 26_Torneos_Core.gs | 5039 | Contexto_Base_Web.md §26B014 |
+| `_reordenarCRListaPorFecha` | función | 26_Torneos_Core.gs | 5101 | Contexto_Base_Web.md §26B014 |
 | `_reordenarFilasNuevosPorClanYNombre` | función | 14_Nuevos_RoyaleAPI.gs | 975 | Contexto_Base_Web.md §14B110 |
 | `_reordenarHistorialAscensosGlobal` | función | 24_Historial_Ascensos.gs | 752 | Contexto_Base_Web.md §24B026 |
 | `_reordenarYOcultarHojasSegunIndice` | función | 03_Indice_Sheet.gs | 350 | Contexto_Base_Web.md §03B017 |
@@ -1613,14 +1613,14 @@ Ninguno.
 | `_requisitosIncumplidosCR_` | función | 24_Historial_Ascensos.gs | 1383 | Contexto_Base_Web.md §PF286 |
 | `_resolverArenaDesdeCatalogo` | función | 09_API_ClashRoyale.gs | 1820 | Contexto_Base_Web.md §09B087 |
 | `_resolverFechaIngF2` | función | 11_DirectorioSheet.gs | 1349 | Contexto_Base_Web.md §11B066 |
-| `_resolverGruposContinuacionTorneos` | función | 26_Torneos_Core.gs | 2526 | Contexto_Base_Web.md §26B259 |
-| `_resolverModoDesdeCatalogo` | función | 26_Torneos_Core.gs | 1782 | Contexto_Base_Web.md §26B245 |
-| `_resolverNombreClan` | función | 01_Config_Global.gs | 1160 | Contexto_Base_Web.md §01B143 |
+| `_resolverGruposContinuacionTorneos` | función | 26_Torneos_Core.gs | 2588 | Contexto_Base_Web.md §26B259 |
+| `_resolverModoDesdeCatalogo` | función | 26_Torneos_Core.gs | 1844 | Contexto_Base_Web.md §26B245 |
+| `_resolverNombreClan` | función | 01_Config_Global.gs | 1162 | Contexto_Base_Web.md §01B143 |
 | `_resolverNombreInsignia` | función | 32_Insignias.gs | 240 | Contexto_Base_Web.md §32B015 |
-| `_resolverOrganizadorCRAutogenerado_` | función | 26_Torneos_Core.gs | 2988 |  |
-| `_resolverOrganizadorPorCreatorTag` | función | 26_Torneos_Core.gs | 1355 | Contexto_Base_Web.md §26B185 |
+| `_resolverOrganizadorCRAutogenerado_` | función | 26_Torneos_Core.gs | 3050 |  |
+| `_resolverOrganizadorPorCreatorTag` | función | 26_Torneos_Core.gs | 1417 | Contexto_Base_Web.md §26B185 |
 | `_resolverPropuestaCRListaComoRealizada` | función | 24_Historial_Ascensos.gs | 1168 | Contexto_Base_Web.md §24B050 |
-| `_resolverTagOrgDesdeOrganizador` | función | 26_Torneos_Core.gs | 1519 | Contexto_Base_Web.md §26B192 |
+| `_resolverTagOrgDesdeOrganizador` | función | 26_Torneos_Core.gs | 1581 | Contexto_Base_Web.md §26B192 |
 | `_respaldarIndiceCSV` | función | 05_Backup_CSV.gs | 1984 | Contexto_Base_Web.md §05B097 |
 | `_respaldarListaHojasCSV` | función | 05_Backup_CSV.gs | 2143 | Contexto_Base_Web.md §05B106 |
 | `_respuestaInfoClan` | función | 44_BotWhatsApp.gs | 1401 | Contexto_Base_Web.md §44B047 |
@@ -1660,7 +1660,7 @@ Ninguno.
 | `_rgValores_` | función | 20_HistorialGuerraJugador.gs | 1277 |  |
 | `_rolDeRangoCR_` | función | 24_Historial_Ascensos.gs | 1465 |  |
 | `_rosterPasoPorClanVetado_` | función | 15_DeteccionInfiltrados.gs | 381 | Contexto_Base_Web.md §PF368 |
-| `_round1` | función | 26_Torneos_Core.gs | 3417 | Contexto_Base_Web.md §26B050 |
+| `_round1` | función | 26_Torneos_Core.gs | 3479 | Contexto_Base_Web.md §26B050 |
 | `_rsCatalogo` | función | 57_ReconstruirSemanaPorDias.gs | 696 |  |
 | `_rsCatalogo_` | global | 57_ReconstruirSemanaPorDias.gs | 111 |  |
 | `_rsCatalogoSinFame_` | global | 57_ReconstruirSemanaPorDias.gs | 112 |  |
@@ -1699,15 +1699,15 @@ Ninguno.
 | `_sanitizarPayloadWsp` | función | 44_BotWhatsApp.gs | 116 | Contexto_Base_Web.md §44B012 |
 | `_saveCSVToDrive` | función | 05_Backup_CSV.gs | 1400 |  |
 | `_saveHistorialGuerraGrupalCSV` | función | 20_HistorialGuerraJugador.gs | 799 |  |
-| `_scriptToken` | función | 01_Config_Global.gs | 1543 |  |
+| `_scriptToken` | función | 01_Config_Global.gs | 1545 |  |
 | `_seleccionarFechasNuevasNecesariasNuevos` | función | 14_Nuevos_RoyaleAPI.gs | 1528 | Contexto_Base_Web.md §14B118 |
 | `_semAcumDiaAnteriorGuerra_` | función | 17_GuerraSheet.gs | 2573 | Contexto_Base_Web.md §17B199 |
 | `_semanaColiseoCerrada_` | función | 17_GuerraSheet.gs | 3697 | Contexto_Base_Web.md §17B143 |
 | `_SEMANAS_TEMPORADA_MEMO` | global | 25_Doc_AscensosDescensos.gs | 43 | Contexto_Base_Web.md §PF091 |
-| `_semanasPendientesCR` | función | 26_Torneos_Core.gs | 3440 | Contexto_Base_Web.md §26B053 |
+| `_semanasPendientesCR` | función | 26_Torneos_Core.gs | 3502 | Contexto_Base_Web.md §26B053 |
 | `_semanasResumen_` | función | 15_DeteccionInfiltrados.gs | 1441 | Contexto_Base_Web.md §PF378 |
 | `_setContentConConteo_` | función | 05_Backup_CSV.gs | 1487 | Contexto_Base_Web.md §PF290 |
-| `_setDateCell` | función | 01_Config_Global.gs | 955 |  |
+| `_setDateCell` | función | 01_Config_Global.gs | 957 |  |
 | `_setEstadoUsuario` | función | 44_BotWhatsApp.gs | 438 |  |
 | `_setPlayerCache` | función | 09_API_ClashRoyale.gs | 2958 |  |
 | `_setupAdministradores` | función | 02_Setup_Hojas.gs | 595 |  |
@@ -1745,7 +1745,7 @@ Ninguno.
 | `_sincronizarHojaNombreClan_` | función | 10_ClanSheet.gs | 302 | Contexto_Base_Web.md §PF503 |
 | `_sincronizarNombreClan_` | función | 10_ClanSheet.gs | 386 | Contexto_Base_Web.md §PF503 |
 | `_sincronizarNombreClanManual_` | función | 10_ClanSheet.gs | 370 |  |
-| `_sincronizarParticipantesSorteoSA` | función | 26_Torneos_Core.gs | 2076 |  |
+| `_sincronizarParticipantesSorteoSA` | función | 26_Torneos_Core.gs | 2138 |  |
 | `_snapshotColiseoDesdeJson_` | función | 17_GuerraSheet.gs | 3711 | Contexto_Base_Web.md §17B144 |
 | `_soloClanesApi_` | función | 09_API_ClashRoyale.gs | 2059 |  |
 | `_SUBCARPETAS_CLAN_POR_ENDPOINT_CLANS_` | global | 09_API_ClashRoyale.gs | 115 | Contexto_Base_Web.md §09B015 |
@@ -1788,10 +1788,10 @@ Ninguno.
 | `_textoPlazoGuerra_` | función | 30_Mensajes.gs | 766 | Contexto_Base_Web.md §PF460 |
 | `_textoPuestoMedallasDia_` | función | 30_Mensajes.gs | 851 | Contexto_Base_Web.md §PF532 |
 | `_textoResumenCuposGuerra_` | función | 30_Mensajes.gs | 830 | Contexto_Base_Web.md §PF455 |
-| `_textoSemanasPendientesCR` | función | 26_Torneos_Core.gs | 3454 | Contexto_Base_Web.md §26B054 |
+| `_textoSemanasPendientesCR` | función | 26_Torneos_Core.gs | 3516 | Contexto_Base_Web.md §26B054 |
 | `_textoVariacionTemporadas_` | función | 47_Migraciones.gs | 878 |  |
-| `_tickTorneoEnVivo` | función | 26_Torneos_Core.gs | 934 | Contexto_Base_Web.md §26B134 |
-| `_tickTorneoEnVivoCuerpo_` | función | 26_Torneos_Core.gs | 954 |  |
+| `_tickTorneoEnVivo` | función | 26_Torneos_Core.gs | 996 | Contexto_Base_Web.md §26B134 |
+| `_tickTorneoEnVivoCuerpo_` | función | 26_Torneos_Core.gs | 1016 |  |
 | `_tiemposActualizacionWeb_` | función | 42_Web_TiemposActualizacion.gs | 75 | Contexto_Base_Web.md §42B005 |
 | `_tiemposApiWeb_` | función | 42_Web_TiemposActualizacion.gs | 86 |  |
 | `_tiemposCategoriaEsGenerada_` | función | 42_Web_TiemposActualizacion.gs | 163 |  |
@@ -1799,14 +1799,14 @@ Ninguno.
 | `_tiemposLeerProp_` | función | 42_Web_TiemposActualizacion.gs | 169 |  |
 | `_tiemposMensajesWeb_` | función | 42_Web_TiemposActualizacion.gs | 129 |  |
 | `_tocaProtegida_` | función | 05_Backup_CSV.gs | 1974 |  |
-| `_topNTrasResoluciones` | función | 26_Torneos_Core.gs | 2719 | Contexto_Base_Web.md §26B269 |
+| `_topNTrasResoluciones` | función | 26_Torneos_Core.gs | 2781 | Contexto_Base_Web.md §26B269 |
 | `_totalesSemanaDesdeAcumulados` | función | 28_Torneos_Docs.gs | 898 | Contexto_Base_Web.md §28B080 |
 | `_totSemanaPorDias_` | función | 57_ReconstruirSemanaPorDias.gs | 141 |  |
 | `_tpSumarClaves_` | función | 48_Herramientas_Debug.gs | 887 |  |
 | `_traducirNombreInsignia` | función | 32_Insignias.gs | 249 | Contexto_Base_Web.md §32B013 |
 | `_truncarTitulo` | función | 44_BotWhatsApp.gs | 219 |  |
-| `_tryCondFmt` | función | 01_Config_Global.gs | 1296 |  |
-| `_trySetFmt` | función | 01_Config_Global.gs | 1292 |  |
+| `_tryCondFmt` | función | 01_Config_Global.gs | 1298 |  |
+| `_trySetFmt` | función | 01_Config_Global.gs | 1294 |  |
 | `_tsdDesdeFecha_` | función | 24_Historial_Ascensos.gs | 359 | Contexto_Base_Web.md §PF267 |
 | `_tsLimaLog_` | función | 09_API_ClashRoyale.gs | 3318 |  |
 | `_tspFilaARegistro_` | función | 20_HistorialGuerraJugador.gs | 1846 |  |
@@ -1815,18 +1815,18 @@ Ninguno.
 | `_tspTexto_` | función | 20_HistorialGuerraJugador.gs | 1843 |  |
 | `_ULTIMO_DIAGNOSTICO_GUERRA_CSV` | global | 22_ControlCalendario.gs | 35 | Contexto_Base_Web.md §22B042 |
 | `_ultimosClanesDeJugadores_` | función | 15_DeteccionInfiltrados.gs | 688 | Contexto_Base_Web.md §PF515 |
-| `_unirPartesEspanol` | función | 26_Torneos_Core.gs | 3363 | Contexto_Base_Web.md §26B048 |
+| `_unirPartesEspanol` | función | 26_Torneos_Core.gs | 3425 | Contexto_Base_Web.md §26B048 |
 | `_unirSemanasClan_` | función | 15_DeteccionInfiltrados.gs | 1456 | Contexto_Base_Web.md §PF378 |
 | `_updateHistorial` | función | 24_Historial_Ascensos.gs | 481 | Contexto_Base_Web.md §24B010 |
 | `_updateInactivos` | función | 13_Inactivos_Vetados.gs | 56 |  |
 | `_updateMulticuentas` | función | 13_Inactivos_Vetados.gs | 879 | Contexto_Base_Web.md §13B046 |
 | `_updateVetados` | función | 13_Inactivos_Vetados.gs | 458 |  |
 | `_upsertVetadoDesdeWeb` | función | 13_Inactivos_Vetados.gs | 813 | Contexto_Base_Web.md §13B043 |
-| `_validarCoherenciaCRLista` | función | 26_Torneos_Core.gs | 3299 | Contexto_Base_Web.md §26B043 |
-| `_validarTagTor2SinCoincidencia` | función | 26_Torneos_Core.gs | 1600 | Contexto_Base_Web.md §26B276 |
-| `_valoresMinSAtaquesTorneosPorClan` | función | 26_Torneos_Core.gs | 4262 | Contexto_Base_Web.md §26B282 |
-| `_valoresMinTAtaquesPorClan` | función | 26_Torneos_Core.gs | 4247 | Contexto_Base_Web.md §26B281 |
-| `_valorExtraDesdeCsv_` | función | 26_Torneos_Core.gs | 4019 | Contexto_Base_Web.md §PF073 |
+| `_validarCoherenciaCRLista` | función | 26_Torneos_Core.gs | 3361 | Contexto_Base_Web.md §26B043 |
+| `_validarTagTor2SinCoincidencia` | función | 26_Torneos_Core.gs | 1662 | Contexto_Base_Web.md §26B276 |
+| `_valoresMinSAtaquesTorneosPorClan` | función | 26_Torneos_Core.gs | 4324 | Contexto_Base_Web.md §26B282 |
+| `_valoresMinTAtaquesPorClan` | función | 26_Torneos_Core.gs | 4309 | Contexto_Base_Web.md §26B281 |
+| `_valorExtraDesdeCsv_` | función | 26_Torneos_Core.gs | 4081 | Contexto_Base_Web.md §PF073 |
 | `_variacionTemporadas_` | función | 47_Migraciones.gs | 856 |  |
 | `_VCRR_CACHE_RANGOS_` | global | 59_Verificar_CRR_vs_Backup.gs | 77 |  |
 | `_VCRR_CACHE_RAPI_` | global | 59_Verificar_CRR_vs_Backup.gs | 75 |  |
@@ -1911,7 +1911,7 @@ Ninguno.
 | `_vcrrVerificarCorreccion_` | función | 59_Verificar_CRR_vs_Backup.gs | 2148 |  |
 | `_vcrrVerificarDescarte_` | función | 59_Verificar_CRR_vs_Backup.gs | 1904 |  |
 | `_vcrrVerificarDiaGuerraT22_` | función | 59_Verificar_CRR_vs_Backup.gs | 2468 |  |
-| `_ventanasHistorialParaDescensoCR_` | función | 26_Torneos_Core.gs | 3544 | Contexto_Base_Web.md §26B060 |
+| `_ventanasHistorialParaDescensoCR_` | función | 26_Torneos_Core.gs | 3606 | Contexto_Base_Web.md §26B060 |
 | `_verificarCambioRangoDesdeRegistros_` | función | 24_Historial_Ascensos.gs | 1714 |  |
 | `_verificarYMarcarCambioRangoHistorial_` | función | 24_Historial_Ascensos.gs | 1346 | Contexto_Base_Web.md §PF286 |
 | `_vigilarUptimeRobot_` | función | 45_Vigilante_UptimeRobot.gs | 96 | Contexto_Base_Web.md §45B005 |
@@ -2187,8 +2187,8 @@ Ninguno.
 | `aplicarFormatoGlobal` | función | 04_Formato_Comun.gs | 36 | Contexto_Base_Web.md §04B002 |
 | `aplicarTotalesSemanaDesdeHistorialAplicar` | función | 48_Herramientas_Debug.gs | 659 |  |
 | `aplicarTotalesSemanaDesdeHistorialInforme` | función | 48_Herramientas_Debug.gs | 658 |  |
-| `applyBorderCenter` | función | 01_Config_Global.gs | 1275 |  |
-| `applyHeaderStyle` | función | 01_Config_Global.gs | 1282 |  |
+| `applyBorderCenter` | función | 01_Config_Global.gs | 1277 |  |
+| `applyHeaderStyle` | función | 01_Config_Global.gs | 1284 |  |
 | `aprobarCorreccionesRiverRacePendientes` | función | 19_CorreccionRiverRace.gs | 57 |  |
 | `ASC` | global | 13_Inactivos_Vetados.gs | 18 | Contexto_Base_Web.md §13B001 |
 | `ASC_ESTADO_PROPUESTA_VALORES` | global | 13_Inactivos_Vetados.gs | 36 |  |
@@ -2200,8 +2200,8 @@ Ninguno.
 | `autoajustarAnchoColumnas` | función | 04_Formato_Comun.gs | 200 | Contexto_Base_Web.md §04B035 |
 | `autoajustarAnchoColumnasCompleto` | función | 04_Formato_Comun.gs | 338 | Contexto_Base_Web.md §04B049 |
 | `autoajustarHojasSinAnchosGuardados` | función | 04_Formato_Comun.gs | 345 | Contexto_Base_Web.md §04B050 |
-| `BATTLELOGCHESTS_API_ENABLED` | global | 01_Config_Global.gs | 497 | Contexto_Base_Web.md §01B071 |
-| `BATTLELOGCHESTS_PROGRESS_FILE` | global | 01_Config_Global.gs | 530 | Contexto_Base_Web.md §01B081 |
+| `BATTLELOGCHESTS_API_ENABLED` | global | 01_Config_Global.gs | 499 | Contexto_Base_Web.md §01B071 |
+| `BATTLELOGCHESTS_PROGRESS_FILE` | global | 01_Config_Global.gs | 532 | Contexto_Base_Web.md §01B081 |
 | `BLG_COBERTURA_PRESUPUESTO_MS` | global | 18_CorreccionGuerra.gs | 134 |  |
 | `BLG_COBERTURA_RANGO` | global | 18_CorreccionGuerra.gs | 131 | Contexto_Base_Web.md §18B045 |
 | `BLG_COL` | global | 18_CorreccionGuerra.gs | 106 | Contexto_Base_Web.md §18B034 |
@@ -2242,8 +2242,8 @@ Ninguno.
 | `CACHE_CLAN_DATA` | global | 09_API_ClashRoyale.gs | 35 | Contexto_Base_Web.md §09B002 |
 | `CACHE_ENDPOINT_PLAYER` | global | 09_API_ClashRoyale.gs | 72 |  |
 | `CACHE_ENDPOINTS` | global | 09_API_ClashRoyale.gs | 60 | Contexto_Base_Web.md §09B007 |
-| `calcDiaGuerraIdx` | función | 01_Config_Global.gs | 1086 |  |
-| `calcTemporadaDesdeMesEfectivo` | función | 01_Config_Global.gs | 1057 | Contexto_Base_Web.md §01B138 |
+| `calcDiaGuerraIdx` | función | 01_Config_Global.gs | 1088 |  |
+| `calcTemporadaDesdeMesEfectivo` | función | 01_Config_Global.gs | 1059 | Contexto_Base_Web.md §01B138 |
 | `calcularPronosticoGuerra` | función | 21_Pronostico_Guerra.gs | 225 | Contexto_Base_Web.md §21B021 |
 | `CALENTAR_OMITIO_PUBLICACION_` | global | 37_Web_API.gs | 133 | Contexto_Base_Web.md §PF311 |
 | `calentarCacheGuerraEnVivo` | función | 37_Web_API.gs | 140 | Contexto_Base_Web.md §37B363 |
@@ -2303,13 +2303,13 @@ Ninguno.
 | `CLANES_EXTERNOS_LISTAR_LIMITE_MS` | global | 15_DeteccionInfiltrados.gs | 53 |  |
 | `CLANES_EXTERNOS_LISTAR_MAX_EXISTENTES` | global | 15_DeteccionInfiltrados.gs | 52 |  |
 | `CLANES_INFO_RESPALDO` | global | 09_API_ClashRoyale.gs | 86 |  |
-| `CLANES_PROGRESO_FILE` | global | 01_Config_Global.gs | 527 | Contexto_Base_Web.md §01B080 |
+| `CLANES_PROGRESO_FILE` | global | 01_Config_Global.gs | 529 | Contexto_Base_Web.md §01B080 |
 | `CLANES_SIN_API_MAX_EDAD_MS` | global | 09_API_ClashRoyale.gs | 162 | Contexto_Base_Web.md §09B107 |
 | `CLANES_SIN_API_TS_CARGADO` | global | 09_API_ClashRoyale.gs | 166 |  |
 | `CLANES_SIN_GUERRA` | global | 09_API_ClashRoyale.gs | 42 |  |
 | `CLANES_SIN_RIVERRACE` | global | 09_API_ClashRoyale.gs | 38 | Contexto_Base_Web.md §09B003 |
 | `CLAVE_ADMIN_PEPPER` | global | 37_Web_API.gs | 40 | Contexto_Base_Web.md §37B007 |
-| `cleanTag` | función | 01_Config_Global.gs | 1237 |  |
+| `cleanTag` | función | 01_Config_Global.gs | 1239 |  |
 | `CMC` | global | 11_DirectorioSheet.gs | 75 | Contexto_Base_Web.md §11B006 |
 | `COBERTURA_GUERRA_CACHE_KEY` | global | 05_Backup_CSV.gs | 82 | Contexto_Base_Web.md §PF042 |
 | `COL_EXTRA_CATEGORIA` | global | 44_BotWhatsApp.gs | 31 | Contexto_Base_Web.md §44B003 |
@@ -2318,7 +2318,7 @@ Ninguno.
 | `COL_INICIO_GRID2` | global | 23_Control2_GuerraSemanal.gs | 24 |  |
 | `COL_INICIO_GRID_NUEVOS` | global | 14_Nuevos_RoyaleAPI.gs | 46 |  |
 | `COL_INICIO_SEMANA_ACTUAL_NUEVOS` | global | 14_Nuevos_RoyaleAPI.gs | 39 | Contexto_Base_Web.md §14B004 |
-| `colLetter` | función | 01_Config_Global.gs | 1264 |  |
+| `colLetter` | función | 01_Config_Global.gs | 1266 |  |
 | `COMENTARIOS_TOTAL_COLS` | global | 11_DirectorioSheet.gs | 82 |  |
 | `compararNuevosConGuerraInforme` | función | 18_CorreccionGuerra.gs | 1443 |  |
 | `COMPLETAR_DOMINGO_JSON_ENCABEZADO_INFORME` | global | 18_CorreccionGuerra.gs | 268 |  |
@@ -2399,11 +2399,11 @@ Ninguno.
 | `CSV_CACHE_CHUNK` | global | 05_Backup_CSV.gs | 54 |  |
 | `CSV_CACHE_MAX_CHUNK` | global | 05_Backup_CSV.gs | 56 |  |
 | `CSV_CACHE_TTL_SEG` | global | 05_Backup_CSV.gs | 52 |  |
-| `CSV_INFORMES_SUBCARPETAS_` | global | 01_Config_Global.gs | 680 | Contexto_Base_Web.md §PF185 |
-| `CSV_MOVER_A_SUBCARPETA` | global | 01_Config_Global.gs | 676 | Contexto_Base_Web.md §01B158 |
-| `CSV_SUBCARPETAS_` | global | 01_Config_Global.gs | 677 |  |
+| `CSV_INFORMES_SUBCARPETAS_` | global | 01_Config_Global.gs | 682 | Contexto_Base_Web.md §PF185 |
+| `CSV_MOVER_A_SUBCARPETA` | global | 01_Config_Global.gs | 678 | Contexto_Base_Web.md §01B158 |
+| `CSV_SUBCARPETAS_` | global | 01_Config_Global.gs | 679 |  |
 | `DASHBOARD_TOKEN` | global | 38_Web_Endpoints.gs | 31 | Contexto_Base_Web.md §38B004 |
-| `dateKey` | función | 01_Config_Global.gs | 926 |  |
+| `dateKey` | función | 01_Config_Global.gs | 928 |  |
 | `DC` | global | 11_DirectorioSheet.gs | 28 |  |
 | `DC_HEADERS_60_COLS` | global | 05_Backup_CSV.gs | 35 | Contexto_Base_Web.md §05B025 |
 | `debugAtaquesTag` | función | 48_Herramientas_Debug.gs | 96 | Contexto_Base_Web.md §48B002 |
@@ -2429,7 +2429,7 @@ Ninguno.
 | `descartarFilasClanEquivocadoAplicar` | función | 59_Verificar_CRR_vs_Backup.gs | 353 |  |
 | `descartarFilasClanEquivocadoInforme` | función | 59_Verificar_CRR_vs_Backup.gs | 346 |  |
 | `detectarTemporadaMasAntiguaConPresenciaTerna` | función | 47_Migraciones.gs | 132 | Contexto_Base_Web.md §47B023 |
-| `detenerActualizacionTorneoEnVivo` | función | 26_Torneos_Core.gs | 322 |  |
+| `detenerActualizacionTorneoEnVivo` | función | 26_Torneos_Core.gs | 384 |  |
 | `detenerTorneoEnVivo` | función | 00_Main.gs | 1920 | Contexto_Base_Web.md §B129 |
 | `DIAG_ALERTA_TAG_DEFECTO` | global | 15_DeteccionInfiltrados.gs | 2220 | Contexto_Base_Web.md §PF399 |
 | `DIAG_GUERRA_VIVO_DASH_KEY` | global | 38_Web_Endpoints.gs | 56 |  |
@@ -2440,8 +2440,8 @@ Ninguno.
 | `diagnosticoInactivosVsCSV` | función | 05_Backup_CSV.gs | 347 | Contexto_Base_Web.md §05B033 |
 | `diagnosticoPlayersTag` | función | 48_Herramientas_Debug.gs | 175 | Contexto_Base_Web.md §48B003 |
 | `diagnosticoRiverRaceHTML` | función | 20_HistorialGuerraJugador.gs | 211 | Contexto_Base_Web.md §20B015 |
-| `diaLetraANombre` | función | 01_Config_Global.gs | 973 | Contexto_Base_Web.md §01B132 |
-| `diasInactividad` | función | 01_Config_Global.gs | 920 |  |
+| `diaLetraANombre` | función | 01_Config_Global.gs | 975 | Contexto_Base_Web.md §01B132 |
+| `diasInactividad` | función | 01_Config_Global.gs | 922 |  |
 | `DIR_SHEET_COLS` | global | 11_DirectorioSheet.gs | 50 | Contexto_Base_Web.md §11B002 |
 | `DIR_TOTAL_COLS` | global | 11_DirectorioSheet.gs | 47 |  |
 | `DOC_ID_CALIFICADOS_CAMBIO_RANGO` | global | 29_Docs_NoCalificados.gs | 38 |  |
@@ -2455,56 +2455,56 @@ Ninguno.
 | `DOC_ID_PARTICIPANTES_CALIFICADOS_TORNEO` | global | 28_Torneos_Docs.gs | 32 |  |
 | `doGet` | función | 38_Web_Endpoints.gs | 119 | Contexto_Base_Web.md §38B016 |
 | `doPost` | función | 38_Web_Endpoints.gs | 1163 | Contexto_Base_Web.md §38B070 |
-| `DRIVE_FOLDER_ID_BATTLELOG` | global | 01_Config_Global.gs | 603 | Contexto_Base_Web.md §01B094 |
-| `DRIVE_FOLDER_ID_CARDS` | global | 01_Config_Global.gs | 608 | Contexto_Base_Web.md §01B096 |
-| `DRIVE_FOLDER_ID_CLANS` | global | 01_Config_Global.gs | 611 | Contexto_Base_Web.md §01B097 |
-| `DRIVE_FOLDER_ID_CLANS_CONSULTA_TEMPORAL` | global | 01_Config_Global.gs | 537 | Contexto_Base_Web.md §01B082 |
-| `DRIVE_FOLDER_ID_CSV` | global | 01_Config_Global.gs | 506 | Contexto_Base_Web.md §01B073 |
-| `DRIVE_FOLDER_ID_CURRENTRIVERRACE` | global | 01_Config_Global.gs | 614 | Contexto_Base_Web.md §01B098 |
-| `DRIVE_FOLDER_ID_ENDPOINTS` | global | 01_Config_Global.gs | 600 |  |
-| `DRIVE_FOLDER_ID_JSON` | global | 01_Config_Global.gs | 509 | Contexto_Base_Web.md §01B074 |
-| `DRIVE_FOLDER_ID_LOCATIONS` | global | 01_Config_Global.gs | 617 | Contexto_Base_Web.md §01B099 |
-| `DRIVE_FOLDER_ID_OTROS` | global | 01_Config_Global.gs | 649 | Contexto_Base_Web.md §01B109 |
-| `DRIVE_FOLDER_ID_PLANTILLAS` | global | 01_Config_Global.gs | 534 |  |
-| `DRIVE_FOLDER_ID_PLANTILLAS_BIENVENIDAS` | global | 01_Config_Global.gs | 552 | Contexto_Base_Web.md §01B087 |
-| `DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO` | global | 01_Config_Global.gs | 556 | Contexto_Base_Web.md §PF286 |
-| `DRIVE_FOLDER_ID_PLANTILLAS_DESCRIPCIONES` | global | 01_Config_Global.gs | 549 | Contexto_Base_Web.md §01B086 |
-| `DRIVE_FOLDER_ID_PLANTILLAS_MAZOS` | global | 01_Config_Global.gs | 546 | Contexto_Base_Web.md §01B085 |
-| `DRIVE_FOLDER_ID_PLANTILLAS_OTRAS` | global | 01_Config_Global.gs | 543 | Contexto_Base_Web.md §01B084 |
-| `DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS` | global | 01_Config_Global.gs | 560 |  |
-| `DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS` | global | 01_Config_Global.gs | 558 |  |
-| `DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS` | global | 01_Config_Global.gs | 540 | Contexto_Base_Web.md §01B083 |
-| `DRIVE_FOLDER_ID_PLAYERS` | global | 01_Config_Global.gs | 512 | Contexto_Base_Web.md §01B075 |
-| `DRIVE_FOLDER_ID_RANKING` | global | 01_Config_Global.gs | 621 |  |
-| `DRIVE_FOLDER_ID_RANKING_COPAS` | global | 01_Config_Global.gs | 624 | Contexto_Base_Web.md §01B100 |
-| `DRIVE_FOLDER_ID_RANKING_GUERRA` | global | 01_Config_Global.gs | 627 | Contexto_Base_Web.md §01B101 |
-| `DRIVE_FOLDER_ID_RANKING_JUGADORES` | global | 01_Config_Global.gs | 630 | Contexto_Base_Web.md §01B102 |
-| `DRIVE_FOLDER_ID_RANKING_JUGADORES_CAMINO_LEYENDAS` | global | 01_Config_Global.gs | 633 | Contexto_Base_Web.md §01B103 |
-| `DRIVE_FOLDER_ID_RANKING_JUGADORES_GLOBAL` | global | 01_Config_Global.gs | 636 | Contexto_Base_Web.md §01B104 |
-| `DRIVE_FOLDER_ID_RESPALDO` | global | 01_Config_Global.gs | 575 | Contexto_Base_Web.md §01B089 |
-| `DRIVE_FOLDER_ID_ROYALEAPI` | global | 01_Config_Global.gs | 515 | Contexto_Base_Web.md §01B076 |
-| `DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL` | global | 01_Config_Global.gs | 521 | Contexto_Base_Web.md §01B078 |
-| `DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL` | global | 01_Config_Global.gs | 518 | Contexto_Base_Web.md §01B077 |
-| `DRIVE_FOLDER_ID_SEASONS` | global | 01_Config_Global.gs | 639 | Contexto_Base_Web.md §01B105 |
-| `DRIVE_FOLDER_ID_TORNEOS` | global | 01_Config_Global.gs | 578 | Contexto_Base_Web.md §01B090 |
-| `DRIVE_FOLDER_ID_TORNEOS_BUSQUEDA_NOMBRE` | global | 01_Config_Global.gs | 584 | Contexto_Base_Web.md §01B092 |
-| `DRIVE_FOLDER_ID_TORNEOS_GLOBALES` | global | 01_Config_Global.gs | 581 | Contexto_Base_Web.md §01B091 |
-| `DRIVE_FOLDER_ID_TORNEOS_LOCALES` | global | 01_Config_Global.gs | 594 | Contexto_Base_Web.md §PF078 |
-| `DRIVE_FOLDER_ID_TORNEOS_TERNA` | global | 01_Config_Global.gs | 589 | Contexto_Base_Web.md §PF078 |
-| `DRIVE_FOLDER_ID_UPCOMINGCHESTS` | global | 01_Config_Global.gs | 642 | Contexto_Base_Web.md §01B106 |
-| `DRIVE_FOLDERS_PLANTILLAS_SUB` | global | 01_Config_Global.gs | 563 | Contexto_Base_Web.md §01B088 |
+| `DRIVE_FOLDER_ID_BATTLELOG` | global | 01_Config_Global.gs | 605 | Contexto_Base_Web.md §01B094 |
+| `DRIVE_FOLDER_ID_CARDS` | global | 01_Config_Global.gs | 610 | Contexto_Base_Web.md §01B096 |
+| `DRIVE_FOLDER_ID_CLANS` | global | 01_Config_Global.gs | 613 | Contexto_Base_Web.md §01B097 |
+| `DRIVE_FOLDER_ID_CLANS_CONSULTA_TEMPORAL` | global | 01_Config_Global.gs | 539 | Contexto_Base_Web.md §01B082 |
+| `DRIVE_FOLDER_ID_CSV` | global | 01_Config_Global.gs | 508 | Contexto_Base_Web.md §01B073 |
+| `DRIVE_FOLDER_ID_CURRENTRIVERRACE` | global | 01_Config_Global.gs | 616 | Contexto_Base_Web.md §01B098 |
+| `DRIVE_FOLDER_ID_ENDPOINTS` | global | 01_Config_Global.gs | 602 |  |
+| `DRIVE_FOLDER_ID_JSON` | global | 01_Config_Global.gs | 511 | Contexto_Base_Web.md §01B074 |
+| `DRIVE_FOLDER_ID_LOCATIONS` | global | 01_Config_Global.gs | 619 | Contexto_Base_Web.md §01B099 |
+| `DRIVE_FOLDER_ID_OTROS` | global | 01_Config_Global.gs | 651 | Contexto_Base_Web.md §01B109 |
+| `DRIVE_FOLDER_ID_PLANTILLAS` | global | 01_Config_Global.gs | 536 |  |
+| `DRIVE_FOLDER_ID_PLANTILLAS_BIENVENIDAS` | global | 01_Config_Global.gs | 554 | Contexto_Base_Web.md §01B087 |
+| `DRIVE_FOLDER_ID_PLANTILLAS_CAMBIO_RANGO` | global | 01_Config_Global.gs | 558 | Contexto_Base_Web.md §PF286 |
+| `DRIVE_FOLDER_ID_PLANTILLAS_DESCRIPCIONES` | global | 01_Config_Global.gs | 551 | Contexto_Base_Web.md §01B086 |
+| `DRIVE_FOLDER_ID_PLANTILLAS_MAZOS` | global | 01_Config_Global.gs | 548 | Contexto_Base_Web.md §01B085 |
+| `DRIVE_FOLDER_ID_PLANTILLAS_OTRAS` | global | 01_Config_Global.gs | 545 | Contexto_Base_Web.md §01B084 |
+| `DRIVE_FOLDER_ID_PLANTILLAS_SORTEOS` | global | 01_Config_Global.gs | 562 |  |
+| `DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS` | global | 01_Config_Global.gs | 560 |  |
+| `DRIVE_FOLDER_ID_PLANTILLAS_TORNEOS_SORTEOS` | global | 01_Config_Global.gs | 542 | Contexto_Base_Web.md §01B083 |
+| `DRIVE_FOLDER_ID_PLAYERS` | global | 01_Config_Global.gs | 514 | Contexto_Base_Web.md §01B075 |
+| `DRIVE_FOLDER_ID_RANKING` | global | 01_Config_Global.gs | 623 |  |
+| `DRIVE_FOLDER_ID_RANKING_COPAS` | global | 01_Config_Global.gs | 626 | Contexto_Base_Web.md §01B100 |
+| `DRIVE_FOLDER_ID_RANKING_GUERRA` | global | 01_Config_Global.gs | 629 | Contexto_Base_Web.md §01B101 |
+| `DRIVE_FOLDER_ID_RANKING_JUGADORES` | global | 01_Config_Global.gs | 632 | Contexto_Base_Web.md §01B102 |
+| `DRIVE_FOLDER_ID_RANKING_JUGADORES_CAMINO_LEYENDAS` | global | 01_Config_Global.gs | 635 | Contexto_Base_Web.md §01B103 |
+| `DRIVE_FOLDER_ID_RANKING_JUGADORES_GLOBAL` | global | 01_Config_Global.gs | 638 | Contexto_Base_Web.md §01B104 |
+| `DRIVE_FOLDER_ID_RESPALDO` | global | 01_Config_Global.gs | 577 | Contexto_Base_Web.md §01B089 |
+| `DRIVE_FOLDER_ID_ROYALEAPI` | global | 01_Config_Global.gs | 517 | Contexto_Base_Web.md §01B076 |
+| `DRIVE_FOLDER_ID_ROYALEAPI_GRUPAL` | global | 01_Config_Global.gs | 523 | Contexto_Base_Web.md §01B078 |
+| `DRIVE_FOLDER_ID_ROYALEAPI_INDIVIDUAL` | global | 01_Config_Global.gs | 520 | Contexto_Base_Web.md §01B077 |
+| `DRIVE_FOLDER_ID_SEASONS` | global | 01_Config_Global.gs | 641 | Contexto_Base_Web.md §01B105 |
+| `DRIVE_FOLDER_ID_TORNEOS` | global | 01_Config_Global.gs | 580 | Contexto_Base_Web.md §01B090 |
+| `DRIVE_FOLDER_ID_TORNEOS_BUSQUEDA_NOMBRE` | global | 01_Config_Global.gs | 586 | Contexto_Base_Web.md §01B092 |
+| `DRIVE_FOLDER_ID_TORNEOS_GLOBALES` | global | 01_Config_Global.gs | 583 | Contexto_Base_Web.md §01B091 |
+| `DRIVE_FOLDER_ID_TORNEOS_LOCALES` | global | 01_Config_Global.gs | 596 | Contexto_Base_Web.md §PF078 |
+| `DRIVE_FOLDER_ID_TORNEOS_TERNA` | global | 01_Config_Global.gs | 591 | Contexto_Base_Web.md §PF078 |
+| `DRIVE_FOLDER_ID_UPCOMINGCHESTS` | global | 01_Config_Global.gs | 644 | Contexto_Base_Web.md §01B106 |
+| `DRIVE_FOLDERS_PLANTILLAS_SUB` | global | 01_Config_Global.gs | 565 | Contexto_Base_Web.md §01B088 |
 | `ejecutarReenumeracionSugerida` | función | 47_Migraciones.gs | 200 | Contexto_Base_Web.md §47B026 |
-| `encodeTag` | función | 01_Config_Global.gs | 1230 | Contexto_Base_Web.md §01B147 |
+| `encodeTag` | función | 01_Config_Global.gs | 1232 | Contexto_Base_Web.md §01B147 |
 | `enlazarPropuestasConParCRHistorialAD` | función | 24_Historial_Ascensos.gs | 70 | Contexto_Base_Web.md §PF286 |
 | `ESCRITURA_VERIF_ESPERA_FINAL_MS` | global | 05_Backup_CSV.gs | 77 |  |
 | `ESCRITURA_VERIF_ESPERA_MS` | global | 05_Backup_CSV.gs | 71 |  |
 | `ESCRITURA_VERIF_REINTENTOS` | global | 05_Backup_CSV.gs | 69 | Contexto_Base_Web.md §PF289 punto 10, §PF291 |
 | `ESCRITURA_VERIF_TOLERANCIA_MS` | global | 05_Backup_CSV.gs | 79 |  |
-| `esDiaGuerraIdx` | función | 01_Config_Global.gs | 982 |  |
-| `esRazonValida` | función | 01_Config_Global.gs | 1171 | Contexto_Base_Web.md §01B144 |
+| `esDiaGuerraIdx` | función | 01_Config_Global.gs | 984 |  |
+| `esRazonValida` | función | 01_Config_Global.gs | 1173 | Contexto_Base_Web.md §01B144 |
 | `estadoCapturaContinuaCRR` | función | 56_CurrentRiverRace_Dias.gs | 65 | Contexto_Base_Web.md §PF426 |
 | `estadoVigilanteUptimeRobot` | función | 45_Vigilante_UptimeRobot.gs | 69 |  |
-| `esTagOculto` | función | 01_Config_Global.gs | 1178 | Contexto_Base_Web.md §01B145 |
+| `esTagOculto` | función | 01_Config_Global.gs | 1180 | Contexto_Base_Web.md §01B145 |
 | `EXC_DIAS_CAP` | global | 55_Reparar_DiasConExceso.gs | 38 |  |
 | `EXC_DIAS_CLASES_TODAS` | global | 55_Reparar_DiasConExceso.gs | 46 |  |
 | `EXC_DIAS_CLASES_UNICAS` | global | 55_Reparar_DiasConExceso.gs | 44 |  |
@@ -2548,10 +2548,10 @@ Ninguno.
 | `generarTodosMensajes` | función | 30_Mensajes.gs | 80 |  |
 | `generarUrlMazo` | función | 31_Cards_Mazos.gs | 894 | Contexto_Base_Web.md §31B011 |
 | `generarUrlMazo2` | función | 31_Cards_Mazos.gs | 908 | Contexto_Base_Web.md §31B012 |
-| `getClanLeader` | función | 01_Config_Global.gs | 1252 |  |
-| `getClanLeaderTag` | función | 01_Config_Global.gs | 1258 |  |
+| `getClanLeader` | función | 01_Config_Global.gs | 1254 |  |
+| `getClanLeaderTag` | función | 01_Config_Global.gs | 1260 |  |
 | `getEstadoVigilanteUptimeRobot_` | función | 45_Vigilante_UptimeRobot.gs | 312 | Contexto_Base_Web.md §45B008 |
-| `getLiga` | función | 01_Config_Global.gs | 1245 |  |
+| `getLiga` | función | 01_Config_Global.gs | 1247 |  |
 | `GL_COLS_BARCO_COLISEO` | global | 17_GuerraSheet.gs | 254 | Contexto_Base_Web.md §17B142 |
 | `GL_ESTADO_ESTIMADO` | global | 17_GuerraSheet.gs | 238 |  |
 | `GL_ESTADO_LEIDO` | global | 17_GuerraSheet.gs | 236 |  |
@@ -2562,7 +2562,7 @@ Ninguno.
 | `GRID_WIDTH_NUEVOS` | global | 14_Nuevos_RoyaleAPI.gs | 52 |  |
 | `guardarAnchosColumnasFijos` | función | 04_Formato_Comun.gs | 394 | Contexto_Base_Web.md §04B051 |
 | `guardarApiDump` | función | 09_API_ClashRoyale.gs | 256 | Contexto_Base_Web.md §09B022 |
-| `guardarTokensEnScriptProperties` | función | 01_Config_Global.gs | 712 | Contexto_Base_Web.md §01B157 |
+| `guardarTokensEnScriptProperties` | función | 01_Config_Global.gs | 714 | Contexto_Base_Web.md §01B157 |
 | `GUERRA_COLS_MILES_` | global | 17_GuerraSheet.gs | 101 |  |
 | `GUERRA_CSV_BLINDAJE_MIN_BYTES` | global | 17_GuerraSheet.gs | 71 | Contexto_Base_Web.md §PF289 |
 | `GUERRA_CSV_BLINDAJE_RATIO` | global | 17_GuerraSheet.gs | 73 |  |
@@ -2600,15 +2600,15 @@ Ninguno.
 | `ID_EVENTO_REGEX_VIEJO_` | global | 26_Torneos_Core.gs | 115 |  |
 | `importarAcumulativosDesdeCSV` | función | 05_Backup_CSV.gs | 617 | Contexto_Base_Web.md §05B039 |
 | `importarBackupCelulares` | función | 05_Backup_CSV.gs | 721 |  |
-| `importarCRListaDesdeCSV` | función | 26_Torneos_Core.gs | 515 | Contexto_Base_Web.md §26B112 |
+| `importarCRListaDesdeCSV` | función | 26_Torneos_Core.gs | 577 | Contexto_Base_Web.md §26B112 |
 | `importarDirectorioDesdeCSV` | función | 05_Backup_CSV.gs | 610 |  |
 | `importarExtraDesdeCSV` | función | 05_Backup_CSV.gs | 728 | Contexto_Base_Web.md §05B047 |
 | `importarIndiceDesdeCSV` | función | 03_Indice_Sheet.gs | 22 | Contexto_Base_Web.md §03B001 |
-| `importarSAsistenciaDesdeCSV` | función | 26_Torneos_Core.gs | 631 | Contexto_Base_Web.md §26B122 |
-| `importarSListaDesdeCSV` | función | 26_Torneos_Core.gs | 461 | Contexto_Base_Web.md §26B107 |
-| `importarTAsistenciaDesdeCSV` | función | 26_Torneos_Core.gs | 562 | Contexto_Base_Web.md §26B116 |
-| `importarTListaDesdeCSV` | función | 26_Torneos_Core.gs | 398 | Contexto_Base_Web.md §26B098 |
-| `importarTResolucionesDesdeCSV` | función | 26_Torneos_Core.gs | 598 | Contexto_Base_Web.md §26B119 |
+| `importarSAsistenciaDesdeCSV` | función | 26_Torneos_Core.gs | 693 | Contexto_Base_Web.md §26B122 |
+| `importarSListaDesdeCSV` | función | 26_Torneos_Core.gs | 523 | Contexto_Base_Web.md §26B107 |
+| `importarTAsistenciaDesdeCSV` | función | 26_Torneos_Core.gs | 624 | Contexto_Base_Web.md §26B116 |
+| `importarTListaDesdeCSV` | función | 26_Torneos_Core.gs | 460 | Contexto_Base_Web.md §26B098 |
+| `importarTResolucionesDesdeCSV` | función | 26_Torneos_Core.gs | 660 | Contexto_Base_Web.md §26B119 |
 | `INACTIVOS_TOTAL_COLS` | global | 02_Setup_Hojas.gs | 38 |  |
 | `INDICE_CLANES_CONT_ESPERA_MS` | global | 15_DeteccionInfiltrados.gs | 39 |  |
 | `INDICE_CLANES_CONT_MAX` | global | 15_DeteccionInfiltrados.gs | 40 |  |
@@ -2632,13 +2632,13 @@ Ninguno.
 | `informeHojaContraCorrecciones` | función | 18_CorreccionGuerra.gs | 396 | Contexto_Base_Web.md §18B124 |
 | `informeRepartoDomingoSinClanTag` | función | 18_CorreccionGuerra.gs | 294 | Contexto_Base_Web.md §18B023 |
 | `inicializarIndiceContenido` | función | 43_Menu_Dinamico.gs | 72 | Contexto_Base_Web.md §43B016 |
-| `iniciarActualizacionTorneoEnVivo` | función | 26_Torneos_Core.gs | 312 | Contexto_Base_Web.md §26B085 |
+| `iniciarActualizacionTorneoEnVivo` | función | 26_Torneos_Core.gs | 374 | Contexto_Base_Web.md §26B085 |
 | `iniciarReenumerarTemporadas` | función | 47_Migraciones.gs | 188 |  |
 | `iniciarTorneoEnVivo` | función | 00_Main.gs | 1913 | Contexto_Base_Web.md §B128 |
 | `INICIO_TANDA_MS_` | global | 00_Main.gs | 2140 | Contexto_Base_Web.md §B135 |
 | `installTriggers` | función | 00_Main.gs | 1899 | Contexto_Base_Web.md §B126 |
 | `lastRowSh` | global | 13_Inactivos_Vetados.gs | 572 |  |
-| `lastSeenToDate` | función | 01_Config_Global.gs | 908 |  |
+| `lastSeenToDate` | función | 01_Config_Global.gs | 910 |  |
 | `LC` | global | 02_Setup_Hojas.gs | 54 | Contexto_Base_Web.md §02B004 |
 | `liberarLockEjecucionManual` | función | 47_Migraciones.gs | 241 |  |
 | `LIMITE_DIAS_HISTORIAL_GUERRA_COMPARADOR` | global | 37_Web_API.gs | 90 | Contexto_Base_Web.md §37B170 |
@@ -2659,9 +2659,9 @@ Ninguno.
 | `LOGROS2_HEADERS` | global | 34_Logros.gs | 23 |  |
 | `LOGROS_CSV` | global | 34_Logros.gs | 17 |  |
 | `LOGROS_HEADERS` | global | 34_Logros.gs | 21 |  |
-| `lunesEnMes` | función | 01_Config_Global.gs | 1071 |  |
-| `makeLink` | función | 01_Config_Global.gs | 896 | Contexto_Base_Web.md §01B128 |
-| `mapRol` | función | 01_Config_Global.gs | 1241 |  |
+| `lunesEnMes` | función | 01_Config_Global.gs | 1073 |  |
+| `makeLink` | función | 01_Config_Global.gs | 898 | Contexto_Base_Web.md §01B128 |
+| `mapRol` | función | 01_Config_Global.gs | 1243 |  |
 | `MC` | global | 30_Mensajes.gs | 20 |  |
 | `MENSAJES_TOTAL_COLS` | global | 30_Mensajes.gs | 26 |  |
 | `META_GUERRA_PROGRESO` | global | 30_Mensajes.gs | 59 | Contexto_Base_Web.md §30B005 |
@@ -2682,7 +2682,7 @@ Ninguno.
 | `mostrarTemporadaEnControl` | función | 22_ControlCalendario.gs | 543 | Contexto_Base_Web.md §22B031 |
 | `moverClanVetadoAConflictos` | función | 47_Migraciones.gs | 707 | Contexto_Base_Web.md §PF369 |
 | `moverComentarioFila` | función | 11_DirectorioSheet.gs | 1845 |  |
-| `moverInformesSueltosASubcarpeta` | función | 01_Config_Global.gs | 698 |  |
+| `moverInformesSueltosASubcarpeta` | función | 01_Config_Global.gs | 700 |  |
 | `NC` | global | 14_Nuevos_RoyaleAPI.gs | 25 | Contexto_Base_Web.md §14B003 |
 | `NC_ENCABEZADO_TABLA_CAMBIO_RANGO` | global | 29_Docs_NoCalificados.gs | 42 |  |
 | `NC_TOTAL_FIJAS` | global | 14_Nuevos_RoyaleAPI.gs | 30 |  |
@@ -2731,8 +2731,8 @@ Ninguno.
 | `OFFSEM` | global | 14_Nuevos_RoyaleAPI.gs | 44 |  |
 | `onEditTrigger` | función | 00_Main.gs | 2412 |  |
 | `OPCION_VACIA_REGISTRO` | global | 44_BotWhatsApp.gs | 40 | Contexto_Base_Web.md §44B005 |
-| `ordenarYFormatearListasYAsistencias` | función | 26_Torneos_Core.gs | 674 |  |
-| `ordenarYFormatearListasYAsistenciasRevisar` | función | 26_Torneos_Core.gs | 672 | Contexto_Base_Web.md §PF286 |
+| `ordenarYFormatearListasYAsistencias` | función | 26_Torneos_Core.gs | 736 |  |
+| `ordenarYFormatearListasYAsistenciasRevisar` | función | 26_Torneos_Core.gs | 734 | Contexto_Base_Web.md §PF286 |
 | `PASOS_CORRGUERRA` | global | 18_CorreccionGuerra.gs | 88 | Contexto_Base_Web.md §PF358 |
 | `PASOS_REENUMERAR_TEMPORADAS` | global | 47_Migraciones.gs | 15 |  |
 | `PASOS_RUNALL` | global | 00_Main.gs | 103 |  |
@@ -2746,29 +2746,29 @@ Ninguno.
 | `PENDIENTES_ABORTADO_POR_API` | global | 17_GuerraSheet.gs | 245 | Contexto_Base_Web.md §17B106 |
 | `PERFIL_WEB_CSV` | global | 36_PerfilWeb.gs | 15 |  |
 | `PERFIL_WEB_HEADERS` | global | 36_PerfilWeb.gs | 17 |  |
-| `periodIdxToLetra` | función | 01_Config_Global.gs | 966 |  |
-| `periodIdxToSectionIndex` | función | 01_Config_Global.gs | 978 |  |
+| `periodIdxToLetra` | función | 01_Config_Global.gs | 968 |  |
+| `periodIdxToSectionIndex` | función | 01_Config_Global.gs | 980 |  |
 | `PG` | global | 21_Pronostico_Guerra.gs | 23 |  |
 | `PIE_NAVEGACION` | global | 44_BotWhatsApp.gs | 28 | Contexto_Base_Web.md §44B002 |
 | `pingProxyRender` | función | 09_API_ClashRoyale.gs | 2923 | Contexto_Base_Web.md §09B137 |
-| `PLANTILLAS_ID_CACHE_PREFIX_` | global | 01_Config_Global.gs | 664 | Contexto_Base_Web.md §01B116 |
-| `PLAYERS_API_ENABLED` | global | 01_Config_Global.gs | 494 | Contexto_Base_Web.md §01B070 |
+| `PLANTILLAS_ID_CACHE_PREFIX_` | global | 01_Config_Global.gs | 666 | Contexto_Base_Web.md §01B116 |
+| `PLAYERS_API_ENABLED` | global | 01_Config_Global.gs | 496 | Contexto_Base_Web.md §01B070 |
 | `PLAYERS_IDX_CACHE_KEY` | global | 09_API_ClashRoyale.gs | 186 |  |
-| `PLAYERS_PROGRESS_FILE` | global | 01_Config_Global.gs | 524 | Contexto_Base_Web.md §01B079 |
-| `PLAYERS_SOLO_INGRESOS_TEMPORAL` | global | 01_Config_Global.gs | 503 | Contexto_Base_Web.md §PF345 |
+| `PLAYERS_PROGRESS_FILE` | global | 01_Config_Global.gs | 526 | Contexto_Base_Web.md §01B079 |
+| `PLAYERS_SOLO_INGRESOS_TEMPORAL` | global | 01_Config_Global.gs | 505 | Contexto_Base_Web.md §PF345 |
 | `PLAYERS_TOTAL_COLS` | global | 02_Setup_Hojas.gs | 51 |  |
 | `PREFIJO_RESUMEN_SORTEO_DOC` | global | 28_Torneos_Docs.gs | 60 |  |
 | `PREFIJOS_LINEAS_RESUMEN_SORTEO_DOC` | global | 28_Torneos_Docs.gs | 69 |  |
 | `PRIMERA_CONSULTA_RR_MAX` | global | 09_API_ClashRoyale.gs | 181 |  |
 | `PRIMERA_CONSULTA_RR_PROP` | global | 09_API_ClashRoyale.gs | 179 | Contexto_Base_Web.md §PF063 |
-| `primerLunesDelMes` | función | 01_Config_Global.gs | 1063 |  |
-| `primerLunesTemporada` | función | 01_Config_Global.gs | 1079 |  |
+| `primerLunesDelMes` | función | 01_Config_Global.gs | 1065 |  |
+| `primerLunesTemporada` | función | 01_Config_Global.gs | 1081 |  |
 | `probarCostosSubirNivel` | función | 31_Cards_Mazos.gs | 241 | Contexto_Base_Web.md §31B063 |
 | `probarCurrentRiverRaceDias` | función | 56_CurrentRiverRace_Dias.gs | 49 |  |
-| `procesarCambioRango` | función | 26_Torneos_Core.gs | 364 | Contexto_Base_Web.md §PF286 |
-| `procesarSListaNuevasFilas` | función | 26_Torneos_Core.gs | 1821 | Contexto_Base_Web.md §26B211 |
-| `procesarSorteos` | función | 26_Torneos_Core.gs | 334 | Contexto_Base_Web.md §26B217 |
-| `procesarTListaNuevasFilas` | función | 26_Torneos_Core.gs | 1032 | Contexto_Base_Web.md §26B137 |
+| `procesarCambioRango` | función | 26_Torneos_Core.gs | 426 | Contexto_Base_Web.md §PF286 |
+| `procesarSListaNuevasFilas` | función | 26_Torneos_Core.gs | 1883 | Contexto_Base_Web.md §26B211 |
+| `procesarSorteos` | función | 26_Torneos_Core.gs | 396 | Contexto_Base_Web.md §26B217 |
+| `procesarTListaNuevasFilas` | función | 26_Torneos_Core.gs | 1094 | Contexto_Base_Web.md §26B137 |
 | `procesarTorneos` | función | 26_Torneos_Core.gs | 199 | Contexto_Base_Web.md §26B086 |
 | `PROGRESO_EVENTOS_CSV` | global | 35_ProgresoEventos.gs | 15 |  |
 | `PROGRESO_EVENTOS_HEADERS` | global | 35_ProgresoEventos.gs | 17 |  |
@@ -2804,7 +2804,7 @@ Ninguno.
 | `reconstruirJsonGrupalDesdeIndividuales` | función | 20_HistorialGuerraJugador.gs | 262 |  |
 | `reconstruirJsonGrupalReiniciar` | función | 20_HistorialGuerraJugador.gs | 268 |  |
 | `reconstruirRivalesHistoricosGuerraLogs` | función | 17_GuerraSheet.gs | 1566 | Contexto_Base_Web.md §17B130 |
-| `regenerarTControlSheet` | función | 26_Torneos_Core.gs | 2339 | Contexto_Base_Web.md §26B125 |
+| `regenerarTControlSheet` | función | 26_Torneos_Core.gs | 2401 | Contexto_Base_Web.md §26B125 |
 | `registrarTagsSinPerfilConocidos` | función | 20_HistorialGuerraJugador.gs | 286 | Contexto_Base_Web.md §PF497 |
 | `reiniciarCapturaContinuaCRR` | función | 56_CurrentRiverRace_Dias.gs | 83 | Contexto_Base_Web.md §PF426 |
 | `reiniciarVigilanteUptimeRobot` | función | 45_Vigilante_UptimeRobot.gs | 74 |  |
@@ -2855,7 +2855,7 @@ Ninguno.
 | `repararResumenExtrasControl` | función | 00_Main.gs | 1836 | Contexto_Base_Web.md §B125 |
 | `repararSemanaDesdeJsonRoyaleApiAplicar` | función | 18_CorreccionGuerra.gs | 1434 |  |
 | `repararSemanaDesdeJsonRoyaleApiInforme` | función | 18_CorreccionGuerra.gs | 1432 |  |
-| `repararTorneosViejosDesdeAPI` | función | 26_Torneos_Core.gs | 680 | Contexto_Base_Web.md §26B177 |
+| `repararTorneosViejosDesdeAPI` | función | 26_Torneos_Core.gs | 742 | Contexto_Base_Web.md §26B177 |
 | `REQ_DOC_TEXTO_ATAQUES_HEADER` | global | 27_Torneos_Sorteos_Requisitos.gs | 24 | Contexto_Base_Web.md §27B003 |
 | `REQ_DOC_TEXTO_MIEMBRO_ACTIVO` | global | 27_Torneos_Sorteos_Requisitos.gs | 26 |  |
 | `REQ_DOC_TEXTO_REACCION` | global | 27_Torneos_Sorteos_Requisitos.gs | 28 |  |
@@ -2946,9 +2946,9 @@ Ninguno.
 | `SL_MIN_S_COLS` | global | 26_Torneos_Core.gs | 65 |  |
 | `SL_TORNEOS_COLS` | global | 26_Torneos_Core.gs | 69 |  |
 | `SL_TOTAL_COLS` | global | 26_Torneos_Core.gs | 63 |  |
-| `soloDigitos` | función | 01_Config_Global.gs | 1097 | Contexto_Base_Web.md §01B140 |
+| `soloDigitos` | función | 01_Config_Global.gs | 1099 | Contexto_Base_Web.md §01B140 |
 | `sugerirFechaRefDesdeCorreccionesGuerra` | función | 47_Migraciones.gs | 257 |  |
-| `SUPRIMIR_PLAYERS_TEMPORAL` | global | 01_Config_Global.gs | 500 | Contexto_Base_Web.md §01B072 |
+| `SUPRIMIR_PLAYERS_TEMPORAL` | global | 01_Config_Global.gs | 502 | Contexto_Base_Web.md §01B072 |
 | `syncAcumulativosCSV` | función | 05_Backup_CSV.gs | 189 | Contexto_Base_Web.md §05B034 |
 | `syncAllCSV` | función | 05_Backup_CSV.gs | 594 | Contexto_Base_Web.md §05B055 |
 | `syncClanCSV` | función | 05_Backup_CSV.gs | 170 | Contexto_Base_Web.md §05B004 |
@@ -3089,7 +3089,7 @@ Ninguno.
 | `verificarCrrVsBackupReiniciar` | función | 59_Verificar_CRR_vs_Backup.gs | 322 |  |
 | `verificarCrrVsBackupRevertirAplicar` | función | 59_Verificar_CRR_vs_Backup.gs | 368 |  |
 | `verificarCrrVsBackupRevertirInforme` | función | 59_Verificar_CRR_vs_Backup.gs | 361 |  |
-| `verificarDatosPrivados` | función | 01_Config_Global.gs | 688 |  |
+| `verificarDatosPrivados` | función | 01_Config_Global.gs | 690 |  |
 | `verTiemposActualizacion` | función | 42_Web_TiemposActualizacion.gs | 29 |  |
 | `VETADOS_COLS_AUTOSYNC` | global | 11_DirectorioSheet.gs | 72 | Contexto_Base_Web.md §11B005 |
 | `VETADOS_TOTAL_COLS` | global | 11_DirectorioSheet.gs | 69 |  |

@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 20:40:07 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 20/11/2026 21:16:08 */
 
 
 
@@ -2776,6 +2776,8 @@ var CFG = {
   TANDA_RELLAMADAS_MAX: 5,                // tope de llamadas extra de un paso por tanda
   TANDA_RELLAMADA_MIN_MS: 60 * 1000,      // duración que se supone a una llamada extra aunque la anterior fuera más corta
   TANDA_RELLAMADA_RESERVA_MS: 30 * 1000,  // margen para el cierre de la tanda (revisión posterior de los CSV, programar la continuación)
+  TORNEOS_FASE_MIN_RESTANTE_MS: 150 * 1000,          // PF541: procesarTorneos() no empieza otra fase si a la ejecución le quedan menos de esto antes del corte (la fase más lenta medida fue 118 s, PF535, más 30 s de cierre)
+  TORNEOS_FASE_CURSOR_MAX_EDAD_MS: 30 * 60 * 1000,   // PF541: un cursor de fases (TORNEOS_FASE_CURSOR) más viejo que esto se descarta y procesarTorneos() empieza de cero
 
   // Presupuesto interno SOLO para el bucle de /players dentro de [→ Contexto_Base_Web.md §01B034]
   PLAYERS_FETCH_BUDGET_MS: 3 * 60 * 1000 + 30 * 1000,  // 3m30s
@@ -46089,69 +46091,131 @@ function procesarTorneos() {
   var ctxCompartido = _getCtx();
   _tPaso('_getCtx (compartido para Participantes/Ganadores)', _t);
 
-  _t = Date.now();
-  actualizarDocParticipantesCalificadosTorneo(ctxCompartido);
-  _tPaso('actualizarDocParticipantesCalificadosTorneo', _t);
-
-  _t = Date.now();
-  actualizarDocParticipantesCalificados(ctxCompartido); // "Participantes calificados (sorteo)"
-  _tPaso('actualizarDocParticipantesCalificados', _t);
-
-  _t = Date.now();
-  actualizarDocGanadoresTorneo(ctxCompartido);
-  _tPaso('actualizarDocGanadoresTorneo', _t);
-
-  // NUEVO (15-sep-2026, pedido del usuario): documentos de NO calificados, [→ Contexto_Base_Web.md §26B092]
-  _t = Date.now();
-  try {
-    actualizarDocNoCalificadosTorneo(ctxCompartido);
-  } catch (eNCT) {
-    Logger.log('[Torneos] actualizarDocNoCalificadosTorneo() falló (se continúa): ' + eNCT.message);
-  }
-  _tPaso('actualizarDocNoCalificadosTorneo', _t);
-
-  _t = Date.now();
-  try {
-    actualizarDocNoCalificadosSorteo(ctxCompartido);
-  } catch (eNCS) {
-    Logger.log('[Torneos] actualizarDocNoCalificadosSorteo() falló (se continúa): ' + eNCS.message);
-  }
-  _tPaso('actualizarDocNoCalificadosSorteo', _t);
-
-  _t = Date.now();
-  // FASE 22 (02/08/2026, HISTÓRICO): en su momento reescribía el texto de [→ Contexto_Base_Web.md §26B093]
-  sincronizarRequisitosYPremiosTorneo();
-  _tPaso('sincronizarRequisitosYPremiosTorneo', _t);
-
-  _t = Date.now();
-  // FIX (pedido usuario): el activador "Torneo en vivo" (procesarTorneos() [→ Contexto_Base_Web.md §26B094]
-  var torneosHoy = _listarTorneosDeHoy();
-  if (torneosHoy.length > 0) {
-    var inicioTorneoHoy = torneosHoy.reduce(function (max, t) {
-      return (t.fecha instanceof Date && (!max || t.fecha > max)) ? t.fecha : max;
-    }, null);
-    try {
-      _instalarActivadorTorneoEnVivo(inicioTorneoHoy);
-    } catch (e) {
-      Logger.log('[Torneos] No se pudo instalar el activador Torneo en vivo: ' + e.message);
+  // PF541 (20-nov-2026): procesarTorneos() ahora es reanudable por FASES (9). Dentro de una cadena por tandas, si a la ejecución le quedan menos de
+  // CFG.TORNEOS_FASE_MIN_RESTANTE_MS antes del corte de la plataforma, guarda el número de la fase por empezar (TORNEOS_FASE_CURSOR = fase|hora) y devuelve
+  // false; el motor la vuelve a llamar (misma tanda si alcanza el tiempo, o en la continuación) y retoma ahí. Siempre se hace al menos una fase por llamada.
+  // Fuera de una cadena (activador «Torneo en vivo», ejecución manual: INICIO_TANDA_MS_ en 0) corre las 9 fases como antes y no lee ni escribe el cursor. [→ Contexto_Base_Web.md §PF541]
+  var _fasesNombres = ['Participantes calificados (torneo)', 'Participantes calificados (sorteo)', 'Ganadores (torneo)', 'No calificados (torneo)', 'No calificados (sorteo)', 'Requisitos y premios', 'Activador Torneo en vivo', 'T_Control', 'Formato de T_Asistencia'];
+  var _fasesTotal = _fasesNombres.length;
+  var _propFaseCursor = 'TORNEOS_FASE_CURSOR';
+  var _faseIni = 0;
+  if (INICIO_TANDA_MS_) {
+    var _propsFase = PropertiesService.getScriptProperties();
+    var _rawFase = _propsFase.getProperty(_propFaseCursor);
+    if (_rawFase) {
+      var _partesFase = String(_rawFase).split('|');
+      var _kFase = parseInt(_partesFase[0], 10);
+      var _tsFase = parseInt(_partesFase[1], 10);
+      if (_kFase > 0 && _kFase < _fasesTotal && _tsFase && (Date.now() - _tsFase) < CFG.TORNEOS_FASE_CURSOR_MAX_EDAD_MS) {
+        _faseIni = _kFase;
+        Logger.log('[Torneos] Retoma en la fase ' + (_faseIni + 1) + '/' + _fasesTotal + ' («' + _fasesNombres[_faseIni] + '»); las ' + _faseIni + ' anteriores se hicieron en la tanda anterior.');
+      } else {
+        _propsFase.deleteProperty(_propFaseCursor);
+      }
     }
   }
-  _tPaso('_listarTorneosDeHoy + _instalarActivadorTorneoEnVivo', _t);
-
-  _t = Date.now();
-  regenerarTControlSheet(ss);
-  _tPaso('regenerarTControlSheet', _t);
-
-  _t = Date.now();
-  // Formato condicional de T_Asistencia por ID de torneo (grupos de filas [→ Contexto_Base_Web.md §26B095]
-  try {
-    _ordenarTAsistenciaPorFecha(ss); // más reciente primero, antes de colorear por torneo
-    _aplicarFormatoCondicionalTAporTorneo(ss);
-  } catch (e) {
-    Logger.log('[Torneos] _aplicarFormatoCondicionalTAporTorneo() falló: ' + e.message);
+  function _faseCorta(k) {
+    if (k <= _faseIni) return false; // siempre se hace al menos una fase por llamada
+    if (!INICIO_TANDA_MS_) return false; // fuera de una cadena corre todo
+    if (_msRestantesDeEjecucion_() >= CFG.TORNEOS_FASE_MIN_RESTANTE_MS) return false;
+    PropertiesService.getScriptProperties().setProperty(_propFaseCursor, k + '|' + Date.now());
+    Logger.log('[Torneos] Quedan ' + Math.round(_msRestantesDeEjecucion_() / 1000) + ' s de ejecución (mínimo ' + Math.round(CFG.TORNEOS_FASE_MIN_RESTANTE_MS / 1000) +
+               ' s para empezar otra fase): se corta antes de la fase ' + (k + 1) + '/' + _fasesTotal + ' («' + _fasesNombres[k] + '»); la continuación retoma ahí.');
+    _logProgresoPaso_('Torneos', 'fases de procesarTorneos()', _faseIni, k - _faseIni, _fasesTotal, 'fases');
+    return true;
   }
-  _tPaso('_aplicarFormatoCondicionalTAporTorneo', _t);
 
+  if (_faseCorta(0)) return false;
+  if (0 >= _faseIni) {
+    _t = Date.now();
+    actualizarDocParticipantesCalificadosTorneo(ctxCompartido);
+    _tPaso('actualizarDocParticipantesCalificadosTorneo', _t);
+  }
+
+  if (_faseCorta(1)) return false;
+  if (1 >= _faseIni) {
+    _t = Date.now();
+    actualizarDocParticipantesCalificados(ctxCompartido); // "Participantes calificados (sorteo)"
+    _tPaso('actualizarDocParticipantesCalificados', _t);
+  }
+
+  if (_faseCorta(2)) return false;
+  if (2 >= _faseIni) {
+    _t = Date.now();
+    actualizarDocGanadoresTorneo(ctxCompartido);
+    _tPaso('actualizarDocGanadoresTorneo', _t);
+  }
+
+  if (_faseCorta(3)) return false;
+  if (3 >= _faseIni) {
+    // NUEVO (15-sep-2026, pedido del usuario): documentos de NO calificados, [→ Contexto_Base_Web.md §26B092]
+    _t = Date.now();
+    try {
+      actualizarDocNoCalificadosTorneo(ctxCompartido);
+    } catch (eNCT) {
+      Logger.log('[Torneos] actualizarDocNoCalificadosTorneo() falló (se continúa): ' + eNCT.message);
+    }
+    _tPaso('actualizarDocNoCalificadosTorneo', _t);
+  }
+
+  if (_faseCorta(4)) return false;
+  if (4 >= _faseIni) {
+    _t = Date.now();
+    try {
+      actualizarDocNoCalificadosSorteo(ctxCompartido);
+    } catch (eNCS) {
+      Logger.log('[Torneos] actualizarDocNoCalificadosSorteo() falló (se continúa): ' + eNCS.message);
+    }
+    _tPaso('actualizarDocNoCalificadosSorteo', _t);
+  }
+
+  if (_faseCorta(5)) return false;
+  if (5 >= _faseIni) {
+    _t = Date.now();
+    // FASE 22 (02/08/2026, HISTÓRICO): en su momento reescribía el texto de [→ Contexto_Base_Web.md §26B093]
+    sincronizarRequisitosYPremiosTorneo();
+    _tPaso('sincronizarRequisitosYPremiosTorneo', _t);
+  }
+
+  if (_faseCorta(6)) return false;
+  if (6 >= _faseIni) {
+    _t = Date.now();
+    // FIX (pedido usuario): el activador "Torneo en vivo" (procesarTorneos() [→ Contexto_Base_Web.md §26B094]
+    var torneosHoy = _listarTorneosDeHoy();
+    if (torneosHoy.length > 0) {
+      var inicioTorneoHoy = torneosHoy.reduce(function (max, t) {
+        return (t.fecha instanceof Date && (!max || t.fecha > max)) ? t.fecha : max;
+      }, null);
+      try {
+        _instalarActivadorTorneoEnVivo(inicioTorneoHoy);
+      } catch (e) {
+        Logger.log('[Torneos] No se pudo instalar el activador Torneo en vivo: ' + e.message);
+      }
+    }
+    _tPaso('_listarTorneosDeHoy + _instalarActivadorTorneoEnVivo', _t);
+  }
+
+  if (_faseCorta(7)) return false;
+  if (7 >= _faseIni) {
+    _t = Date.now();
+    regenerarTControlSheet(ss);
+    _tPaso('regenerarTControlSheet', _t);
+  }
+
+  if (_faseCorta(8)) return false;
+  if (8 >= _faseIni) {
+    _t = Date.now();
+    // Formato condicional de T_Asistencia por ID de torneo (grupos de filas [→ Contexto_Base_Web.md §26B095]
+    try {
+      _ordenarTAsistenciaPorFecha(ss); // más reciente primero, antes de colorear por torneo
+      _aplicarFormatoCondicionalTAporTorneo(ss);
+    } catch (e) {
+      Logger.log('[Torneos] _aplicarFormatoCondicionalTAporTorneo() falló: ' + e.message);
+    }
+    _tPaso('_aplicarFormatoCondicionalTAporTorneo', _t);
+  }
+
+  PropertiesService.getScriptProperties().deleteProperty(_propFaseCursor); // terminó todas las fases: el próximo procesarTorneos() de una cadena empieza de cero
   Logger.log('[Torneos][Tiempos] TOTAL procesarTorneos(): ' + (Date.now() - _tInicioTotal) + ' ms');
 
   // FIX (07-sep-2026): procesarTorneos() ahora es "reanudable" a nivel de [→ Contexto_Base_Web.md §26B096]
