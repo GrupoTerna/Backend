@@ -1,0 +1,22 @@
+{
+  "tag": "#VRJLY8LC8",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "20/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": 27,
+      "temporadaRoyaleAPI": 138,
+      "semana": 3,
+      "clan": "GrupoXTerna™2",
+      "ataques": 2,
+      "fame": 400,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    }
+  ]
+}
