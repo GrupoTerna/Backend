@@ -1247,6 +1247,57 @@ function _leerRegistrosHistorialAscensos_() {
 }
 
 /**
+ * _historialRangoJugadorDesdeRegistros_(registros, tag, formatearFecha) — función pura (se prueba en Node, sin hojas). [→ Contexto_Base_Web.md §PF286]
+ * Historial de cambios de rango de UNA cuenta, para el modal de la tabla de propuestas de la web (pedido de la usuaria del 28-oct-2026, punto 17 (a)).
+ * Toma los registros de _leerRegistrosHistorialAscensos_() y deja solo los de esa cuenta (se compara con cleanTag(), mayúsculas y sin #) cuyo Tipo es un
+ * cambio real (CR_TIPOS_CAMBIO_REAL_: Ascenso, Degradación, Expulsión, Ascenso de clan) y que no son una propuesta todavía «Planificado» (eso aún no ocurrió).
+ * «Elegible Admin» no entra: solo se propone, no cambia el rango. Orden: del más reciente al más antiguo; sin fecha válida van al final.
+ * `formatearFecha(ms)` devuelve 'dd/mm/aaaa' (se pasa de fuera para que esta función no dependa de Utilities).
+ * Devuelve [{ tipo, rango, rango2, clan, fechaMs, fechaTxt, temporada, semana, dia, deCorrida }]; `deCorrida` es true si salió de una propuesta marcada «Realizado».
+ */
+function _historialRangoJugadorDesdeRegistros_(registros, tag, formatearFecha) {
+  var clave = cleanTag(tag);
+  if (!clave) return [];
+  var lista = [];
+  (registros || []).forEach(function (r) {
+    if (!r || cleanTag(r.tag) !== clave) return;
+    if (!CR_TIPOS_CAMBIO_REAL_[r.tipo]) return;
+    if (r.estadoProp === 'Planificado') return;
+    var conFecha = isFinite(r.fechaMs);
+    lista.push({
+      tipo: r.tipo,
+      rango: r.rango || '',
+      rango2: r.rango2 || '',
+      clan: r.clan || '',
+      fechaMs: conFecha ? r.fechaMs : null,
+      fechaTxt: conFecha ? formatearFecha(r.fechaMs) : '',
+      temporada: r.temporada,
+      semana: r.semana,
+      dia: r.dia,
+      deCorrida: r.estadoProp === 'Realizado'
+    });
+  });
+  lista.sort(function (a, b) {
+    if (a.fechaMs === null && b.fechaMs === null) return 0;
+    if (a.fechaMs === null) return 1;
+    if (b.fechaMs === null) return -1;
+    return b.fechaMs - a.fechaMs;
+  });
+  return lista;
+}
+
+/**
+ * _leerHistorialRangoJugador_(tag) — lee Historial_A/D (solo lectura) y devuelve el historial de cambios de rango de esa cuenta (ver _historialRangoJugadorDesdeRegistros_()). Sin hoja o sin filas devuelve [].
+ */
+function _leerHistorialRangoJugador_(tag) {
+  var registros = _leerRegistrosHistorialAscensos_();
+  if (!registros) return [];
+  return _historialRangoJugadorDesdeRegistros_(registros, tag, function (ms) {
+    return Utilities.formatDate(new Date(ms), 'America/Lima', 'dd/MM/yyyy');
+  });
+}
+
+/**
  * _corridaCambioRangoDesdeRegistros_(registros, desdeMs, claveDia) — función pura (se prueba en Node, sin hojas).
  * Una «corrida» son las propuestas (Estado de propuesta «Planificado» o «Realizado») cuya Fecha cae en el mismo día de Lima que la propuesta más reciente: la Fecha
  * es la de creación de la propuesta y no cambia al pasar a «Realizado» (_resolverPropuestaCRListaComoRealizada()), así que todas las de una corrida comparten día.

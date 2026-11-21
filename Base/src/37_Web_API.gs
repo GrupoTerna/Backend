@@ -5201,6 +5201,13 @@ function _webCRListaVerificar(token, idAscenso) {
   return verificacion;
 }
 
+// _webCRHistorialJugador(): modal «Historial de cambios de rango» de la tabla de propuestas de admin.html (PF286 punto 17 (a)). GET que solo lee Historial_A/D (_leerHistorialRangoJugador_(), 24_Historial_Ascensos.gs); exige sesión de admin igual que el resto del panel. [→ Contexto_Base_Web.md §PF286]
+function _webCRHistorialJugador(token, tag) {
+  if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
+  if (!cleanTag(tag)) return { ok: false, error: 'Falta el Tag de la cuenta.' };
+  return { ok: true, tag: cleanTag(tag), cambios: _leerHistorialRangoJugador_(tag) };
+}
+
 // _webCRListaVerificarYMarcar(): versión de la rama «verificar» que ESCRIBE (por eso es POST): igual que _webCRListaVerificar(), pero antes marca «Realizado» en Historial_A/D las propuestas que el Directorio ya muestra cumplidas (_verificarYMarcarCambioRangoHistorial_(), 24_Historial_Ascensos.gs; PF286). Devuelve además `marcadas` y los `pares` para el selector.
 function _webCRListaVerificarYMarcar(token, idAscenso) {
   if (!_webAuthValidar(token)) return { ok: false, error: 'Sesión inválida o vencida. Vuelve a iniciar sesión.' };
