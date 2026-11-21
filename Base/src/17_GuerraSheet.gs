@@ -65,13 +65,15 @@ var GC = {
   DON_D:        22,
   ORIGEN:       23,
   CLAN_TAG:     24,  // 7-nov-2026: Tag del CLAN de la fila (p. ej. #GCRG8L00); es la clave de identidad del clan, la columna Clan es solo el nombre.
-  COMPROBADA:   25   // 20-nov-2026 (§PF437 F3): vacía (sin comprobar) o «Valores + Battlelog» (GUERRA_COMPROBADA_BATTLELOG)
+  COMPROBADA:   25   // 20-nov-2026 (§PF437 F3): vacía (sin comprobar), «Valores» (GUERRA_COMPROBADA_VALORES, desde el 21-nov-2026) o «Valores + Battlelog» (GUERRA_COMPROBADA_BATTLELOG)
 };
 
 var GUERRA_TOTAL_COLS = 25;
 
 // Texto de la columna Comprobada cuando el día se comprobó con el battlelog (el mismo de GDS_COMPROBADA_BATTLELOG en 18_CorreccionGuerra.gs).
 var GUERRA_COMPROBADA_BATTLELOG = 'Valores + Battlelog';
+// 21-nov-2026 (§PF437 F3, estado «Valores»): la semana del jugador coincide con el total de RoyaleAPI (perfil) y todos sus días tienen desglose «Único» o «Battlelog». El mismo texto de GDS_COMPROBADA_VALORES en 18_CorreccionGuerra.gs.
+var GUERRA_COMPROBADA_VALORES = 'Valores';
 
 // PF289 (28-oct-2026): blindaje de _syncGuerraCSV() contra una lectura vacía o recortada de Backup_Guerra.csv. Solo se aplica si el CSV de referencia pesa más que el mínimo; el ratio es la fracción del tamaño de referencia por debajo de la cual se rechaza leer o escribir. [→ Contexto_Base_Web.md §PF289]
 var GUERRA_CSV_BLINDAJE_MIN_BYTES = 100000;
