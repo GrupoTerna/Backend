@@ -229,6 +229,8 @@ Cada fila termina con su **Revisión**. Solo tres tienen fecha (`PF441` y `PF439
 
 - [ ] `PF073` — Ver en el registro del bot `[GuerraEstatico] sin cambios…` (el 9-nov se publicó todo; el mensaje no se vio). **Revisión:** sin fecha; en la próxima publicación sin cambios de `[GuerraEstatico]`.
 
+---
+
 ## E. Acciones de la usuaria
 
 - [ ] `PF377`: revisar el panel de `admin.html` en tres tarjetas (partes 1 y 2 hechas, `Web` `ff25e46` y `cdbabf1`): cintas, rótulos y pastillas.
