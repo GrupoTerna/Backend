@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 04:49:03 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 05:05:33 */
 
 
 
@@ -75216,6 +75216,52 @@ function _reenumerarClanesExternosCore_(deltaMeses, runId) {
   _anotarProgresoPaso_(nombrePaso + ': ' + acumVistos + ' archivos recorridos', acumVistos);
   Logger.log('[Reenumeración] ' + nombrePaso + ': ' + (incompleto ? 'presupuesto agotado, se reintenta en la próxima continuación. ' : '') + 'cambiados en esta pasada: ' + cambiados + ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos + ' (temporada interna += ' + deltaMeses + ').');
   return !incompleto;
+}
+
+// destrabarReenumeracionTerminada(): 22-nov-2026; MANUAL. Quita las marcas que dejan bloqueados runGuerra() y todo lo demás cuando la reenumeración YA terminó pero quedó REENUM_PASO (o REENUM_BLOQUEO) suelto.
+// Solo actúa si no queda nada por reanudar: faltan REENUM_DELTA_MESES, REENUM_NUEVA_REF y REENUM_OFFSET_VIEJO, que solo se borran al terminar la reenumeración completa (_continuarRunReenumerarTemporadas()). Si queda alguno, NO toca nada: hay una reenumeración a medias y se reanuda con reanudarReenumerarTemporadas().
+// Caso real del 22-nov-2026: quedó REENUM_PASO = 6 (el valor de reserva de reanudarReenumerarTemporadas()) con la reenumeración ya terminada, y runGuerra() decía «hay una reenumeración en curso».
+function destrabarReenumeracionTerminada() {
+  var props = PropertiesService.getScriptProperties();
+  var pendientesDeReanudar = props.getProperty('REENUM_DELTA_MESES') !== null || props.getProperty('REENUM_NUEVA_REF') !== null || props.getProperty('REENUM_OFFSET_VIEJO') !== null;
+  if (pendientesDeReanudar) {
+    Logger.log('[Destrabar] NO se tocó nada: todavía hay datos de una reenumeración por reanudar (REENUM_DELTA_MESES = ' + props.getProperty('REENUM_DELTA_MESES') + ', REENUM_NUEVA_REF = ' + props.getProperty('REENUM_NUEVA_REF') + ', REENUM_OFFSET_VIEJO = ' + props.getProperty('REENUM_OFFSET_VIEJO') + '). Usa reanudarReenumerarTemporadas().');
+    return;
+  }
+  if (!_reenumeracionEnCurso_()) { Logger.log('[Destrabar] No hay nada que destrabar: no queda ninguna marca de reenumeración.'); return; }
+  Logger.log('[Destrabar] Marcas sueltas de una reenumeración ya terminada: REENUM_PASO = ' + props.getProperty('REENUM_PASO') + ', REENUM_BLOQUEO = ' + props.getProperty('REENUM_BLOQUEO') + '. Se borran.');
+  props.deleteProperty('REENUM_PASO');
+  props.deleteProperty('REENUM_BLOQUEO');
+  props.deleteProperty('REENUM_PASO_NOMBRE');
+  props.deleteProperty('REENUM_REINTENTO');
+  props.deleteProperty('REENUM_TANDAS_PASO');
+  props.deleteProperty('REENUM_PROGRESO_PASO');
+  try { _borrarTriggersDeContinuacion('_continuarRunReenumerarTemporadas'); } catch (eT) { /* sin activador */ }
+  var raw = props.getProperty('EJECUCION_EN_CURSO');
+  if (raw) { try { if (/Reenumerar/i.test(JSON.parse(raw).fn || '')) { _liberarLockEjecucion(); Logger.log('[Destrabar] Candado de ejecución liberado (era de la reenumeración).'); } } catch (eL) { /* candado ilegible: se deja */ } }
+  Logger.log('[Destrabar] LISTO. runGuerra() y las demás funciones ya pueden correr.' + (_reenumClanesExternosPendiente_() ? ' Quedan archivos de Clanes_Externos aplazados: termínalos después con reenumerarClanesExternosPendientes().' : ''));
+}
+
+// diagnosticarReenumeracion(): 22-nov-2026; MANUAL y de SOLO LECTURA (no cambia nada). Escribe en el registro el estado que bloquea o retiene la reenumeración y la guerra: propiedades REENUM_*, candado de ejecución y su antigüedad, ventana de guerra, aplazado de Clanes_Externos y activadores de continuación.
+function diagnosticarReenumeracion() {
+  var props = PropertiesService.getScriptProperties();
+  var L = function (t) { Logger.log('[Diagnóstico] ' + t); };
+  var todas = props.getProperties();
+  Object.keys(todas).sort().forEach(function (k) {
+    if (k.indexOf('REENUM_') === 0 || k.indexOf('CLANESEXT') === 0 || k === 'RUNGUERRA_ULTIMA_HORA') {
+      var v = String(todas[k]); L(k + ' = ' + (v.length > 160 ? v.slice(0, 160) + '…' : v));
+    }
+  });
+  var raw = props.getProperty('EJECUCION_EN_CURSO');
+  if (raw) {
+    try { var info = JSON.parse(raw); var seg = Math.round((Date.now() - info.inicio) / 1000); L('EJECUCION_EN_CURSO: ' + info.fn + ', iniciada hace ' + seg + ' s (vence a los ' + Math.round(CFG.LOCK_MAX_DURACION_MS / 1000) + ' s' + (seg * 1000 >= CFG.LOCK_MAX_DURACION_MS ? '; YA VENCIÓ y el siguiente la libera sola' : '') + ').'); }
+    catch (e) { L('EJECUCION_EN_CURSO ilegible: ' + raw); }
+  } else { L('EJECUCION_EN_CURSO: libre.'); }
+  L('_reenumeracionEnCurso_() = ' + _reenumeracionEnCurso_() + '; aplazado de Clanes_Externos: ' + (_reenumClanesExternosPendiente_() ? 'SÍ' : 'no'));
+  try { var v = _estadoVentanaGuerra_(); L('Ventana de guerra protegida ahora: ' + v.protegida + ' (en ventana: ' + v.enVentana + ').'); } catch (eV) { L('No se pudo leer la ventana de guerra: ' + eV.message); }
+  var ts = ScriptApp.getProjectTriggers(), n = 0;
+  ts.forEach(function (t) { var h = t.getHandlerFunction(); if (/Reenum|runGuerra|RunGuerra|ClanesExt/i.test(h)) { n++; L('Activador: ' + h + ' (' + t.getEventType() + ').'); } });
+  if (!n) L('No hay ningún activador de continuación de la reenumeración ni de runGuerra.');
 }
 
 // ----- Clanes_Externos aplazado (22-nov-2026) -----
