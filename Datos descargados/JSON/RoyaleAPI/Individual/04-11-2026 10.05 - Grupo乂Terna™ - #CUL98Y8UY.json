@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "04/11/2026",
   "registros": [
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 4,
       "clan": "Grupo乂Terna™",
@@ -19,7 +19,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 3,
       "clan": "Grupo乂Terna™",
@@ -32,7 +32,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 2,
       "clan": "Grupo乂Terna™",
@@ -45,5 +45,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1793146932920"
+  "reenumeracionId": "1795320518442"
 }

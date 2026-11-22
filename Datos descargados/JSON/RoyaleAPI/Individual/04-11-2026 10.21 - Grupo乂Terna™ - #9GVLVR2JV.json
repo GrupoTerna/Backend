@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "Grupo乂Terna™",
@@ -19,7 +19,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 27,
+      "temporadaInterna": 39,
       "temporadaRoyaleAPI": 138,
       "semana": 2,
       "clan": "Nova Perú",
@@ -33,7 +33,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 27,
+      "temporadaInterna": 39,
       "temporadaRoyaleAPI": 138,
       "semana": 1,
       "clan": "Nova Perú",
@@ -47,7 +47,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "semana": 4,
       "clan": "Nova Perú",
@@ -61,7 +61,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "semana": 3,
       "clan": "Nova Perú",
@@ -75,7 +75,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "semana": 2,
       "clan": "Nova Perú",
@@ -89,7 +89,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "semana": 1,
       "clan": "Nova Perú",
@@ -103,7 +103,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 4,
       "clan": "Nova Perú",
@@ -117,7 +117,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 3,
       "clan": "Nova Perú",
@@ -131,7 +131,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 2,
       "clan": "Nova Perú",
@@ -145,7 +145,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 1,
       "clan": "Nova Perú",
@@ -159,7 +159,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "Nova Perú",
@@ -173,7 +173,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "PERU ROYALE",
@@ -187,7 +187,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "PERU ROYALE",
@@ -201,7 +201,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 2,
       "clan": "Pro Extinction",
@@ -215,7 +215,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 1,
       "clan": "Pro Extinction",
@@ -229,7 +229,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 4,
       "clan": "Pro Extinction",
@@ -243,7 +243,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 3,
       "clan": "Pro Extinction",
@@ -257,7 +257,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 2,
       "clan": "Pro Extinction",
@@ -271,7 +271,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 1,
       "clan": "Pro Extinction",
@@ -285,7 +285,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 5,
       "clan": "Pro Extinction",
@@ -299,7 +299,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 4,
       "clan": "Pro Extinction",
@@ -313,7 +313,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 3,
       "clan": "Pro Extinction",
@@ -327,7 +327,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 2,
       "clan": "Pro Extinction",
@@ -341,7 +341,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 1,
       "clan": "Nova Perú",
@@ -355,7 +355,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 4,
       "clan": "Nova Perú",
@@ -369,7 +369,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 3,
       "clan": "Nova Perú",
@@ -383,7 +383,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 2,
       "clan": "Nova Perú",
@@ -397,7 +397,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 1,
       "clan": "Nova Perú",
@@ -411,7 +411,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 4,
       "clan": "Nova Perú",
@@ -425,7 +425,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 3,
       "clan": "Nova Perú",
@@ -439,7 +439,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 2,
       "clan": "Nova Perú",
@@ -453,7 +453,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 1,
       "clan": "Nova Perú",
@@ -467,7 +467,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 5,
       "clan": "Nova Perú",
@@ -481,7 +481,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 4,
       "clan": "Nova Perú",
@@ -495,7 +495,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 3,
       "clan": "Nova Perú",
@@ -509,7 +509,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 2,
       "clan": "Nova Perú",
@@ -523,7 +523,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 1,
       "clan": "Nova Perú",
@@ -537,7 +537,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 18,
+      "temporadaInterna": 30,
       "temporadaRoyaleAPI": 129,
       "semana": 4,
       "clan": "Nova Perú",
@@ -551,7 +551,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 18,
+      "temporadaInterna": 30,
       "temporadaRoyaleAPI": 129,
       "semana": 3,
       "clan": "DRAGON PERU",
@@ -565,7 +565,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 18,
+      "temporadaInterna": 30,
       "temporadaRoyaleAPI": 129,
       "semana": 2,
       "clan": "Aura",
@@ -579,7 +579,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 18,
+      "temporadaInterna": 30,
       "temporadaRoyaleAPI": 129,
       "semana": 1,
       "clan": "SJL Cto Grand",
@@ -593,7 +593,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 4,
       "clan": "SJL Cto Grand",
@@ -607,7 +607,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 3,
       "clan": "\"The peruvians\"",
@@ -621,7 +621,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 2,
       "clan": "\"The peruvians\"",
@@ -635,7 +635,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 1,
       "clan": "\"The peruvians\"",
@@ -649,7 +649,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 16,
+      "temporadaInterna": 28,
       "temporadaRoyaleAPI": 127,
       "semana": 5,
       "clan": "\"The peruvians\"",
@@ -663,7 +663,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 16,
+      "temporadaInterna": 28,
       "temporadaRoyaleAPI": 127,
       "semana": 4,
       "clan": "\"The peruvians\"",
@@ -677,7 +677,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 4,
       "clan": "ANTIGORDAS SA",
@@ -691,7 +691,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 3,
       "clan": "ANTIGORDAS SA",
@@ -705,7 +705,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 2,
       "clan": "ANTIGORDAS SA",
@@ -719,7 +719,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 1,
       "clan": "ANTIGORDAS SA",
@@ -733,7 +733,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 5,
       "clan": "ANTIGORDAS SA",
@@ -747,7 +747,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 4,
       "clan": "ANTIGORDAS SA",
@@ -761,7 +761,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 3,
       "clan": "ANTIGORDAS SA",
@@ -775,7 +775,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 4,
       "clan": "LOS RM",
@@ -789,7 +789,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 3,
       "clan": "LOS RM",
@@ -803,7 +803,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 2,
       "clan": "LOS RM",
@@ -817,7 +817,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 4,
       "clan": "LOS RM",
@@ -831,7 +831,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 3,
       "clan": "LOS RM",
@@ -845,7 +845,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 2,
       "clan": "LOS RM",
@@ -859,7 +859,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 1,
       "clan": "LOS RM",
@@ -873,7 +873,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 4,
       "clan": "LOS RM",
@@ -887,7 +887,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 3,
       "clan": "LOS RM",
@@ -901,7 +901,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 2,
       "clan": "LOS RM",
@@ -915,7 +915,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 1,
       "clan": "LOS RM",
@@ -929,7 +929,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 4,
       "clan": "LOS RM",
@@ -943,7 +943,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 3,
       "clan": "LOS RM",
@@ -957,7 +957,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 2,
       "clan": "LOS RM",
@@ -971,7 +971,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 1,
       "clan": "COOKIE'S CLAN",
@@ -985,7 +985,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 5,
       "clan": "ALIANZA LIMA VI",
@@ -999,7 +999,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 4,
       "clan": "IncaRoyale™",
@@ -1013,7 +1013,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 3,
       "clan": "TeamStranges",
@@ -1027,7 +1027,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 2,
       "clan": "IncaRoyale™",
@@ -1041,7 +1041,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 1,
       "clan": "AG Master",
@@ -1055,7 +1055,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 4,
       "clan": "AG Master",
@@ -1069,7 +1069,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 3,
       "clan": "AG Master",
@@ -1083,7 +1083,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 2,
       "clan": "AG Master",
@@ -1097,7 +1097,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 1,
       "clan": "AG Master",
@@ -1111,7 +1111,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 4,
       "clan": "AG Master",
@@ -1125,7 +1125,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 3,
       "clan": "AG Master",
@@ -1139,7 +1139,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 2,
       "clan": "AG Master",
@@ -1153,7 +1153,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 1,
       "clan": "AG Master",
@@ -1167,7 +1167,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 5,
       "clan": "AG Master",
@@ -1181,7 +1181,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 4,
       "clan": "AG Master",
@@ -1195,7 +1195,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 3,
       "clan": "AG Master",
@@ -1209,7 +1209,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 2,
       "clan": "AG Master",
@@ -1223,7 +1223,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 1,
       "clan": "FAMILIA PERUANA",
@@ -1237,7 +1237,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 4,
       "clan": "*UNIDOS™ PERÚ*❤",
@@ -1251,7 +1251,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 3,
       "clan": "BASTIÓN INKA®",
@@ -1265,7 +1265,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 2,
       "clan": "BASTIÓN INKA®",
@@ -1279,7 +1279,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 1,
       "clan": "BASTIÓN INKA®",
@@ -1293,7 +1293,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 4,
       "clan": "BASTIÓN INKA®",
@@ -1307,7 +1307,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 3,
       "clan": "BASTIÓN INKA®",
@@ -1321,7 +1321,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 4,
       "clan": "Guilty Crown",
@@ -1335,7 +1335,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 3,
       "clan": "Guilty Crown",
@@ -1349,7 +1349,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 2,
       "clan": "Guilty Crown",
@@ -1363,7 +1363,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 1,
       "clan": "Guilty Crown",
@@ -1377,7 +1377,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 4,
       "clan": "ClanPollin",
@@ -1391,7 +1391,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 3,
       "clan": "ClanPollin",
@@ -1405,7 +1405,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 2,
       "clan": "ClanPollin",
@@ -1419,7 +1419,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 1,
       "clan": "ClanPollin",
@@ -1433,7 +1433,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 5,
       "clan": "ClanPollin",
@@ -1447,7 +1447,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 4,
       "clan": "ClanPollin",
@@ -1461,7 +1461,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 3,
       "clan": "ClanPollin",
@@ -1475,7 +1475,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 2,
       "clan": "Legion Rebelde",
@@ -1489,7 +1489,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 1,
       "clan": "BeamerBoy",
@@ -1503,5 +1503,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1793146932920"
+  "reenumeracionId": "1795320518442"
 }

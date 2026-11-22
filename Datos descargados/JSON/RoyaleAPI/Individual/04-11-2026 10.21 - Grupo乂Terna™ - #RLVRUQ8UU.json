@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "Grupo乂Terna™",
@@ -19,7 +19,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "semana": 3,
       "clan": "Clan Entel",
@@ -33,7 +33,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "semana": 2,
       "clan": "Clan Entel",
@@ -47,7 +47,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "semana": 1,
       "clan": "Clan Entel",
@@ -61,7 +61,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 4,
       "clan": "Clan Entel",
@@ -75,7 +75,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 3,
       "clan": "Clan Entel",
@@ -89,7 +89,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 2,
       "clan": "Clan Entel",
@@ -103,7 +103,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 1,
       "clan": "Clan Entel",
@@ -117,7 +117,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "LEYENDAS",
@@ -131,7 +131,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 4,
       "clan": "Aztecas",
@@ -145,7 +145,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 9,
+      "temporadaInterna": 21,
       "temporadaRoyaleAPI": 120,
       "semana": 4,
       "clan": "The Better Ones",
@@ -159,7 +159,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 9,
+      "temporadaInterna": 21,
       "temporadaRoyaleAPI": 120,
       "semana": 3,
       "clan": "The Better Ones",
@@ -173,7 +173,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 5,
+      "temporadaInterna": 17,
       "temporadaRoyaleAPI": 116,
       "semana": 4,
       "clan": "The Better Ones",
@@ -187,7 +187,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 5,
+      "temporadaInterna": 17,
       "temporadaRoyaleAPI": 116,
       "semana": 2,
       "clan": "The Better Ones",
@@ -201,7 +201,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 5,
+      "temporadaInterna": 17,
       "temporadaRoyaleAPI": 116,
       "semana": 1,
       "clan": "The Better Ones",
@@ -215,7 +215,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 3,
+      "temporadaInterna": 15,
       "temporadaRoyaleAPI": 114,
       "semana": 4,
       "clan": "The Better Ones",
@@ -229,7 +229,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 3,
+      "temporadaInterna": 15,
       "temporadaRoyaleAPI": 114,
       "semana": 3,
       "clan": "The Better Ones",
@@ -243,7 +243,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 3,
+      "temporadaInterna": 15,
       "temporadaRoyaleAPI": 114,
       "semana": 2,
       "clan": "The Better Ones",
@@ -257,7 +257,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 3,
+      "temporadaInterna": 15,
       "temporadaRoyaleAPI": 114,
       "semana": 1,
       "clan": "The Better Ones",
@@ -271,7 +271,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 4,
       "clan": "The Better Ones",
@@ -285,7 +285,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 3,
       "clan": "The Better Ones",
@@ -299,7 +299,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 2,
       "clan": "The Better Ones",
@@ -313,7 +313,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 1,
       "clan": "The Better Ones",
@@ -327,7 +327,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 1,
+      "temporadaInterna": 13,
       "temporadaRoyaleAPI": 112,
       "semana": 5,
       "clan": "The Better Ones",
@@ -341,7 +341,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 1,
+      "temporadaInterna": 13,
       "temporadaRoyaleAPI": 112,
       "semana": 4,
       "clan": "The Better Ones",
@@ -355,7 +355,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 1,
+      "temporadaInterna": 13,
       "temporadaRoyaleAPI": 112,
       "semana": 3,
       "clan": "The Better Ones",
@@ -369,7 +369,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 1,
+      "temporadaInterna": 13,
       "temporadaRoyaleAPI": 112,
       "semana": 2,
       "clan": "The Better Ones",
@@ -383,7 +383,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 1,
+      "temporadaInterna": 13,
       "temporadaRoyaleAPI": 112,
       "semana": 1,
       "clan": "The Better Ones",
@@ -397,7 +397,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 0,
+      "temporadaInterna": 12,
       "temporadaRoyaleAPI": 111,
       "semana": 4,
       "clan": "The Better Ones",
@@ -411,7 +411,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 0,
+      "temporadaInterna": 12,
       "temporadaRoyaleAPI": 111,
       "semana": 3,
       "clan": "The Better Ones",
@@ -425,7 +425,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 0,
+      "temporadaInterna": 12,
       "temporadaRoyaleAPI": 111,
       "semana": 2,
       "clan": "The Better Ones",
@@ -439,7 +439,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 5,
       "clan": "The Better Ones",
@@ -453,7 +453,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 4,
       "clan": "The Better Ones",
@@ -467,7 +467,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 3,
       "clan": "The Better Ones",
@@ -481,7 +481,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 2,
       "clan": "The Better Ones",
@@ -495,7 +495,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 1,
       "clan": "The Better Ones",
@@ -509,7 +509,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -5,
+      "temporadaInterna": 7,
       "temporadaRoyaleAPI": 106,
       "semana": 4,
       "clan": "The Better Ones",
@@ -523,7 +523,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -5,
+      "temporadaInterna": 7,
       "temporadaRoyaleAPI": 106,
       "semana": 3,
       "clan": "The Better Ones",
@@ -537,7 +537,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -5,
+      "temporadaInterna": 7,
       "temporadaRoyaleAPI": 106,
       "semana": 2,
       "clan": "The Better Ones",
@@ -551,7 +551,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -5,
+      "temporadaInterna": 7,
       "temporadaRoyaleAPI": 106,
       "semana": 1,
       "clan": "The Better Ones",
@@ -565,7 +565,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -6,
+      "temporadaInterna": 6,
       "temporadaRoyaleAPI": 105,
       "semana": 4,
       "clan": "The Better Ones",
@@ -579,7 +579,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -6,
+      "temporadaInterna": 6,
       "temporadaRoyaleAPI": 105,
       "semana": 3,
       "clan": "The Better Ones",
@@ -593,7 +593,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -9,
+      "temporadaInterna": 3,
       "temporadaRoyaleAPI": 102,
       "semana": 4,
       "clan": "The Better Ones",
@@ -607,7 +607,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -9,
+      "temporadaInterna": 3,
       "temporadaRoyaleAPI": 102,
       "semana": 3,
       "clan": "The Better Ones",
@@ -621,7 +621,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 96,
       "semana": 5,
       "clan": "The Better Ones",
@@ -635,7 +635,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 96,
       "semana": 4,
       "clan": "The Better Ones",
@@ -649,7 +649,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 96,
       "semana": 3,
       "clan": "The Better Ones",
@@ -663,7 +663,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 96,
       "semana": 2,
       "clan": "The Better Ones",
@@ -677,7 +677,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 96,
       "semana": 1,
       "clan": "The Better Ones",
@@ -691,7 +691,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 4,
       "clan": "The Better Ones",
@@ -705,7 +705,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 3,
       "clan": "The Better Ones",
@@ -719,7 +719,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 2,
       "clan": "The Better Ones",
@@ -733,7 +733,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 1,
       "clan": "The Better Ones",
@@ -747,7 +747,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 1,
       "clan": "NO MERCy",
@@ -761,7 +761,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 4,
       "clan": "NO MERCy",
@@ -775,7 +775,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 3,
       "clan": "NO MERCy",
@@ -789,7 +789,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 2,
       "clan": "NO MERCy",
@@ -803,7 +803,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 1,
       "clan": "NO MERCy",
@@ -817,7 +817,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 5,
       "clan": "NO MERCy",
@@ -831,7 +831,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 4,
       "clan": "NO MERCy",
@@ -845,7 +845,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 3,
       "clan": "NO MERCy",
@@ -859,7 +859,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 2,
       "clan": "NO MERCy",
@@ -873,7 +873,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 1,
       "clan": "NO MERCy",
@@ -887,7 +887,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 4,
       "clan": "NO MERCy",
@@ -901,7 +901,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 3,
       "clan": "NO MERCy",
@@ -915,7 +915,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 2,
       "clan": "NO MERCy",
@@ -929,7 +929,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 1,
       "clan": "NO MERCy",
@@ -943,7 +943,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 5,
       "clan": "NO MERCy",
@@ -957,7 +957,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 4,
       "clan": "NO MERCy",
@@ -971,7 +971,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 3,
       "clan": "NO MERCy",
@@ -985,7 +985,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 2,
       "clan": "NO MERCy",
@@ -999,7 +999,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 1,
       "clan": "NO MERCy",
@@ -1013,7 +1013,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 4,
       "clan": "NO MERCy",
@@ -1027,7 +1027,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 3,
       "clan": "NO MERCy",
@@ -1041,7 +1041,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 2,
       "clan": "NO MERCy",
@@ -1055,7 +1055,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 1,
       "clan": "NO MERCy",
@@ -1069,5 +1069,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1793146932920"
+  "reenumeracionId": "1795320518442"
 }
