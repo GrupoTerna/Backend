@@ -3,7 +3,7 @@
   "backfillPerfilHecho": false,
   "ultimaTemporadaCubierta": null,
   "ultimaSemanaCubierta": null,
-  "fechaUltimaConsulta": "17/11/2026",
+  "fechaUltimaConsulta": "22/11/2026",
   "registros": [
     {
       "temporadaInterna": 39,
@@ -2551,6 +2551,34 @@
       "cerrada": true,
       "externa": true,
       "clanTag": "#Q9R09PVV",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 2,
+      "clan": "✨MikaEmpire II✨",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#GCC02V0R",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 38,
+      "temporadaRoyaleAPI": 137,
+      "semana": 4,
+      "clan": "✨Mika Empire✨",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#RPVCQPGQ",
       "comentario": ""
     }
   ],
