@@ -801,8 +801,8 @@ function _excDiasVerificar(filasAntes, filasDespues, plan, creadasEsperadas) {
       var n = _excDiasNum(f[GC.ATAQUES_HOY - 1]), b = _excDiasNum(f[GC.BARCOS - 1]), fm = _excDiasNum(f[GC.FAME - 1]), a = _excDiasNum(f[GC.ATAQUES_SEM - 1]);
       if (n > 4) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ' con mas de 4 ataques');
       if (a - pa !== n) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': AtaquesSemana no sube lo que dice AtaquesHoy');
-      var dSF = !!(c.sinFame && c.sinFame[o]);   // §PF183 (3-nov-2026): día sin fame de un clan que ya cruzó la meta: fame 0 con 0 a n barcos es válido (mismo catálogo que _rsCatalogoSinFameDomingo)
-      if (dSF ? (fm - pf !== 0 || b - pb < 0 || b - pb > n) : _fameTablaDia_(n, b - pb).indexOf(fm - pf) < 0) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': ' + n + ' ataques, ' + (b - pb) + ' barcos y ' + (fm - pf) + ' de fame no estan en la tabla');
+      var dSF = !!(c.sinFame && c.sinFame[o]);   // §PF183 (3-nov-2026): día sin fame de un clan que ya cruzó la meta: fame 0 y 0 barcos es válido; con el clan ya cruzado no se ataca barcos (22-nov-2026, §PF183 actualización 52; mismo catálogo que _rsCatalogoSinFameDomingo)
+      if (dSF ? (fm - pf !== 0 || b - pb !== 0) : _fameTablaDia_(n, b - pb).indexOf(fm - pf) < 0) problemas.push(etq + 'dia ' + EXC_DIAS_LETRAS.charAt(o) + ': ' + n + ' ataques, ' + (b - pb) + ' barcos y ' + (fm - pf) + ' de fame no estan en la tabla');
       pa = a; pb = b; pf = fm;
     });
     var fin = _excDiasFinalDe(gd.dias), antes = c.finalAntes;

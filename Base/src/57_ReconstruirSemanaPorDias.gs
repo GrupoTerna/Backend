@@ -713,13 +713,15 @@ function _rsMismoReparto_(x, y) {
 
 /**
  * Catálogo del día en un clan que ya cruzó la meta (§PF183, regla de la usuaria del 2-nov-2026): los ataques de ese clan no dan fame, así que cada terna es
- * (n ataques, b barcos, 0 de fame) con n de 0 a 4 y b de 0 a n. Los barcos tras el cruce siguen sin determinar (§PF183 actualización 7): no se supone ni que se pueda ni que no.
+ * (n ataques, 0 barcos, 0 de fame) con n de 0 a 4. Con el clan ya cruzado no aparece la opción de atacar barcos (la usuaria, 22-nov-2026; §PF183 actualización 52); hasta ese día se admitían de 0 a n barcos.
+ * Una serie con barcos en ese día no tiene reparto y la omite el planificador (queda como caso a revisar).
  * Si el mismo jugador ataca ese día en OTRO clan Terna que no cruzó, esos ataques son de la serie de ese otro clan y dan fame como siempre.
  */
 function _rsCatalogoSinFameDomingo() {
   if (_rsCatalogoSinFame_) return _rsCatalogoSinFame_;
   var lista = [], claves = {};
-  for (var n = 0; n <= 4; n++) for (var b = 0; b <= n; b++) {
+  for (var n = 0; n <= 4; n++) {
+    var b = 0;   // 22-nov-2026 (§PF183 actualización 52): sin barcos tras el cruce
     var e = { n: n, b: b, f: 0, k: n + ',' + b + ',0' };
     lista.push(e); claves[e.k] = true;
   }

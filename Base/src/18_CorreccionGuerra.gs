@@ -1664,7 +1664,7 @@ function _fameCatalogoDia_() {
 /**
  * _fameEstadosSinMedallasDomingo_() [→ Contexto_Base_Web.md §PF493]
  * Estados de UN domingo de un clan que YA cruzó la meta (§PF357; g de §PF438): ese domingo no da fame, así que cuentan g ataques (1 a CGW_MAX_ATAQUES_SIN_FAME), todos con 0 de
- * medallas, y de esos g pueden ser barcos de 0 a g (no se ha descartado atacar barcos con el clan ya terminado; es el mismo rango que usa _cgwRepartoClanTerminado_ para el domingo).
+ * medallas y ninguno es de barco: con el clan ya terminado no aparece la opción de atacar barcos (la usuaria, 22-nov-2026; §PF183 actualización 52). Hasta el 22-nov-2026 se admitían de 0 a g barcos.
  * Lista de { h: g, j, k: 0 } con la forma de _fameCatalogoDia_(). Ninguno está en el catálogo normal (todos sus estados con ataques tienen fame mayor que 0), así que no se repiten.
  * Se calcula una sola vez por ejecución. Solo _repartirSemanaConjunto_ lo usa, y únicamente para el domingo de un clan verificado como terminado (_repartoClanCruzoDomingo_).
  */
@@ -1672,7 +1672,7 @@ function _fameEstadosSinMedallasDomingo_() {
   if (_FAME_ESTADOS_SIN_MEDALLAS_CACHE_) return _FAME_ESTADOS_SIN_MEDALLAS_CACHE_;
   var lista = [];
   for (var g = 1; g <= CGW_MAX_ATAQUES_SIN_FAME && g <= FAME_MAZOS_POR_DIA; g++) {
-    for (var j = 0; j <= g; j++) lista.push({ h: g, j: j, k: 0 });
+    lista.push({ h: g, j: 0, k: 0 }); // 22-nov-2026 (§PF183 actualización 52): sin barcos en el domingo de un clan terminado
   }
   _FAME_ESTADOS_SIN_MEDALLAS_CACHE_ = lista;
   return lista;
@@ -1749,8 +1749,8 @@ function _cgwSemanaEsPosibleTresDias_(ataques, fame, barcos) {
  * _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) [→ Contexto_Base_Web.md §PF357]
  * §PF357 (reglas de la usuaria, 4-nov-2026; §PF183): el clan cruza la meta en el cambio de periodIndex hacia el domingo, así que en el domingo cuentan todos los ataques con fame
  * o ninguno. Primero prueba la semana tal cual (g = 0, _cgwSemanaEsPosible_, cuatro días). Si no cabe, prueba g = 1 a 4 ataques en el domingo, TODOS sin fame (CGW_MAX_ATAQUES_SIN_FAME), y los
- * (ataques - g) restantes deben cuadrar con la tabla en jueves, viernes y sábado (_cgwSemanaEsPosibleTresDias_). Los g ataques pueden ser de PvP, de duelo o de barco (no se ha descartado
- * que se pueda atacar barcos con el clan ya terminado), así que los barcos que dieron fame pueden ser desde (barcos - g) hasta barcos. Sin dato de barcos solo se comprueban ataques y fame.
+ * (ataques - g) restantes deben cuadrar con la tabla en jueves, viernes y sábado (_cgwSemanaEsPosibleTresDias_). Los g ataques son de PvP o de duelo, nunca de barco (con el clan terminado no aparece la
+ * opción de atacar barcos; la usuaria, 22-nov-2026, §PF183 actualización 52), así que todos los barcos de la semana dieron fame en jueves, viernes o sábado. Sin dato de barcos solo se comprueban ataques y fame.
  * Devuelve el menor g que cuadra (0 = cabe sin suponer nada; g es la variable «sin medallas» de §PF438, antes llamada k) o -1 si no cabe de ninguna forma. No comprueba que el clan haya terminado (eso es _cgwClanTerminadoVerificado_).
  */
 function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
@@ -1764,10 +1764,8 @@ function _cgwSemanaPosibleClanTerminado_(ataques, fame, barcos, memo) {
   for (var g = 1; g <= CGW_MAX_ATAQUES_SIN_FAME && g <= ataques && res < 0; g++) {
     if (!hayBarcos) {
       if (_cgwSemanaEsPosibleTresDias_(ataques - g, fame, null)) res = g;
-    } else {
-      for (var j2 = Math.max(0, barcos - g); j2 <= barcos && res < 0; j2++) {
-        if (_cgwSemanaEsPosibleTresDias_(ataques - g, fame, j2)) res = g;
-      }
+    } else if (_cgwSemanaEsPosibleTresDias_(ataques - g, fame, barcos)) { // 22-nov-2026 (§PF183 actualización 52): los barcos de la semana son los de jueves a sábado
+      res = g;
     }
   }
   if (memo) memo[clave] = res;
@@ -1804,6 +1802,8 @@ function _cgwDescripcionDia_(h, j, k) {
  * donde el duelo y el barco caen en los primeros días), e) el primero en el orden del catálogo.
  * Devuelve { g, barcosGanados, dias: [{ dia, h, j, k, texto }] (J, V, S, D) } o { g: 0 } o null (g = ataques sin medallas, §PF438; h, j, k de los días son las del catálogo de §PF122, antes n, b, f: §PF440). Un día con el mismo total puede tener otro orden (por ejemplo el duelo en jueves o en viernes):
  * el reparto elegido es uno entre varios equivalentes.
+ * 22-nov-2026 (§PF183 actualización 52): los g ataques del domingo no son de barco (con el clan terminado no aparece esa opción), así que el domingo sale siempre con 0 barcos y el criterio b
+ * ya no desempata; si los barcos de la semana solo cuadran con barcos en el domingo, la función devuelve null y la semana queda como caso a revisar.
  */
 function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
   if (typeof ataques !== 'number' || typeof fame !== 'number' || isNaN(ataques) || isNaN(fame) || ataques % 1 !== 0 || ataques < 0 || ataques > BLG_DIAS_GUERRA * FAME_MAZOS_POR_DIA) return null;
@@ -1826,7 +1826,7 @@ function _cgwRepartoClanTerminado_(ataques, fame, barcos, memo) {
     for (var g = 1; g <= CGW_MAX_ATAQUES_SIN_FAME && g <= ataques; g++) {
       var h3 = ataques - g;
       if (h3 > 3 * FAME_MAZOS_POR_DIA) continue;
-      var j2ini = hayBarcos ? Math.max(0, barcos - g) : 0, j2fin = hayBarcos ? barcos : 0;
+      var j2ini = hayBarcos ? barcos : 0, j2fin = hayBarcos ? barcos : 0; // 22-nov-2026 (§PF183 actualización 52): los g ataques del domingo no son de barco; todos los barcos son de jueves a sábado
       for (var j2 = j2ini; j2 <= j2fin; j2++) {
         for (var i = 0; i < cat.length; i++) {
           var s1 = cat[i];
@@ -1931,7 +1931,7 @@ function _cgwCombinacionesPorPuntuacion_(h, k, j, memo) {
   for (var g = 0; g <= gMax; g++) {
     var nDias = (g === 0) ? 4 : 3, nObj = h - g;
     if (nObj > nDias * FAME_MAZOS_POR_DIA) continue;
-    var jMin = hayBarcos ? (g === 0 ? j : Math.max(0, j - g)) : 0;
+    var jMin = hayBarcos ? j : 0; // 22-nov-2026 (§PF183 actualización 52): los g ataques del domingo sin medallas no son de barco
     var jMax = hayBarcos ? j : h;
     var capa = {};
     capa['0,0,0,0,0,0'] = { t: [0, 0, 0, 0, 0, 0], dias: [] };
@@ -7430,7 +7430,7 @@ function _cdjProcesarSemana_(filas, sem, indiceJson, topeA, topeM, letraDomingo,
         // §PF494: el domingo con g ataques sin medallas (clan terminado) no esta en la tabla de dias posibles; se acepta solo si el reparto lo eligio en ese periodo.
         var domGOk = false;
         Object.keys(repMenos).forEach(function (sk2) {
-          if (series[sk2].tag === tag && repMenos[sk2].domingoSinMedallasPi === Number(pi) && tot.m === 0 && tot.a >= 1 && tot.a <= CGW_MAX_ATAQUES_SIN_FAME && tot.b <= tot.a) domGOk = true;
+          if (series[sk2].tag === tag && repMenos[sk2].domingoSinMedallasPi === Number(pi) && tot.m === 0 && tot.a >= 1 && tot.a <= CGW_MAX_ATAQUES_SIN_FAME && tot.b === 0) domGOk = true; // 22-nov-2026 (§PF183 actualización 52): sin medallas y sin barcos (con el clan terminado no se ataca barcos)
         });
         if (!malo && ((_cdjEstadoDia_(tot.m, tot.a, tot.b) === 'no_existe' && !domGOk) || tot.a > topeA)) {
           malo = 'la suma de los clanes del jugador el periodo ' + pi + ' (' + tot.m + ' medallas, ' + tot.a + ' ataques, ' + tot.b + ' barcos) no es un dia posible';
