@@ -1970,7 +1970,9 @@ function _migrarIdsEvento_(aplicar) {
     { nombre: CFG.SHEETS.T_ASISTENCIA,  primera: 2, col: TA.ID },
     { nombre: CFG.SHEETS.S_ASISTENCIA,  primera: 2, col: SA.ID },
     { nombre: CFG.SHEETS.T_RESOLUCIONES, primera: 2, col: TR.ID_TORNEO },
-    { nombre: CFG.SHEETS.S_LISTA,        primera: 3, col: SL.ID_2 }
+    { nombre: CFG.SHEETS.S_LISTA,        primera: 3, col: SL.ID_2 },
+    // Par_CR (PF286 punto 40): id A_… del par de CR_Lista que generó cada propuesta. Sin esta cita, «Verificar» y «Realizado» no encontrarían las propuestas tras reenumerar.
+    { nombre: CFG.SHEETS.ASCENSOS,       primera: 2, col: ASC.PAR_ID }
   ];
 
   var tocadas = totalCambios > 0;
@@ -1980,6 +1982,7 @@ function _migrarIdsEvento_(aplicar) {
       if (!sh) { Logger.log(tag + ' Hoja ' + c.nombre + ' no encontrada; se omiten sus citas.'); return; }
       var ultima = sh.getLastRow();
       if (ultima < c.primera) return;
+      if (sh.getMaxColumns() < c.col) { Logger.log(tag + ' ' + c.nombre + ': la hoja aún no tiene la columna ' + c.col + '; se omite su cita.'); return; }
       var rango = sh.getRange(c.primera, c.col, ultima - c.primera + 1, 1);
       var vals = rango.getValues();
       var r = _aplicarMapaIdsEnColumna_(vals, mapa);
