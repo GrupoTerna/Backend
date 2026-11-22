@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Links del blog de RoyaleAPI
 // @namespace    familia-terna-blog-links
-// @version      2.2
+// @version      2.3
 // @description  En royaleapi.com/blog pulsa «Show all…» hasta desplegar todas las entradas y abre solo las que todavía no están en su lista de «leídas»: de cada una toma el enlace, el título, la fecha real, el tiempo de lectura, el resumen de una frase, las etiquetas y la portada, y la da por leída solo si cargó completa y con fecha. Descarga solo lo nuevo en un .txt y un .json (y lo copia). Las leídas se guardan en Tampermonkey; las que fallan se reintentan en la siguiente corrida. No guarda el contenido de las entradas: Claude abre después cada enlace.
 // @match        https://royaleapi.com/blog
 // @match        https://royaleapi.com/blog/
@@ -24,6 +24,7 @@
   const MAX_CLICS = 40;
   const CLAVE = 'ft_blog_leidas_v1';
   const PAUSA_MS = 800; // entre una entrada y la siguiente, para no parecer un robot
+  const SEL_ETIQUETAS = '.blog_tag_label, .ui.tag.label';
 
   function esperar(ms) {
     return new Promise(function (res) { setTimeout(res, ms); });
@@ -57,6 +58,13 @@
     try {
       if (typeof GM_deleteValue === 'function') GM_deleteValue(CLAVE); else localStorage.removeItem(CLAVE);
     } catch (e) { /* nada */ }
+  }
+
+  // Etiquetas de una tarjeta o de una entrada, sin repetir (las tarjetas pequeñas pueden usar otra clase que la principal).
+  function listaEtiquetas(raiz) {
+    const vistas = new Set();
+    Array.from(raiz.querySelectorAll(SEL_ETIQUETAS)).map(texto).filter(Boolean).forEach(function (t) { vistas.add(t); });
+    return Array.from(vistas);
   }
 
   // ---- Índice del blog ----
@@ -103,7 +111,7 @@
       const img = a.querySelector('img');
       const titulo = texto(a.querySelector('h1,h2,h3,h4,.header')) ||
         (img ? (img.getAttribute('alt') || '').trim() : '');
-      const etiquetas = Array.from(a.querySelectorAll('.blog_tag_label')).map(texto).filter(Boolean);
+      const etiquetas = listaEtiquetas(a);
       const portada = img ? (img.getAttribute('src') || img.getAttribute('data-src') || '') : '';
       const previo = mapa.get(slug) || { slug: slug, url: location.origin + '/blog/' + slug, titulo: '', etiquetas: [], portada: '' };
       if (!previo.titulo && titulo) previo.titulo = titulo;
@@ -115,14 +123,17 @@
   }
 
   async function desplegarTodo(estado) {
-    let clics = 0;
+    let clics = 0, sinCrecer = 0;
     for (; clics < MAX_CLICS; clics++) {
       const b = botonVisible();
       if (!b) break;
+      const antes = contarEnlaces();
       estado('Pulsando «Show all…» (' + (clics + 1) + ')…');
       b.scrollIntoView({ block: 'center' });
       b.click();
-      await esperar(1200);
+      await esperar(1500);
+      // Si el botón sigue a la vista pero ya no aparecen entradas, se deja de pulsar (dos veces seguidas).
+      if (contarEnlaces() === antes) { if (++sinCrecer >= 2) { clics++; break; } } else sinCrecer = 0;
     }
     // Espera a que el número de enlaces deje de crecer (carga diferida).
     let anterior = -1, iguales = 0;
@@ -215,7 +226,7 @@
     if (!fecha) return { ok: false, tipo: 'incompleto', motivo: 'sin fecha (no encontré .meta_info con la fecha)' };
 
     const lm = info.match(/(\d+)\s*min\s*read/i);
-    const etiquetas = Array.from(doc.querySelectorAll('.blog_tag_label')).map(texto).filter(Boolean);
+    const etiquetas = listaEtiquetas(doc);
     return {
       ok: true,
       datos: {
