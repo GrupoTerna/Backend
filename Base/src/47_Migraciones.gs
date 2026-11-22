@@ -99,12 +99,12 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'HistorialGuerra_Grupal.csv: suma el delta a TemporadaInterna → todas las filas con la numeración nueva',
   'Hoja Alertas_HistorialGuerra: suma el delta a Temporada interna → alertas con la numeración nueva',
   'Alertas_HistorialGuerra.csv: suma el delta a Temporada interna → copia igual a la hoja',
-  'Informes CSV de CSV/Informes y CSV/Tampermonkey: suma el delta a la columna Temporada y recalcula ID → todos los informes con columna Temporada actualizados',
+  'Informes CSV de CSV/Informes, CSV/Tampermonkey y CSV/Informes/Cruce_Meta: suma el delta a la columna Temporada y recalcula ID → todos los informes con columna Temporada actualizados',
   'Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados',
   'Finalizar: cambia la Ref y el offset de RoyaleAPI, sube la versión de la caché del cruce de meta y mueve NUEVOS_CIERRE_SEMANA_T<n> → numeración nueva activa',
   'Historial_I/S, Historial_A/D y Comentarios: recalcula Temporada, Semana y Día desde la Fecha (no suma delta) → columnas con la numeración nueva',
   'Fichas T<n>_S<m> de la columna Semanas de T_Lista, S_Lista y CR_Lista y sus Backup_*.csv: suma el delta → fichas apuntando a la semana correcta',
-  'Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes y CSV/Tampermonkey): suma el delta al número de temporada del nombre → nombres con la numeración nueva',
+  'Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes, CSV/Tampermonkey y CSV/Informes/Cruce_Meta): suma el delta al número de temporada del nombre → nombres con la numeración nueva',
   'Temporada de T_Lista, S_Lista y CR_Lista recalculada por fecha (y ficha de Semanas si repetía el valor equivocado) y sus respaldos → filas que ya venían desfasadas quedan con la temporada de su fecha',
   'Ids de evento de T_Lista, S_Lista y CR_Lista: rehace cada id con la temporada de su fila y reescribe las citas en T_Asistencia, S_Asistencia, T_Resoluciones y Extra, y sus respaldos → ids con la numeración nueva en todas las hojas',
   'Temporada y Fecha de T_Asistencia y S_Asistencia tomadas de su torneo o sorteo (el id es la llave) y sus respaldos → asistencias coherentes con sus listas',
@@ -1385,7 +1385,14 @@ function _reenumerarClanesExternos_() {
   return !incompleto;
 }
 
-// _reenumerarInformesCSV(): PF258; recorre los .csv de CSV/Informes y CSV/Tampermonkey (menos los de _nombreInformeExcluidoReenum_) y les suma REENUM_DELTA_MESES a «Temporada».
+// _subcarpetasInformesReenum_(): PF286 punto 40. Rutas de CSV que recorren los dos pasos de informes (_reenumerarInformesCSV y _reenumerarNombresInformes_): Informes, Tampermonkey y cada subcarpeta de Informes (CSV_INFORMES_SUBCARPETAS_, hoy Cruce_Meta, donde _csvInformesSubDe_() manda los Cruce_* y Cotejo_*). getFiles() no entra en subcarpetas, por eso hay que nombrarlas.
+function _subcarpetasInformesReenum_() {
+  var rutas = ['Informes', 'Tampermonkey'];
+  for (var k = 0; k < CSV_INFORMES_SUBCARPETAS_.length; k++) rutas.push('Informes/' + CSV_INFORMES_SUBCARPETAS_[k]);
+  return rutas;
+}
+
+// _reenumerarInformesCSV(): PF258; recorre los .csv de CSV/Informes, CSV/Tampermonkey y las subcarpetas de Informes como Cruce_Meta (menos los de _nombreInformeExcluidoReenum_) y les suma REENUM_DELTA_MESES a «Temporada».
 // Reanudable: guarda el índice en REENUM_INF_IDX y NO suma dos veces porque un archivo modificado después del inicio de la corrida (REENUM_RUN_ID) se salta. Devuelve false si queda incompleto.
 function _reenumerarInformesCSV() {
   var props = PropertiesService.getScriptProperties();
@@ -1396,7 +1403,7 @@ function _reenumerarInformesCSV() {
   var claveIdx = 'REENUM_INF_IDX';
 
   var lista = [];
-  var subcarpetas = ['Informes', 'Tampermonkey'];
+  var subcarpetas = _subcarpetasInformesReenum_();
   for (var s = 0; s < subcarpetas.length; s++) {
     var carpeta = _getCsvSubcarpeta_(subcarpetas[s], false);
     if (!carpeta) { Logger.log('[Reenumeración] Informes: no existe CSV/' + subcarpetas[s] + ', se omite.'); continue; }
@@ -1724,7 +1731,7 @@ function _reenumerarTokensSemanasTexto_(texto, deltaMeses) {
   return { texto: partes.join(','), cambiados: cambiados, saltados: saltados };
 }
 
-// _reenumerarNombresInformes_(): PF270; renombra los archivos de CSV/Informes y CSV/Tampermonkey cuyo nombre lleva la temporada interna (informes de reparación de domingo y sus respaldos). El contenido no cambia.
+// _reenumerarNombresInformes_(): PF270; renombra los archivos de CSV/Informes, CSV/Tampermonkey y las subcarpetas de Informes (Cruce_Meta, PF286 punto 40) cuyo nombre lleva la temporada interna (informes de reparación de domingo y sus respaldos). El contenido no cambia.
 // Sin sumar dos veces: marca en la descripción del archivo («REENUM:<corrida>:ANTES:<nombre viejo>» y luego «…:OK»), igual que _reenumRenombrarItem_ (PF260). Son pocos archivos, se hace entero en una pasada.
 function _reenumerarNombresInformes_() {
   var props = PropertiesService.getScriptProperties();
@@ -1732,7 +1739,7 @@ function _reenumerarNombresInformes_() {
   var runId = props.getProperty('REENUM_RUN_ID') ||
     (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + delta);
   var ok = 'REENUM:' + runId + ':OK', pre = 'REENUM:' + runId + ':ANTES:';
-  var subcarpetas = ['Informes', 'Tampermonkey'];
+  var subcarpetas = _subcarpetasInformesReenum_();
   var vistos = 0, renombrados = 0, yaHechos = 0, negativos = 0;
   for (var s = 0; s < subcarpetas.length; s++) {
     var carpeta = _getCsvSubcarpeta_(subcarpetas[s], false);
