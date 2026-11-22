@@ -1485,8 +1485,8 @@ function _reenumerarClanesExternosCore_(deltaMeses, runId) {
 
   // 22-nov-2026: ya NO se lista y ordena toda la carpeta en cada tanda (7287 archivos: el solo listado agotaba los 6 min antes de procesar casi nada y la tanda moría sin programar su continuación; iban 183 tras 6 tandas).
   // Se recorre con el iterador de Drive y su token de continuación (REENUM_CLANESEXT_TOKEN): cada tanda sigue donde quedó la anterior y revisa el tiempo después de cada archivo. Si el token se pierde, se empieza de nuevo sin riesgo: los archivos ya hechos llevan reenumeracionId y se saltan.
+  // 22-nov-2026: el candado de script ya no se toma durante toda la tanda (5 min): bloqueaba las escrituras de la web. Se toma por archivo; si no se consigue, la tanda termina y ese archivo se reintenta (el token se guarda ANTES de leerlo).
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) { Logger.log('[Reenumeración] ' + nombrePaso + ': no se obtuvo el lock; se reintenta en la próxima continuación.'); return false; }
   var claveToken = 'REENUM_CLANESEXT_TOKEN', claveVistos = 'REENUM_CLANESEXT_VISTOS';
   var token = props.getProperty(claveToken);
   var vistosPrevios = token ? (Number(props.getProperty(claveVistos)) || 0) : 0;
@@ -1495,11 +1495,16 @@ function _reenumerarClanesExternosCore_(deltaMeses, runId) {
   if (!it) it = folder.getFiles();
   var inicio = Date.now(), cambiados = 0, yaHechos = 0, omitidos = 0, incompleto = false;
   try {
+    var tokenAntes = null;
     while (it.hasNext()) {
+      tokenAntes = it.getContinuationToken();
       var archivo = it.next();
       var nombreArchivo = archivo.getName();
       if (!/^Clan - #[0-9A-Z]+\.json$/i.test(nombreArchivo)) continue;
+      var tieneLock = false;
       try {
+        tieneLock = lock.tryLock(15000);
+        if (!tieneLock) { incompleto = true; break; }
         var doc = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
         if (!doc || !doc.jugadores || typeof doc.jugadores !== 'object') { omitidos++; }
         else if (doc.reenumeracionId === runId) { yaHechos++; }
@@ -1514,13 +1519,15 @@ function _reenumerarClanesExternosCore_(deltaMeses, runId) {
       } catch (eArch) {
         Logger.log('[Reenumeración] ' + nombrePaso + ': AVISO: no se pudo procesar «' + nombreArchivo + '» (' + eArch.message + '); queda sin reenumerar.');
         omitidos++;
+      } finally {
+        if (tieneLock) lock.releaseLock();
       }
-      if (_reenumSinTiempo_(inicio)) { incompleto = it.hasNext(); break; }
+      if (_reenumSinTiempo_(inicio)) { incompleto = it.hasNext(); tokenAntes = incompleto ? it.getContinuationToken() : tokenAntes; break; }
     }
-    if (incompleto) { props.setProperty(claveToken, it.getContinuationToken()); props.setProperty(claveVistos, String(vistosPrevios + yaHechos + cambiados + omitidos)); }
+    if (incompleto) { props.setProperty(claveToken, tokenAntes || it.getContinuationToken()); props.setProperty(claveVistos, String(vistosPrevios + yaHechos + cambiados + omitidos)); }
     else { props.deleteProperty(claveToken); props.deleteProperty(claveVistos); }
   } finally {
-    lock.releaseLock();
+    /* el candado de script se toma y se suelta por archivo */
   }
   var acumVistos = vistosPrevios + yaHechos + cambiados + omitidos;
   Logger.log('[Reenumeración]   ' + nombrePaso + ': recorridos ' + acumVistos + ' archivos en total (en tandas anteriores: ' + vistosPrevios + '; en esta tanda: ' + (yaHechos + cambiados + omitidos) + ').');
@@ -1632,17 +1639,36 @@ function _reenumerarClanesExternosPendientes_() {
 // reenumerarClanesExternosPendientes(): MANUAL (proyecto Base). Termina, por tandas y con continuación automática, los archivos de Clanes_Externos que quedaron aplazados. No corre con una reenumeración en curso ni en la ventana de guerra protegida (4:00-5:00 a. m. Lima y su margen previo).
 function reenumerarClanesExternosPendientes() {
   if (!_reenumClanesExternosPendiente_()) { Logger.log('[Reenumeración] No hay Clanes_Externos aplazado. No se hizo nada.'); return; }
-  if (!_adquirirLockEjecucion('reenumerarClanesExternosPendientes')) return;
   PropertiesService.getScriptProperties().setProperty('CLANESEXT_PASO', '0');
   _continuarReenumClanesExternos();
 }
 
+// _programarContinuacionClanesExtEn_(ms): activador de una sola vez para _continuarReenumClanesExternos() dentro de `ms` milisegundos (reemplaza al que hubiera).
+function _programarContinuacionClanesExtEn_(ms) {
+  _borrarTriggersDeContinuacion('_continuarReenumClanesExternos');
+  ScriptApp.newTrigger('_continuarReenumClanesExternos').timeBased().after(ms).create();
+}
+
 // _continuarReenumClanesExternos(): entrada de reenumerarClanesExternosPendientes() y de su activador de continuación.
+// 22-nov-2026: NO retiene el candado global entre tandas. Antes lo dejaba tomado durante las ~3 horas que dura la cadena y runGuerra(), runPendientes y las demás respondían «ya hay otra ejecución en curso». Ahora toma el candado por tanda, lo suelta al terminarla y, si otra función lo tiene, espera 3 minutos y reintenta.
 function _continuarReenumClanesExternos() {
+  var props = PropertiesService.getScriptProperties();
+  if (!_reenumClanesExternosPendiente_()) { _borrarTriggersDeContinuacion('_continuarReenumClanesExternos'); return; }
+  try { // un candado propio que dejó la versión anterior de esta cadena se retoma; el de otra función se respeta
+    var raw = props.getProperty('EJECUCION_EN_CURSO');
+    var fnLock = raw ? String(JSON.parse(raw).fn || '') : '';
+    if (fnLock === 'CLANESEXT' || fnLock === 'reenumerarClanesExternosPendientes') _liberarLockEjecucion();
+  } catch (eRaw) { /* candado ilegible: lo trata _adquirirLockEjecucion() */ }
+  if (!_adquirirLockEjecucion('reenumerarClanesExternosPendientes')) {
+    var esperaMs = LOCK_ULTIMO_RECHAZO_ === 'ocupado' ? 3 * 60 * 1000 : 10 * 60 * 1000;
+    _programarContinuacionClanesExtEn_(esperaMs);
+    Logger.log('[Reenumeración] Clanes_Externos aplazado: otra función tiene el candado' + (LOCK_ULTIMO_RECHAZO_ === 'ocupado' ? '' : ' (o es la ventana de guerra / hay una reenumeración)') + '; se reintenta en ' + Math.round(esperaMs / 60000) + ' min.');
+    return;
+  }
   try {
     var completo = _ejecutarPorTandas('CLANESEXT', PASOS_CLANESEXT_PENDIENTES, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarReenumClanesExternos', NOMBRES_PASOS_CLANESEXT_PENDIENTES);
-    if (completo) { _liberarLockEjecucion(); Logger.log('[Reenumeración] Clanes_Externos aplazado: FIN de la cadena.'); }
-    // Si no está completo, el lock sigue tomado: _ejecutarPorTandas refrescó su hora y programó la continuación (o descartó la cadena por la ventana de guerra; en ese caso se vuelve a correr reenumerarClanesExternosPendientes()).
+    _liberarLockEjecucion(); // termine o no, el candado se suelta: runGuerra() y las demás pueden entrar entre tandas
+    if (completo) Logger.log('[Reenumeración] Clanes_Externos aplazado: FIN de la cadena.');
   } catch (e) {
     _borrarTriggersDeContinuacion('_continuarReenumClanesExternos');
     _liberarLockEjecucion();
