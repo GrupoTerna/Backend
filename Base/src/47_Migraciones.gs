@@ -1758,8 +1758,39 @@ function _finalizarReenumeracion() {
     // con la numeración vieja. Normalmente no queda nada (la cadena tiene el candado y se limpia al terminar, al fallar o al cancelar), pero una cadena cortada por la plataforma puede dejarlo.
     // Se descarta: sin estado, la cadena vuelve a empezar desde la primera temporada y es segura (lo ya aplicado no cambia). Las filas «Reconstruido» y Revision_Guerra.csv ya los cubren sus pasos.
     props.deleteProperty('CORRGUERRA_ESTADO');
+    // (e) 21-nov-2026 (PF286 punto 48): propiedades de clave literal que guardan una temporada o una clave temporada*1000+semana en la numeración vieja.
+    // RS_CURSOR_INFORME y RS_CURSOR_APLICAR (57_ReconstruirSemanaPorDias.gs): última semana ya recorrida como temporada*1000+semana; con la numeración nueva el corte `ks <= desde` saltaría semanas sin recorrer. Se descartan (es lo que hace totalesSemanaPorDiasReiniciar() con ellas): la próxima corrida empieza de nuevo.
+    props.deleteProperty('RS_CURSOR_INFORME');
+    props.deleteProperty('RS_CURSOR_APLICAR');
+    props.deleteProperty('RS_AUTO_TANDAS');
+    props.deleteProperty('RS_AUTO_SIN_AVANCE');
+    // WEB_ULTIMA_GUERRA_PREVIA_V1 (37_Web_API.gs): instantánea con `paraTemporada` y la temporada de la última guerra; vale 10 minutos y se recalcula desde Backup_Guerra.csv, pero se borra para que no coincida por casualidad con un número nuevo.
+    _webUltimaGuerraPreviaInvalidar_();
+    // PRIMERA_CONSULTA_RR (09_API_ClashRoyale.gs): mapa 'temporada|periodIndex|clanTag' → hora de la primera consulta. Se pasa a la numeración nueva (T += deltaMeses) para conservar las horas; sin esto una clave vieja coincidiría con una semana nueva y _registrarPrimeraConsultaRR_() (que nunca reemplaza) dejaría una hora ajena.
+    // Marca propia (REENUM_PRIMERA_CONSULTA_HECHO) para no sumar el delta dos veces si el paso se reintenta.
+    var movidasRR = 0;
+    if (props.getProperty('REENUM_PRIMERA_CONSULTA_HECHO') !== runIdFin) {
+      try {
+        var txtRR = props.getProperty('PRIMERA_CONSULTA_RR');
+        if (txtRR) {
+          var mapaRR = JSON.parse(txtRR) || {}, mapaRRNuevo = {};
+          Object.keys(mapaRR).forEach(function (kRR) {
+            var pRR = kRR.split('|');
+            if (pRR.length === 3 && isFinite(Number(pRR[0]))) { pRR[0] = String(Number(pRR[0]) + deltaMeses); movidasRR++; }
+            mapaRRNuevo[pRR.join('|')] = mapaRR[kRR];
+          });
+          props.setProperty('PRIMERA_CONSULTA_RR', JSON.stringify(mapaRRNuevo));
+        }
+      } catch (eRR) {
+        Logger.log('[Reenumeración] PRIMERA_CONSULTA_RR ilegible, se descarta: ' + eRR.message);
+        props.deleteProperty('PRIMERA_CONSULTA_RR');
+      }
+      props.setProperty('REENUM_PRIMERA_CONSULTA_HECHO', runIdFin);
+    }
+    _PRIMERA_CONSULTA_RR_MEM = null; // la copia en memoria de 09_API_ClashRoyale.gs ya no vale
     props.setProperty('REENUM_PROPS_NUMERACION_HECHO', runIdFin);
     Logger.log('[Reenumeración] Avance de verificarCrrVsBackup* (VCRR_ESTADO) y de la corrección de Guerra (CORRGUERRA_ESTADO) descartados.');
+    Logger.log('[Reenumeración] Cursores de Semana por días (RS_CURSOR_*), instantánea de la última guerra previa descartados y ' + movidasRR + ' clave(s) de PRIMERA_CONSULTA_RR pasadas a la numeración nueva (T += ' + deltaMeses + ').');
     Logger.log('[Reenumeración] Índice de cruce de meta descartado y ' + movidas.length + ' marca(s) NUEVOS_CIERRE_SEMANA_T<n> pasadas a la numeración nueva (T += ' + deltaMeses + ').');
   }
 
