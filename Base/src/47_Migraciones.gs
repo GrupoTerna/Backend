@@ -141,14 +141,17 @@ function detectarTemporadaMasAntiguaConPresenciaTerna() {
   }
   var nombresTerna = _getNombresClanesTernaOrdenados();
 
-  var fechaGuerra = _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna);
-  var fechaNuevos = _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna);
-  var fechaCorrecciones = _buscarFechaMasAntiguaTernaEnCorreccionesGuerra(); // §PF253: por TAG de clan
+  var evGuerra = _evidenciaMasAntiguaTernaEnBackupGuerra_(nombresTerna);
+  var evNuevos = _evidenciaMasAntiguaTernaEnNuevos_(nombresTerna);
+  var evCorrecciones = _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_(); // §PF253: por TAG de clan
+  var fechaGuerra = evGuerra ? evGuerra.fecha : null;
+  var fechaNuevos = evNuevos ? evNuevos.fecha : null;
+  var fechaCorrecciones = (evCorrecciones && evCorrecciones.fecha) ? evCorrecciones.fecha : null;
 
   var candidatos = [];
-  if (fechaGuerra) candidatos.push({ fecha: fechaGuerra, fuente: 'Backup_Guerra.csv' });
-  if (fechaNuevos) candidatos.push({ fecha: fechaNuevos, fuente: 'hoja Nuevos (historial RoyaleAPI)' });
-  if (fechaCorrecciones) candidatos.push({ fecha: fechaCorrecciones, fuente: 'Correcciones_Guerra.csv (por tag de clan)' });
+  if (fechaGuerra) candidatos.push({ fecha: fechaGuerra, fuente: 'Backup_Guerra.csv', clave: 'guerra', ev: evGuerra });
+  if (fechaNuevos) candidatos.push({ fecha: fechaNuevos, fuente: 'hoja Nuevos (historial RoyaleAPI)', clave: 'nuevos', ev: evNuevos });
+  if (fechaCorrecciones) candidatos.push({ fecha: fechaCorrecciones, fuente: 'Correcciones_Guerra.csv (por tag de clan)', clave: 'correcciones', ev: evCorrecciones });
 
   if (!candidatos.length) {
     Logger.log('[Detección Reenumeración] No se encontró ninguna fila/bloque con presencia confirmada ' +
@@ -176,6 +179,7 @@ function detectarTemporadaMasAntiguaConPresenciaTerna() {
     props.deleteProperty('REENUM_SUGERENCIA_FECHA');
     props.deleteProperty('REENUM_SUGERENCIA_FUENTE');
     Logger.log(cabecera + 'Esta función SOLO sugiere. No se guardó ninguna sugerencia.');
+    _registrarEvidenciaPresenciaTerna_(candidatos, elegido, tz);
     return '';
   }
 
@@ -184,7 +188,55 @@ function detectarTemporadaMasAntiguaConPresenciaTerna() {
   Logger.log(cabecera + 'FECHA REF A USAR: ' + fechaStr + '. Esta función SOLO sugiere -- no reenumera nada. Para aplicar, correr ' +
     'iniciarReenumerarTemporadas() (la usa), ejecutarReenumeracionSugerida() (usa esta fecha) o ' +
     'runReenumerarTemporadas(\'YYYY-MM-DD\') con la fecha que prefieras.');
+  _registrarEvidenciaPresenciaTerna_(candidatos, elegido, tz); // PF286 punto 41: tags de jugador y enlaces para comprobar la fecha
   return fechaStr;
+}
+
+// _enlaceRoyaleApiJugador_(tag) y _enlaceRoyaleApiClan_(tag): PF286 punto 41; direcciones de RoyaleAPI para comprobar a mano un jugador o la guerra de un clan.
+function _enlaceRoyaleApiJugador_(tag) { return 'https://royaleapi.com/player/' + String(tag || '').replace('#', '').trim() + '/'; }
+function _enlaceRoyaleApiClan_(tag) { return 'https://royaleapi.com/clan/' + String(tag || '').replace('#', '').trim() + '/war/analytics'; }
+
+// _registrarEvidenciaPresenciaTerna_(candidatos, elegido, tz): PF286 punto 41. Escribe en el registro, por cada fuente evaluada, qué fila o bloque dio su fecha más antigua con el tag de uno o varios jugadores (y el clan)
+// y un enlace a RoyaleAPI, para comprobar que es presencia Terna real y no una fila suelta de un jugador en un clan externo. Para Backup_Guerra.csv compara además por el ClanTag de la fila (no por el nombre del clan): si la fila
+// más antigua no tiene un ClanTag Terna, lo avisa y dice qué fecha y qué variación saldría con la fila más antigua confirmada por ClanTag. Solo escribe en el registro.
+function _registrarEvidenciaPresenciaTerna_(candidatos, elegido, tz) {
+  var L = '[Detección Reenumeración] ';
+  var ternaTags = {};
+  CFG.TERNA_TAGS.forEach(function (t) { ternaTags[_normalizarClanTagCorreccion(t)] = true; });
+  function dia(f) { return Utilities.formatDate(f, tz, 'yyyy-MM-dd'); }
+  function jugadorTxt(j) { return (j.nombre ? j.nombre + ' ' : '') + j.tag + ' → ' + _enlaceRoyaleApiJugador_(j.tag); }
+  Logger.log(L + 'COMPROBACIÓN DE LA FECHA (abre los enlaces en RoyaleAPI y mira que el jugador estuviera en un clan Terna en esa fecha):');
+  candidatos.forEach(function (c) {
+    var marca = (c === elegido) ? ' ← ES LA FECHA ELEGIDA' : '';
+    var ev = c.ev;
+    if (!ev) { Logger.log(L + '  · ' + c.fuente + ' (' + dia(c.fecha) + ')' + marca + ': sin detalle de jugador.'); return; }
+    if (c.clave === 'guerra') {
+      var f = ev.fila;
+      var estadoTag = !f.clanTag ? 'SIN ClanTag (coincide solo por el nombre del clan; no se puede confirmar por tag)'
+        : (ternaTags[f.clanTag] ? 'ClanTag ' + f.clanTag + ' = clan Terna ✓' : 'ClanTag ' + f.clanTag + ' NO es de un clan Terna ✗ (coincidió solo por el nombre)');
+      Logger.log(L + '  · Backup_Guerra.csv' + marca + ': fila más antigua del ' + dia(f.fecha) + ' (Temporada ' + f.temporada + ', semana ' + f.semana + (f.origen ? ', origen ' + f.origen : '') + '). Jugador: ' + jugadorTxt(f) + '. Clan: ' + (f.clan || '(vacío)') + '; ' + estadoTag + '.');
+      Logger.log(L + '      Ese día hay ' + ev.filasEnEsaFecha + ' fila(s) de clanes con nombre Terna de ' + ev.jugadoresEnEsaFecha + ' jugador(es) (con ClanTag Terna: ' + ev.filasConTagTerna + '; sin ClanTag: ' + ev.filasSinClanTag + '; con ClanTag de otro clan: ' + (ev.filasEnEsaFecha - ev.filasConTagTerna - ev.filasSinClanTag) + ').');
+      ev.jugadores.forEach(function (j) { if (j.tag !== f.tag) Logger.log(L + '      Otro jugador de ese día: ' + jugadorTxt(j) + ' (clan ' + (j.clan || '(vacío)') + (j.clanTag ? ', ' + j.clanTag : '') + ').'); });
+      if (f.clanTag) Logger.log(L + '      Guerra del clan en RoyaleAPI: ' + _enlaceRoyaleApiClan_(f.clanTag));
+      if (!ev.porTag) {
+        Logger.log(L + '      AVISO: ninguna fila de Backup_Guerra.csv tiene un ClanTag Terna; la fecha de esta fuente depende solo del nombre del clan.');
+      } else if (dia(ev.porTag.fecha) !== dia(f.fecha)) {
+        var dTag = null;
+        try { dTag = _variacionTemporadas_(ev.porTag.fecha).deltaMeses; } catch (eV) { /* sin variación */ }
+        Logger.log(L + '      AVISO: la fila más antigua confirmada por ClanTag Terna es del ' + dia(ev.porTag.fecha) + ' (Temporada ' + ev.porTag.temporada + ', semana ' + ev.porTag.semana + '; jugador ' + jugadorTxt(ev.porTag) + '; clan ' + ev.porTag.clan + ' ' + ev.porTag.clanTag + ')' +
+          (dTag !== null ? ' y con esa fecha la variación sería de ' + dTag + ' temporada(s)' : '') + '. La fecha elegida por nombre es anterior: compruébala con los enlaces de arriba antes de reenumerar.');
+      } else {
+        Logger.log(L + '      La fila más antigua confirmada por ClanTag Terna es del mismo día: la fecha de esta fuente está respaldada por el tag del clan.');
+      }
+    } else if (c.clave === 'nuevos') {
+      Logger.log(L + '  · Hoja Nuevos' + marca + ': bloque del ' + dia(ev.fecha) + ' (columna ' + ev.columna + '), con ' + ev.totalEnBloque + ' fila(s) cuyo clan tiene nombre Terna (esta hoja no guarda el tag del clan, solo el nombre).');
+      ev.jugadores.forEach(function (j) { Logger.log(L + '      Jugador: ' + jugadorTxt(j) + ' (clan ' + j.clan + ').'); });
+    } else if (c.clave === 'correcciones') {
+      Logger.log(L + '  · Correcciones_Guerra.csv' + marca + ': Temporada ' + ev.temporada + ', semana ' + ev.semana + ' (lunes ' + dia(ev.fecha) + '); clan ' + ev.clanTag + ' (' + (ev.via === 'perfil' ? 'por el perfil de RoyaleAPI del jugador, sin fila de clan' : 'por la fila del clan') + ', confirmado por TAG de clan).');
+      (ev.tags || []).forEach(function (j) { Logger.log(L + '      Jugador: ' + jugadorTxt(j) + (j.clanTag ? ' (clan ' + j.clanTag + ')' : '') + '.'); });
+      if (ev.clanTag) Logger.log(L + '      Guerra del clan en RoyaleAPI: ' + _enlaceRoyaleApiClan_(ev.clanTag));
+    }
+  });
 }
 
 // iniciarReenumerarTemporadas(): PF258; punto de entrada para correr DESDE EL EDITOR (el editor no pasa argumentos). Escribe la fecha Ref nueva en FECHA_REF_NUEVA, guarda y corre esta función.
@@ -898,8 +950,10 @@ function _textoVariacionTemporadas_(v) {
     comparacion + ' ' + actual + relacion;
 }
 
-// _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna): fuente 1 de la detección; devuelve Date o null. [→ Contexto_Base_Web.md §47B024]
-function _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna) {
+// _evidenciaMasAntiguaTernaEnBackupGuerra_(nombresTerna): fuente 1 de la detección, con la evidencia para comprobarla (PF286 punto 41). Devuelve null si no hay fila Terna, o
+// { fecha, fila: {fecha, tag, nombre, clan, clanTag, temporada, semana, origen}, jugadores: [hasta 5 {tag, nombre, clan, clanTag}] de ese mismo día, filasEnEsaFecha, jugadoresEnEsaFecha,
+// filasConTagTerna, filasSinClanTag, porTag: la fila más antigua cuyo ClanTag (no el nombre) es de CFG.TERNA_TAGS, o null }. La decisión sigue siendo por nombre de clan (como antes); porTag sirve para comprobarla. Solo lee.
+function _evidenciaMasAntiguaTernaEnBackupGuerra_(nombresTerna) {
   var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
   if (!csvText) return null;
   var parsed = _parseCSV(csvText);
@@ -909,21 +963,57 @@ function _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna) {
   for (var n = 0; n < nombresTerna.length; n++) {
     nombresSet[String(nombresTerna[n]).trim().toLowerCase()] = true;
   }
+  var ternaTags = {};
+  for (var t = 0; t < CFG.TERNA_TAGS.length; t++) ternaTags[_normalizarClanTagCorreccion(CFG.TERNA_TAGS[t])] = true;
+  var tz = Session.getScriptTimeZone() || 'GMT-5';
 
-  var masAntigua = null;
+  function infoDe(fila, fecha) {
+    return {
+      fecha: fecha, tag: String(fila[GC.TAG - 1] || '').trim(), nombre: String(fila[GC.NOMBRE - 1] || '').trim(),
+      clan: String(fila[GC.CLAN - 1] || '').trim(), clanTag: _normalizarClanTagCorreccion(fila[GC.CLAN_TAG - 1]),
+      temporada: fila[GC.TEMPORADA - 1], semana: fila[GC.SEMANA - 1], origen: String(fila[GC.ORIGEN - 1] || '').trim()
+    };
+  }
+  var masAntigua = null, porTag = null;
   for (var i = 1; i < parsed.length; i++) {
     var fila = parsed[i];
-    var clanFila = String(fila[GC.CLAN - 1] || '').trim().toLowerCase();
-    if (!clanFila || !nombresSet[clanFila]) continue;
     var fechaObj = _comoFechaComparable(fila[GC.FECHA - 1]);
     if (!fechaObj) continue;
-    if (!masAntigua || fechaObj < masAntigua) masAntigua = fechaObj;
+    var clanTagFila = _normalizarClanTagCorreccion(fila[GC.CLAN_TAG - 1]);
+    if (clanTagFila && ternaTags[clanTagFila] && (!porTag || fechaObj < porTag.fecha)) porTag = infoDe(fila, fechaObj);
+    var clanFila = String(fila[GC.CLAN - 1] || '').trim().toLowerCase();
+    if (!clanFila || !nombresSet[clanFila]) continue;
+    if (!masAntigua || fechaObj < masAntigua.fecha) masAntigua = infoDe(fila, fechaObj);
   }
-  return masAntigua;
+  if (!masAntigua) return null;
+
+  var diaClave = Utilities.formatDate(masAntigua.fecha, tz, 'yyyy-MM-dd');
+  var vistos = {}, jugadores = [], filasEnEsaFecha = 0, conTagTerna = 0, sinClanTag = 0;
+  for (var j = 1; j < parsed.length; j++) {
+    var f = parsed[j];
+    var fo = _comoFechaComparable(f[GC.FECHA - 1]);
+    if (!fo || Utilities.formatDate(fo, tz, 'yyyy-MM-dd') !== diaClave) continue;
+    var cn = String(f[GC.CLAN - 1] || '').trim().toLowerCase();
+    if (!cn || !nombresSet[cn]) continue;
+    filasEnEsaFecha++;
+    var ct = _normalizarClanTagCorreccion(f[GC.CLAN_TAG - 1]);
+    if (!ct) sinClanTag++; else if (ternaTags[ct]) conTagTerna++;
+    var tg = String(f[GC.TAG - 1] || '').trim();
+    if (tg && !vistos[tg]) { vistos[tg] = true; if (jugadores.length < 5) jugadores.push(infoDe(f, fo)); }
+  }
+  return { fecha: masAntigua.fecha, fila: masAntigua, jugadores: jugadores, filasEnEsaFecha: filasEnEsaFecha, jugadoresEnEsaFecha: Object.keys(vistos).length,
+           filasConTagTerna: conTagTerna, filasSinClanTag: sinClanTag, porTag: porTag };
 }
 
-// _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna): fuente 2 de la detección; recorre los bloques de fecha de la hoja Nuevos. [→ Contexto_Base_Web.md §47B025]
-function _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna) {
+// _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna): fuente 1 de la detección; devuelve Date o null. Usa _evidenciaMasAntiguaTernaEnBackupGuerra_(). [→ Contexto_Base_Web.md §47B024]
+function _buscarFechaMasAntiguaTernaEnBackupGuerra(nombresTerna) {
+  var ev = _evidenciaMasAntiguaTernaEnBackupGuerra_(nombresTerna);
+  return ev ? ev.fecha : null;
+}
+
+// _evidenciaMasAntiguaTernaEnNuevos_(nombresTerna): fuente 2 de la detección, con evidencia (PF286 punto 41); recorre los bloques de fecha de la hoja Nuevos. Devuelve null o
+// { fecha, columna, jugadores: [hasta 5 {tag, nombre, clan}] de ese bloque con clan Terna, totalEnBloque }. Aquí solo hay el NOMBRE del clan (el bloque no guarda su tag). Solo lee.
+function _evidenciaMasAntiguaTernaEnNuevos_(nombresTerna) {
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
   if (!sh) return null;
@@ -938,25 +1028,39 @@ function _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna) {
 
   var bloques = _leerBloquesFechaNuevos(sh);
   var numFilasDatos = lastRow - NUEVOS_FILA_DATOS_INICIO + 1;
-  var masAntigua = null;
+  var mejor = null;
 
   for (var b = 0; b < bloques.length; b++) {
     var bloque = bloques[b];
     if (!bloque.date) continue; // bloque sin fecha asignada todavía
+    if (mejor && bloque.date >= mejor.fecha) continue;
 
     var valoresClan = sh.getRange(NUEVOS_FILA_DATOS_INICIO, bloque.col, numFilasDatos, 1).getValues();
-    var hayTernaEnBloque = false;
+    var filasTerna = [];
     for (var r = 0; r < valoresClan.length; r++) {
       var clanTxt = String(valoresClan[r][0] || '').trim().toLowerCase();
-      if (clanTxt && nombresSet[clanTxt]) { hayTernaEnBloque = true; break; }
+      if (clanTxt && nombresSet[clanTxt]) filasTerna.push({ idx: r, clan: String(valoresClan[r][0]).trim() });
     }
-
-    if (hayTernaEnBloque && (!masAntigua || bloque.date < masAntigua)) {
-      masAntigua = bloque.date;
-    }
+    if (filasTerna.length) mejor = { fecha: bloque.date, columna: bloque.col, filasTerna: filasTerna };
   }
+  if (!mejor) return null;
 
-  return masAntigua;
+  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, numFilasDatos, 1).getValues();
+  var nombres = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.NOMBRE, numFilasDatos, 1).getValues();
+  var jugadores = [];
+  for (var k = 0; k < mejor.filasTerna.length && jugadores.length < 5; k++) {
+    var ix = mejor.filasTerna[k].idx;
+    var tg = String(tags[ix][0] || '').trim();
+    if (!tg) continue;
+    jugadores.push({ tag: tg, nombre: String(nombres[ix][0] || '').trim(), clan: mejor.filasTerna[k].clan });
+  }
+  return { fecha: mejor.fecha, columna: mejor.columna, jugadores: jugadores, totalEnBloque: mejor.filasTerna.length };
+}
+
+// _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna): fuente 2 de la detección; recorre los bloques de fecha de la hoja Nuevos. Usa _evidenciaMasAntiguaTernaEnNuevos_(). [→ Contexto_Base_Web.md §47B025]
+function _buscarFechaMasAntiguaTernaEnNuevos(nombresTerna) {
+  var ev = _evidenciaMasAntiguaTernaEnNuevos_(nombresTerna);
+  return ev ? ev.fecha : null;
 }
 
 // _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_(): §PF259 (25-oct-2026); semana más antigua de Correcciones_Guerra.csv con un clan Terna CONFIRMADO. Devuelve { temporada, semana, clanTag, via, fecha, filasTerna, perfilesSinClan } o null.
@@ -979,7 +1083,7 @@ function _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_() {
     ternaSet[_normalizarClanTagCorreccion(CFG.TERNA_TAGS[t])] = true;
   }
 
-  var mejor = null, filasTerna = 0, perfilesSinClan = 0;
+  var mejor = null, filasTerna = 0, perfilesSinClan = 0, confirmadas = [];
   for (var i = 0; i < claves.length; i++) {
     var p = claves[i].split('|'); // temporada | semana | clantag | tag
     var e = overlay[claves[i]];
@@ -999,11 +1103,20 @@ function _buscarSemanaMasAntiguaTernaEnCorreccionesGuerra_() {
       via = 'perfil';
     }
     filasTerna++;
+    confirmadas.push({ temporada: temporada, semana: semana, clanTag: clanTag, via: via, tag: p[3] || '' });
     if (!mejor || temporada < mejor.temporada || (temporada === mejor.temporada && semana < mejor.semana)) {
-      mejor = { temporada: temporada, semana: semana, clanTag: clanTag, via: via };
+      mejor = { temporada: temporada, semana: semana, clanTag: clanTag, via: via, tag: p[3] || '' };
     }
   }
   if (!mejor) return null;
+  // PF286 punto 41: tags de jugador (hasta 5, distintos) de esa misma temporada y semana, para comprobarlos en RoyaleAPI.
+  var vistosTags = {};
+  mejor.tags = [];
+  confirmadas.forEach(function (c) {
+    if (c.temporada !== mejor.temporada || c.semana !== mejor.semana || !c.tag || vistosTags[c.tag]) return;
+    vistosTags[c.tag] = true;
+    if (mejor.tags.length < 5) mejor.tags.push({ tag: c.tag, clanTag: c.clanTag, via: c.via });
+  });
 
   var pl = primerLunesTemporada(CFG.REF_DEFAULT, mejor.temporada);
   mejor.fecha = (pl && !isNaN(pl.getTime())) ? new Date(pl.getTime()) : null;
