@@ -2101,8 +2101,11 @@ function _rankingsDeJugadorSeguro_(tag) {
 /**
  * _semanasExternasDeJugadorSeguro_(tag) (22-nov-2026, pedido de la usuaria: «añadir los puntos externos a las gráficas de perfil.html»; solo admins).
  * Devuelve las semanas de guerra que el jugador hizo en un clan EXTERNO (no de CFG.TERNA_TAGS), leídas de las filas `externa: true` de su JSON individual de RoyaleAPI
- * (§PF340: total por semana y clan; nunca están en Backup_Guerra.csv ni en la hoja Guerra). Cada elemento: { temporada, semana, clan, clanTag, ataques, fame, barcos }
- * (temporada = temporadaInterna; semana = semana de guerra 1-based; un dato ausente va como null). Nunca lanza error: si el archivo no existe o falla, devuelve [].
+ * (§PF340: total por semana y clan; nunca están en Backup_Guerra.csv ni en la hoja Guerra). Cada elemento: { temporada, semana, fecha, clan, clanTag, ataques, fame, barcos }
+ * (temporada = temporadaInterna; semana = semana de guerra 1-based; un dato ausente va como null). `fecha` (dd/MM/yyyy) es el DOMINGO de esa semana, que es donde perfil.html pone el punto:
+ * esas filas no traen fecha, así que sale de calcDiaGuerraIdx(CFG.REF_DEFAULT, temporada, (semana-1)*7+6), la misma cuenta con la que _fechaATemporadaSemana() etiqueta los puntos de las gráficas
+ * (comprobada contra Backup_Guerra.csv: 40 617 filas coinciden y 786 difieren un día porque su Fecha es la de captura); si no se puede calcular va null y el frontend ignora esa semana.
+ * Nunca lanza error: si el archivo no existe o falla, devuelve [].
  * Solo la llama _webPerfilJugador() con esAdmin: un no admin nunca recibe estos datos (misma cautela que sinDatosDrive). [→ Contexto_Base_Web.md §PF066]
  */
 function _semanasExternasDeJugadorSeguro_(tag) {
@@ -2110,11 +2113,19 @@ function _semanasExternasDeJugadorSeguro_(tag) {
     var historial = _cargarHistorialGuerraIndividual('#' + cleanTag(tag)); // el índice de archivos usa el Tag con # (como en 15_DeteccionInfiltrados.gs)
     if (!historial || !Array.isArray(historial.registros)) return [];
     function _num(v) { return (v === undefined || v === null || v === '' || !isFinite(Number(v))) ? null : Number(v); }
+    var tzExt = Session.getScriptTimeZone() || 'America/Lima';
+    var refExt = CFG.REF_DEFAULT;
+    function _domingoDeSemana(temporada, semana) {
+      try {
+        var d = calcDiaGuerraIdx(refExt, temporada, (semana - 1) * 7 + 6); // periodIndex 6 = domingo de esa semana
+        return (d instanceof Date && !isNaN(d.getTime())) ? Utilities.formatDate(d, tzExt, 'dd/MM/yyyy') : null;
+      } catch (e2) { return null; }
+    }
     return historial.registros
       .filter(function (r) { return r && r.externa === true && isFinite(Number(r.temporadaInterna)) && isFinite(Number(r.semana)); })
       .map(function (r) {
         return {
-          temporada: Number(r.temporadaInterna), semana: Number(r.semana),
+          temporada: Number(r.temporadaInterna), semana: Number(r.semana), fecha: _domingoDeSemana(Number(r.temporadaInterna), Number(r.semana)),
           clan: String(r.clan || ''), clanTag: String(r.clanTag || ''),
           ataques: _num(r.ataques), fame: _num(r.fame), barcos: _num(r.barcos)
         };
