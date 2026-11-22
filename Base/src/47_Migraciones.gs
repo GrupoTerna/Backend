@@ -850,6 +850,7 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   props.deleteProperty('REENUM_INF_IDX'); // PF258: índice del paso de informes
   props.deleteProperty('REENUM_JSON_IDX'); // PF260: índice del paso de nombres de JSON
   Object.keys(props.getProperties()).forEach(function (k) { if (k.indexOf('REENUM_TOK_') === 0) props.deleteProperty(k); }); // PF268: marcas del paso de fichas «Semanas»
+  try { _descartarAvanceIndiceClanes_(); } catch (eIdx) { Logger.log('[Reenumeración] AVISO: no se pudo descartar el avance del índice de clanes externos (' + (eIdx.message || eIdx) + '). Borra a mano Indice_Clanes_Externos_Parcial.json de la carpeta Otros antes de que corra el índice.'); } // §PF286 punto 43: su avance guarda numeración vieja
 
   Logger.log('[Reenumeración] Ref vieja: ' + refVieja.toDateString() +
              ' | Ref nueva: ' + refNueva.toDateString() +
@@ -869,6 +870,7 @@ function _continuarRunReenumerarTemporadas() {
       PropertiesService.getScriptProperties().deleteProperty('REENUM_DELTA_MESES');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_NUEVA_REF');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_OFFSET_VIEJO');
+      try { _descartarAvanceIndiceClanes_(); } catch (eIdx2) { /* solo es limpieza: una pasada del índice que estuviera en vuelo al iniciar pudo dejar su avance */ } // §PF286 punto 43
       PropertiesService.getScriptProperties().deleteProperty('REENUM_BLOQUEO'); // 14-nov-2026: recién aquí se levanta la segunda guarda
       _liberarLockEjecucion();
       Logger.log('[Reenumeración] FIN — completa.');
