@@ -1,6 +1,4 @@
 Fecha,Estado,Resultado,Error
-2026-10-25 13:15:28,OK,"{""ok"":true,""aplicadas"":20,""omitidas"":188,""sinCambios"":0,""total"":208}",
-2026-10-25 13:16:52,OK,"{""ok"":true,""aplicadas"":22,""omitidas"":169,""sinCambios"":0,""total"":191}",
 2026-10-25 13:17:34,OK,"{""ok"":true,""aplicadas"":9,""omitidas"":22,""sinCambios"":0,""total"":31}",
 2026-10-25 13:18:25,OK,"{""ok"":true,""aplicadas"":24,""omitidas"":89,""sinCambios"":0,""total"":113}",
 2026-10-25 13:19:21,OK,"{""ok"":true,""aplicadas"":14,""omitidas"":91,""sinCambios"":0,""total"":105}",
@@ -499,3 +497,5 @@ Fecha,Estado,Resultado,Error
 2026-11-22 18:27:03,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":450,""total"":450,""visitasPerfil"":3,""anterioresT1"":150,""nuevosDetectados"":[""#G9JRJQ9YP"",""#GQ28VYVP2"",""#GVG990CG0""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":3,""sinFecha"":0,""sinRegistros"":0}}",
 2026-11-22 18:28:26,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":492,""total"":492,""visitasPerfil"":3,""anterioresT1"":112,""nuevosDetectados"":[""#J2U9P202Y"",""#J8PY8YJY"",""#JG9Q02RJ0""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":3,""sinFecha"":0,""sinRegistros"":0}}",
 2026-11-22 18:30:08,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":506,""total"":506,""visitasPerfil"":4,""anterioresT1"":183,""nuevosDetectados"":[""#JJP0V2GG9"",""#L9L9Y9JYV"",""#LJ28C2200""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":3,""sinFecha"":0,""sinRegistros"":0}}",
+2026-11-22 18:31:46,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":401,""total"":401,""visitasPerfil"":4,""anterioresT1"":165,""nuevosDetectados"":[""#LV8JYU2U0"",""#Q0U2PYVQQ"",""#QC20QPRPQ"",""#QGY220UCU""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":4,""sinFecha"":0,""sinRegistros"":0}}",
+2026-11-22 18:34:02,OK,"{""ok"":true,""aplicadas"":2,""omitidas"":0,""sinCambios"":472,""total"":474,""visitasPerfil"":4,""anterioresT1"":148,""nuevosDetectados"":[""#R2QJVV8QL"",""#RQL99L9VG"",""#RQULULJVY"",""#U9JVQCQ2C""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":4,""sinFecha"":0,""sinRegistros"":0}}",
