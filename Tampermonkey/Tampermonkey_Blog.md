@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Links del blog de RoyaleAPI
 // @namespace    familia-terna-blog-links
-// @version      2.0
+// @version      2.1
 // @description  En royaleapi.com/blog pulsa «Show all…» hasta desplegar todas las entradas y abre solo las que todavía no están en su lista de «leídas»: de cada una toma el enlace, el título, la fecha real, el tiempo de lectura, las etiquetas y la portada, y la da por leída solo si cargó completa y con fecha. Descarga solo lo nuevo en un .txt y un .json (y lo copia). Las leídas se guardan en Tampermonkey; las que fallan se reintentan en la siguiente corrida. No guarda el contenido de las entradas: Claude abre después cada enlace.
 // @match        https://royaleapi.com/blog
 // @match        https://royaleapi.com/blog/
@@ -143,6 +143,39 @@
     return m ? (m.getAttribute('content') || '').trim() : '';
   }
 
+  function palabras(t) {
+    return (t || '').toLowerCase().replace(/[^a-z0-9áéíóúñ#]+/g, ' ').trim().split(' ').filter(Boolean);
+  }
+
+  // Parecido entre dos títulos (0 a 1): «WIP Balance Changes for December…» vs «WIP Balance Changes - December…».
+  function parecido(a, b) {
+    const A = new Set(palabras(a)), B = new Set(palabras(b));
+    if (!A.size || !B.size) return 0;
+    let c = 0;
+    A.forEach(function (w) { if (B.has(w)) c++; });
+    return c / (A.size + B.size - c);
+  }
+
+  // En la entrada el título va en un enlace <a href="/blog?id=…">; respaldo: h1, og:title y <title>.
+  // Si hay varios enlaces así (p. ej. entradas relacionadas), gana el que más se parece al título de la pestaña.
+  function tituloDeEntrada(doc) {
+    const og = metaContenido(doc, 'meta[property="og:title"]');
+    const pestana = (doc.title || '').replace(/\s*[|\-–]\s*RoyaleAPI.*$/i, '').trim();
+    const referencia = og || pestana;
+    const enlaces = Array.from(doc.querySelectorAll('a[href^="/blog?id="], a[href*="/blog?id="]'))
+      .map(texto).filter(Boolean);
+    if (enlaces.length) {
+      if (!referencia || enlaces.length === 1) return enlaces[0];
+      let mejor = enlaces[0], mejorP = -1;
+      enlaces.forEach(function (t) {
+        const p = parecido(t, referencia);
+        if (p > mejorP) { mejorP = p; mejor = t; }
+      });
+      return mejor;
+    }
+    return texto(doc.querySelector('h1')) || og || pestana;
+  }
+
   // Devuelve { ok:true, datos } o { ok:false, tipo, motivo }.
   // «Completa y sin errores» = respondió 200, el HTML llegó entero, tiene título y tiene fecha.
   async function leerEntrada(e) {
@@ -166,8 +199,7 @@
       return { ok: false, tipo: 'bloqueo', motivo: 'página de verificación de Cloudflare' };
     }
 
-    const titulo = texto(doc.querySelector('h1')) || metaContenido(doc, 'meta[property="og:title"]') ||
-      (doc.title || '').replace(/\s*[|\-–]\s*RoyaleAPI.*$/i, '').trim();
+    const titulo = tituloDeEntrada(doc);
     if (!titulo) return { ok: false, tipo: 'incompleto', motivo: 'sin título' };
 
     const info = texto(doc.querySelector('.meta_info'));
@@ -189,6 +221,7 @@
       datos: {
         url: e.url,
         titulo: titulo,
+        titulo_indice: (e.titulo && e.titulo !== titulo) ? e.titulo : '',
         fecha: fecha,
         fecha_texto: fechaTexto,
         lectura_min: lm ? Number(lm[1]) : null,
