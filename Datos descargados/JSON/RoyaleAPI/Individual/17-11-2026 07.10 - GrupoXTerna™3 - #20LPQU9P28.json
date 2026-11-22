@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "GrupoXTerna™3",
@@ -19,7 +19,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "GrupoXTerna™3",
@@ -32,7 +32,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 4,
       "clan": "Sangre Guerrera",
@@ -46,7 +46,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 3,
       "clan": "Sangre Guerrera",
@@ -60,7 +60,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 2,
       "clan": "Sangre Guerrera",
@@ -74,7 +74,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 1,
       "clan": "Sangre Guerrera",
@@ -88,7 +88,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 4,
       "clan": "Sangre Guerrera",
@@ -102,7 +102,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 5,
       "clan": "Sangre Guerrera",
@@ -116,7 +116,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 4,
       "clan": "Sangre Guerrera",
@@ -130,7 +130,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 3,
       "clan": "Sangre Guerrera",
@@ -144,7 +144,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 2,
       "clan": "Sangre Guerrera",
@@ -158,7 +158,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 1,
       "clan": "Sangre Guerrera",
@@ -172,7 +172,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 15,
+      "temporadaInterna": 27,
       "temporadaRoyaleAPI": 126,
       "semana": 4,
       "clan": "Sangre Guerrera",
@@ -186,7 +186,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 15,
+      "temporadaInterna": 27,
       "temporadaRoyaleAPI": 126,
       "semana": 3,
       "clan": "Sangre Guerrera",
@@ -200,7 +200,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 15,
+      "temporadaInterna": 27,
       "temporadaRoyaleAPI": 126,
       "semana": 2,
       "clan": "Sangre Guerrera",
@@ -214,7 +214,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 15,
+      "temporadaInterna": 27,
       "temporadaRoyaleAPI": 126,
       "semana": 1,
       "clan": "Sangre Guerrera",
@@ -228,7 +228,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 4,
       "clan": "Sangre Guerrera",
@@ -242,7 +242,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 3,
       "clan": "Sangre Guerrera",
@@ -256,7 +256,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 2,
       "clan": "Sangre Guerrera",
@@ -270,7 +270,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 1,
       "clan": "Sangre Guerrera",
@@ -284,7 +284,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 5,
       "clan": "Sangre Guerrera",
@@ -298,7 +298,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 4,
       "clan": "LOS BAJE KUAKER",
@@ -312,7 +312,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 3,
       "clan": "LOS BAJE KUAKER",
@@ -326,7 +326,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 2,
       "clan": "CODEX",
@@ -340,7 +340,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 1,
       "clan": "Sangre Guerrera",
@@ -354,7 +354,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 4,
       "clan": "S.A.P.",
@@ -368,7 +368,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 3,
       "clan": "Feelmood",
@@ -382,7 +382,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 2,
       "clan": "Feelmood",
@@ -396,7 +396,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 1,
       "clan": "Feelmood",
@@ -410,7 +410,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 11,
+      "temporadaInterna": 23,
       "temporadaRoyaleAPI": 122,
       "semana": 4,
       "clan": "Sangre Guerrera",
@@ -424,7 +424,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 11,
+      "temporadaInterna": 23,
       "temporadaRoyaleAPI": 122,
       "semana": 3,
       "clan": "Sangre Guerrera",
@@ -438,5 +438,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1793146932920"
+  "reenumeracionId": "1795320518442"
 }

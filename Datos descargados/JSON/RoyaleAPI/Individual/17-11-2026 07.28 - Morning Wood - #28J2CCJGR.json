@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 5,
       "clan": "Tec Macuspana",
@@ -20,7 +20,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 4,
       "clan": "Tec Macuspana",
@@ -34,7 +34,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 3,
       "clan": "ColombianWar™️",
@@ -48,7 +48,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 2,
       "clan": "ColombianWar™️",
@@ -62,7 +62,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 5,
       "clan": "APS",
@@ -76,7 +76,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 4,
       "clan": "APS",
@@ -90,7 +90,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 3,
       "clan": "APS",
@@ -104,7 +104,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 4,
       "clan": "yummy",
@@ -118,7 +118,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 3,
       "clan": "yummy",
@@ -132,7 +132,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 2,
       "clan": "yummy",
@@ -146,7 +146,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 1,
       "clan": "yummy",
@@ -160,7 +160,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 1,
       "clan": "trump",
@@ -174,7 +174,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 5,
       "clan": "Trump",
@@ -188,7 +188,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 4,
       "clan": "Trump",
@@ -202,7 +202,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 3,
       "clan": "Trump",
@@ -216,7 +216,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 2,
       "clan": "Trump",
@@ -230,7 +230,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 1,
       "clan": "Trump",
@@ -244,7 +244,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 4,
       "clan": "Old & Bored 30+",
@@ -258,7 +258,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 3,
       "clan": "Old & Bored 30+",
@@ -272,7 +272,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 2,
       "clan": "ActualHappiness",
@@ -286,7 +286,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 1,
       "clan": "Old & Bored 30+",
@@ -300,7 +300,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 3,
       "clan": "Morning Wood",
@@ -313,5 +313,6 @@
       "clanTag": "#2PRJCLCR",
       "comentario": ""
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }
