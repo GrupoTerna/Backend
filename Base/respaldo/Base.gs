@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 05:56:09 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 06:52:21 */
 
 
 
@@ -62467,7 +62467,7 @@ function _rankingsDeJugadorSeguro_(tag) {
  * _semanasExternasDeJugadorSeguro_(tag) (22-nov-2026, pedido de la usuaria: «añadir los puntos externos a las gráficas de perfil.html»; solo admins).
  * Devuelve las semanas de guerra que el jugador hizo en un clan EXTERNO (no de CFG.TERNA_TAGS), leídas de las filas `externa: true` de su JSON individual de RoyaleAPI
  * (§PF340: total por semana y clan; nunca están en Backup_Guerra.csv ni en la hoja Guerra). Cada elemento: { temporada, semana, fecha, clan, clanTag, ataques, fame, barcos }
- * (temporada = temporadaInterna; semana = semana de guerra 1-based; un dato ausente va como null). `fecha` (dd/MM/yyyy) es el DOMINGO de esa semana, que es donde perfil.html pone el punto:
+ * (temporada = temporadaInterna; semana = semana de guerra 1-based; un dato ausente va como null). 22-nov-2026: cada elemento trae también `temporadaRoyaleAPI` (null si el registro no la tiene): perfil.html la necesita porque hasta la temporada 104, semana 2, la columna «Decks used» del perfil de RoyaleAPI sumaba también los mazos de los días de entrenamiento (tope 28 en vez de 16) y esas semanas no son anomalías. `fecha` (dd/MM/yyyy) es el DOMINGO de esa semana, que es donde perfil.html pone el punto:
  * esas filas no traen fecha, así que sale de calcDiaGuerraIdx(CFG.REF_DEFAULT, temporada, (semana-1)*7+6), la misma cuenta con la que _fechaATemporadaSemana() etiqueta los puntos de las gráficas
  * (comprobada contra Backup_Guerra.csv: 40 617 filas coinciden y 786 difieren un día porque su Fecha es la de captura); si no se puede calcular va null y el frontend ignora esa semana.
  * Nunca lanza error: si el archivo no existe o falla, devuelve [].
@@ -62490,7 +62490,7 @@ function _semanasExternasDeJugadorSeguro_(tag) {
       .filter(function (r) { return r && r.externa === true && isFinite(Number(r.temporadaInterna)) && isFinite(Number(r.semana)); })
       .map(function (r) {
         return {
-          temporada: Number(r.temporadaInterna), semana: Number(r.semana), fecha: _domingoDeSemana(Number(r.temporadaInterna), Number(r.semana)),
+          temporada: Number(r.temporadaInterna), temporadaRoyaleAPI: _num(r.temporadaRoyaleAPI), semana: Number(r.semana), fecha: _domingoDeSemana(Number(r.temporadaInterna), Number(r.semana)),
           clan: String(r.clan || ''), clanTag: String(r.clanTag || ''),
           ataques: _num(r.ataques), fame: _num(r.fame), barcos: _num(r.barcos)
         };
