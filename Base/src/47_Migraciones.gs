@@ -69,7 +69,9 @@ var PASOS_REENUMERAR_TEMPORADAS = [
   // PF322 (1-nov-2026): JSON grupales por clan (JSON/RoyaleAPI/Grupal, PF321). Al FINAL para no mover los índices de los pasos anteriores; no depende de la Ref ni del offset (solo suma el delta a temporadaInterna), y mientras dura la reenumeración los endpoints están bloqueados.
   function () { return _reenumerarJsonGrupal_(); },
   // PF378 (6-nov-2026): archivos por clan externo (carpeta Clanes_Externos de Otros): suma el delta a la temporada interna de cada semana. Al FINAL para no mover los índices de los pasos anteriores.
-  function () { return _reenumerarClanesExternos_(); }
+  function () { return _reenumerarClanesExternos_(); },
+  // PF286 punto 40 (21-nov-2026): Guerra_Desglose.csv (CSV/Hojas, §PF437) tiene Temporada y su clave de «día comprobado» (Temporada|Semana|Tag|ClanTag, _gdsIndiceComprobadas_) la usa; sin este paso los avisos dejarían de coincidir hasta correr generarGuerraDesglose() (manual y pesado). La columna sale del encabezado GDS_HEADERS. Al FINAL para no mover índices.
+  function () { return _reenumerarCSV(GDS_CSV_NOMBRE, null, GDS_HEADERS.length, GDS_HEADERS.indexOf('Temporada') + 1); }
 ];
 
 // PF269 (25-oct-2026): qué hace cada paso y qué se espera al terminarlo; _ejecutarPorTandas lo imprime («Ejecutando paso N/M: …»). MISMO ORDEN que PASOS_REENUMERAR_TEMPORADAS (si se añade un paso, añadir su texto al final).
@@ -107,7 +109,8 @@ var NOMBRES_PASOS_REENUMERAR_TEMPORADAS = [
   'Ids de evento de T_Lista, S_Lista y CR_Lista: rehace cada id con la temporada de su fila y reescribe las citas en T_Asistencia, S_Asistencia, T_Resoluciones y Extra, y sus respaldos → ids con la numeración nueva en todas las hojas',
   'Temporada y Fecha de T_Asistencia y S_Asistencia tomadas de su torneo o sorteo (el id es la llave) y sus respaldos → asistencias coherentes con sus listas',
   'HistorialGuerra, JSON grupales por clan (Drive): suma el delta a la temporada interna de cada semana, junta las semanas repetidas y quita las alternativas ya resueltas → todos los JSON grupales con la numeración nueva',
-  'Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva'
+  'Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva',
+  'Guerra_Desglose.csv: suma el delta a la columna Temporada de cada fila → avisos de «día comprobado» que siguen coincidiendo con la hoja Guerra'
 ];
 
 // PF286b (29-oct-2026): propiedad de script donde se guarda la semana forzada de un id de evento (tema 2.5, forzarSemanaIdEvento).
