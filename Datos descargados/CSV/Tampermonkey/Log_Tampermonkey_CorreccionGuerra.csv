@@ -1,8 +1,4 @@
 Fecha,Estado,Resultado,Error
-2026-10-25 13:11:49,OK,"{""ok"":true,""aplicadas"":2,""omitidas"":143,""sinCambios"":0,""total"":145}",
-2026-10-25 13:12:39,OK,"{""ok"":true,""aplicadas"":24,""omitidas"":166,""sinCambios"":0,""total"":190}",
-2026-10-25 13:13:29,OK,"{""ok"":true,""aplicadas"":6,""omitidas"":148,""sinCambios"":0,""total"":154}",
-2026-10-25 13:14:22,OK,"{""ok"":true,""aplicadas"":23,""omitidas"":172,""sinCambios"":0,""total"":195}",
 2026-10-25 13:15:28,OK,"{""ok"":true,""aplicadas"":20,""omitidas"":188,""sinCambios"":0,""total"":208}",
 2026-10-25 13:16:52,OK,"{""ok"":true,""aplicadas"":22,""omitidas"":169,""sinCambios"":0,""total"":191}",
 2026-10-25 13:17:34,OK,"{""ok"":true,""aplicadas"":9,""omitidas"":22,""sinCambios"":0,""total"":31}",
@@ -499,3 +495,7 @@ Fecha,Estado,Resultado,Error
 2026-11-22 18:19:50,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":412,""total"":412,""visitasPerfil"":4,""anterioresT1"":149,""nuevosDetectados"":[""#20UU2PU0QG"",""#2G9GU0GR2"",""#80GGU0U80"",""#80J82Q892""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":4,""sinFecha"":0,""sinRegistros"":0}}",
 2026-11-22 18:21:06,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":438,""total"":438,""visitasPerfil"":3,""anterioresT1"":146,""nuevosDetectados"":[""#8CURUL0V9"",""#8GYVU28G9"",""#8UG2GRYGG""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":3,""sinFecha"":0,""sinRegistros"":0}}",
 2026-11-22 18:23:21,OK,"{""ok"":true,""aplicadas"":4,""omitidas"":0,""sinCambios"":550,""total"":554,""visitasPerfil"":4,""anterioresT1"":271,""nuevosDetectados"":[""#8Y9YL0Y9J"",""#928CYUQ9Y"",""#9CY0U0L0L"",""#9GJ8UVJ2J""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":4,""sinFecha"":0,""sinRegistros"":0}}",
+2026-11-22 18:25:36,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":424,""total"":424,""visitasPerfil"":5,""anterioresT1"":111,""nuevosDetectados"":[""#9R8CQC02U"",""#9V89PYC9Y"",""#C8RJJ8R22"",""#CC2PQG829"",""#CVGPP8Q8U""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":5,""sinFecha"":0,""sinRegistros"":0}}",
+2026-11-22 18:27:03,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":450,""total"":450,""visitasPerfil"":3,""anterioresT1"":150,""nuevosDetectados"":[""#G9JRJQ9YP"",""#GQ28VYVP2"",""#GVG990CG0""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":3,""sinFecha"":0,""sinRegistros"":0}}",
+2026-11-22 18:28:26,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":492,""total"":492,""visitasPerfil"":3,""anterioresT1"":112,""nuevosDetectados"":[""#J2U9P202Y"",""#J8PY8YJY"",""#JG9Q02RJ0""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":3,""sinFecha"":0,""sinRegistros"":0}}",
+2026-11-22 18:30:08,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":506,""total"":506,""visitasPerfil"":4,""anterioresT1"":183,""nuevosDetectados"":[""#JJP0V2GG9"",""#L9L9Y9JYV"",""#LJ28C2200""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":3,""sinFecha"":0,""sinRegistros"":0}}",
