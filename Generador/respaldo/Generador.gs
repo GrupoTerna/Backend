@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 19/11/2026 06:23:49 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 19:07:08 */
 
 
 
@@ -5609,6 +5609,7 @@ function _imgApiArchivoTipos_() {
 // QUÉ COPIA (ver DATOS_GH_FUENTES_):
 //   - Tampermonkey/ (CSV/Tampermonkey de Drive): TODOS los archivos de texto de la carpeta (desde el 1-nov-2026, §PF324; antes una lista de nombres más un filtro, y por eso
 //     HistorialGuerra_Grupal.csv, que se mudó a esta carpeta, no llegaba)   → Datos descargados/CSV/Tampermonkey/
+//     Excepción de tamaño (§PF554, 21-nov-2026): Correcciones_Guerra.csv tiene su propia fuente con tope de 30 MB (el de la carpeta es de 8 MB); pesaba 15 MB y se subía a mano.
 //     Hoy: Correcciones_Guerra.csv, Correcciones_Nuevos.csv, Backup_Guerra_Semanal.csv, HistorialGuerra_Grupal.csv, Correcciones_RiverRace_Pendientes.csv y los Log_Tampermonkey_*.csv.
 //   - Carpeta Seasons: Cache_Seasons.json (respuesta cruda de descargarSeasons(), ids de
 //     temporada de Supercell)  → Datos descargados/JSON/Endpoints/Seasons/
@@ -5670,10 +5671,16 @@ var DATOS_GH_CARPETA_GRUPAL_       = '1T8PhxVVRZ-p7o2A_U6ARP-LsC3Zg7ObL';   // =
 var DATOS_GH_CARPETA_CSV_          = '1rTp5gXQ0ydnkM3eg6wy2vfOrpUp9GOsR';   // = DRIVE_FOLDER_ID_CSV de Base (01_Config_Global.gs): raíz de la carpeta CSV; de aquí solo se copia Battlelog_Capturas.csv de la subcarpeta Jugador (§PF443)
 var DATOS_GH_CARPETA_CRR_          = '1xZr_GxHbuG_Y4gzPHZQxduhzkF8CeFPg';   // = DRIVE_FOLDER_ID_CURRENTRIVERRACE de Base (01_Config_Global.gs): raíz de CurrentRiverRace; de aquí solo se copia la subcarpeta Capturas_Continuas (§PF426)
 
+var DATOS_GH_MAX_CORRECCIONES_GUERRA_ = 30 * 1024 * 1024;   // §PF554: tope de Correcciones_Guerra.csv (sube con el tiempo); por debajo de los 50 MB en que GitHub empieza a avisar
+
 var DATOS_GH_FUENTES_ = [
   { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,   // 1-nov-2026 (§PF324, pedido de la usuaria): TODA la carpeta, sin lista de nombres ni filtro; así un archivo nuevo (como HistorialGuerra_Grupal.csv al mudarse aquí) llega solo
     todos: true,
+    omitir: /^Correcciones_Guerra\.csv$/,   // §PF554: este archivo pesa más de 8 MB y tiene su propia fuente, justo debajo
     destino: 'Datos descargados/CSV/Tampermonkey/', maxBytes: 8 * 1024 * 1024 },
+  { carpetaId: DATOS_GH_CARPETA_TAMPERMONKEY_,   // §PF554 (21-nov-2026, pedido de la usuaria): excepción de tamaño solo para Correcciones_Guerra.csv (15 MB el 21-nov; la subía a mano). El tope de 8 MB era nuestro, no de GitHub (GitHub avisa a los 50 MB y rechaza a los 100 MB)
+    nombres: ['Correcciones_Guerra.csv'],
+    destino: 'Datos descargados/CSV/Tampermonkey/', maxBytes: DATOS_GH_MAX_CORRECCIONES_GUERRA_ },
   { carpetaId: DATOS_GH_CARPETA_SEASONS_,
     nombres: ['Cache_Seasons.json'],
     destino: 'Datos descargados/JSON/Endpoints/Seasons/', maxBytes: 1 * 1024 * 1024 },
@@ -5720,7 +5727,7 @@ var DATOS_GH_NOMBRES_PERMITIDOS_ = ['987660457 xd'];       // clan «987660457 x
 var DATOS_GH_PREFIJO_ESTADO_   = 'DATOS_GH_';
 var DATOS_GH_HANDLER_AUTO_     = 'subirDatosDriveAGithubAuto';
 var DATOS_GH_HANDLER_SEGUIR_   = 'subirDatosDriveAGithubContinuar';
-var DATOS_GH_LOTE_BYTES_       = 8 * 1024 * 1024;   // tamaño máximo de contenido por commit
+var DATOS_GH_LOTE_BYTES_       = 8 * 1024 * 1024;   // tamaño máximo de contenido por commit; un archivo más grande que el lote (Correcciones_Guerra.csv, §PF554) va solo en su propio commit
 var DATOS_GH_TIEMPO_MAX_MS_    = 4 * 60 * 1000;     // a los 4 min deja lo que falte para la corrida siguiente
 
 // =============================================================================
@@ -5827,7 +5834,7 @@ function _datosDriveAGithub_(op) {
         continue;
       }
       var contenido = f.getBlob().getDataAsString('UTF-8');
-      var bytesTexto = Utilities.newBlob(contenido, 'text/plain').getBytes().length;
+      var bytesTexto = _datosGhBytesUtf8_(contenido);   // §PF554: sin getBytes() (un arreglo de millones de números en los CSV grandes)
       if (bytesTexto !== bytesDrive) {
         omitidos.push(nombre + ' → Drive dice ' + bytesDrive + ' bytes y el texto leído da ' + bytesTexto + ' (no es UTF-8 limpio); no se copia para no alterarlo');
         continue;
@@ -5954,6 +5961,25 @@ function _datosGhListarCandidatos_() {
     }
   });
   return { candidatos: candidatos, problemas: problemas };
+}
+
+/**
+ * _datosGhBytesUtf8_(texto): §PF554. Cuántos bytes ocupa el texto en UTF-8, contando los caracteres (sin armar el arreglo de bytes). Reemplaza a
+ * Utilities.newBlob(texto).getBytes().length, que con un CSV de 15 MB crea un arreglo de 15 millones de números. Función pura. Un carácter suelto
+ * incompleto (par sustituto roto) cuenta 3 bytes, igual que el carácter de reemplazo U+FFFD con que se lee un UTF-8 dañado, así que sigue sin coincidir con Drive.
+ */
+function _datosGhBytesUtf8_(texto) {
+  var t = String(texto), n = 0, c, d;
+  for (var i = 0; i < t.length; i++) {
+    c = t.charCodeAt(i);
+    if (c < 0x80) n += 1;
+    else if (c < 0x800) n += 2;
+    else if (c >= 0xD800 && c <= 0xDBFF) {
+      d = (i + 1 < t.length) ? t.charCodeAt(i + 1) : 0;
+      if (d >= 0xDC00 && d <= 0xDFFF) { n += 4; i++; } else n += 3;
+    } else n += 3;
+  }
+  return n;
 }
 
 /**
