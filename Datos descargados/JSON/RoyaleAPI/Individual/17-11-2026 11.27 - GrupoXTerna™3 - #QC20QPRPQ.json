@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 5,
       "clan": "cholos infinito",
@@ -20,7 +20,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 4,
       "clan": "cholos infinito",
@@ -34,7 +34,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 3,
       "clan": "cholos infinito",
@@ -48,7 +48,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 2,
       "clan": "Húsares d Junín",
@@ -62,7 +62,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 1,
       "clan": "GrupoXTerna™3",
@@ -75,7 +75,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 3,
       "clan": "Lima Royale",
@@ -89,7 +89,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 2,
       "clan": "Lima Royale",
@@ -103,7 +103,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 5,
       "clan": "Nic",
@@ -117,7 +117,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 4,
       "clan": "Nic",
@@ -131,7 +131,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 3,
       "clan": "Nic",
@@ -145,7 +145,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 2,
       "clan": "Nic",
@@ -159,7 +159,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 1,
       "clan": "Nic",
@@ -173,7 +173,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 4,
       "clan": "Nic",
@@ -187,7 +187,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 3,
       "clan": "Nic",
@@ -201,7 +201,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 2,
       "clan": "Nic",
@@ -215,7 +215,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 1,
       "clan": "Nic",
@@ -229,7 +229,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 11,
+      "temporadaInterna": 23,
       "temporadaRoyaleAPI": 122,
       "semana": 4,
       "clan": "Nic",
@@ -243,7 +243,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 4,
       "clan": "Team Buffalos",
@@ -257,7 +257,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 3,
       "clan": "Team Buffalos",
@@ -271,7 +271,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 2,
       "clan": "Team Buffalos",
@@ -285,7 +285,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 3,
       "clan": "RedStar",
@@ -299,7 +299,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 2,
       "clan": "RedStar",
@@ -313,7 +313,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 1,
       "clan": "RedStar",
@@ -327,7 +327,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 4,
       "clan": "RedStar",
@@ -341,7 +341,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 3,
       "clan": "RedStar",
@@ -355,7 +355,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 2,
       "clan": "RedStar",
@@ -369,7 +369,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 1,
       "clan": "RedStar",
@@ -383,7 +383,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 4,
       "clan": "RedStar",
@@ -397,7 +397,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 3,
       "clan": "RedStar",
@@ -411,7 +411,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 2,
       "clan": "RedStar",
@@ -425,7 +425,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 1,
       "clan": "RedStar",
@@ -439,7 +439,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 5,
       "clan": "RedStar",
@@ -453,7 +453,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 4,
       "clan": "RedStar",
@@ -467,7 +467,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 3,
       "clan": "RedStar",
@@ -481,7 +481,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 2,
       "clan": "RedStar",
@@ -495,7 +495,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 1,
       "clan": "Alianza Peruana",
@@ -509,7 +509,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 4,
       "clan": "Alianza Peruana",
@@ -523,7 +523,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 3,
       "clan": "Alianza Peruana",
@@ -537,7 +537,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 2,
       "clan": "Alianza Peruana",
@@ -551,7 +551,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 1,
       "clan": "Alianza Peruana",
@@ -565,7 +565,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 4,
       "clan": "Alianza Peruana",
@@ -579,7 +579,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 3,
       "clan": "Alianza Peruana",
@@ -593,7 +593,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 2,
       "clan": "UNIVERSAL CLAN",
@@ -607,7 +607,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 1,
       "clan": "los mercenarios",
@@ -621,7 +621,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 4,
       "clan": "los mercenarios",
@@ -635,7 +635,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 3,
       "clan": "los mercenarios",
@@ -649,7 +649,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 4,
       "clan": "RaffiTeam",
@@ -663,7 +663,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 3,
       "clan": "RaffiTeam",
@@ -677,7 +677,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 2,
       "clan": "RaffiTeam",
@@ -691,7 +691,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 1,
       "clan": "RaffiTeam",
@@ -705,7 +705,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -42,
+      "temporadaInterna": -30,
       "temporadaRoyaleAPI": 69,
       "semana": 4,
       "clan": "RaffiTeam",
@@ -719,7 +719,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -42,
+      "temporadaInterna": -30,
       "temporadaRoyaleAPI": 69,
       "semana": 3,
       "clan": "RaffiTeam",
@@ -733,7 +733,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -42,
+      "temporadaInterna": -30,
       "temporadaRoyaleAPI": 69,
       "semana": 2,
       "clan": "RaffiTeam",
@@ -747,7 +747,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 4,
       "clan": "RaffiTeam",
@@ -761,7 +761,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 3,
       "clan": "RaffiTeam",
@@ -775,7 +775,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 2,
       "clan": "RaffiTeam",
@@ -789,7 +789,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 1,
       "clan": "ELITE VIP CR",
@@ -803,7 +803,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -44,
+      "temporadaInterna": -32,
       "temporadaRoyaleAPI": 67,
       "semana": 4,
       "clan": "ELITE VIP CR",
@@ -817,7 +817,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -44,
+      "temporadaInterna": -32,
       "temporadaRoyaleAPI": 67,
       "semana": 3,
       "clan": "INVICTUS",
@@ -831,7 +831,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -44,
+      "temporadaInterna": -32,
       "temporadaRoyaleAPI": 67,
       "semana": 2,
       "clan": "RaffiTeam",
@@ -845,7 +845,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -44,
+      "temporadaInterna": -32,
       "temporadaRoyaleAPI": 67,
       "semana": 1,
       "clan": "新时代的我们",
@@ -859,7 +859,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 5,
       "clan": "FAMILIA ROYAL",
@@ -873,7 +873,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 4,
       "clan": "FAMILIA ROYAL",
@@ -887,7 +887,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 3,
       "clan": "FAMILIA ROYAL",
@@ -901,7 +901,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 2,
       "clan": "FAMILIA ROYAL",
@@ -915,7 +915,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -45,
+      "temporadaInterna": -33,
       "temporadaRoyaleAPI": 66,
       "semana": 1,
       "clan": "FAMILIA ROYAL",
@@ -929,7 +929,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 4,
       "clan": "FAMILIA ROYAL",
@@ -943,7 +943,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 3,
       "clan": "FAMILIA ROYAL",
@@ -957,7 +957,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 2,
       "clan": "FAMILIA ROYAL",
@@ -971,7 +971,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -46,
+      "temporadaInterna": -34,
       "temporadaRoyaleAPI": 65,
       "semana": 1,
       "clan": "FAMILIA ROYAL",
@@ -985,7 +985,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 5,
       "clan": "Cara de pacman",
@@ -999,7 +999,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 4,
       "clan": "Cara de pacman",
@@ -1013,7 +1013,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 3,
       "clan": "Cara de pacman",
@@ -1027,7 +1027,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 1,
       "clan": "[Pûjll∆qPeπū™]",
@@ -1040,5 +1040,6 @@
       "clanTag": "#YV90GJLP",
       "comentario": ""
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }

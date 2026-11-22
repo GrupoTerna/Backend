@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "Team Colombia",
@@ -20,7 +20,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "Team Colombia",
@@ -34,7 +34,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "Team Colombia",
@@ -48,7 +48,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 2,
       "clan": "Quick Team pro",
@@ -62,7 +62,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 5,
       "clan": "GrupoXTerna™3",
@@ -75,7 +75,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 4,
       "clan": "GrupoXTerna™3",
@@ -88,7 +88,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 3,
       "clan": "GrupoXTerna™3",
@@ -101,7 +101,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 2,
       "clan": "GrupoXTerna™3",
@@ -114,7 +114,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 1,
       "clan": "GrupoXTerna™3",
@@ -127,7 +127,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 4,
       "clan": "GrupoXTerna™3",
@@ -140,7 +140,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 3,
       "clan": "GrupoXTerna™3",
@@ -153,7 +153,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 2,
       "clan": "Batman",
@@ -167,7 +167,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 1,
       "clan": "lamparas",
@@ -181,7 +181,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 4,
       "clan": "lamparas",
@@ -195,7 +195,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 15,
+      "temporadaInterna": 27,
       "temporadaRoyaleAPI": 126,
       "semana": 1,
       "clan": "losdelaeuropa",
@@ -209,7 +209,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 2,
       "clan": "losdelaeuropa",
@@ -223,7 +223,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 1,
       "clan": "losdelaeuropa",
@@ -237,7 +237,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 5,
       "clan": "losdelaeuropa",
@@ -251,7 +251,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -11,
+      "temporadaInterna": 1,
       "temporadaRoyaleAPI": 100,
       "semana": 4,
       "clan": "THE COLOMBIA",
@@ -265,7 +265,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -11,
+      "temporadaInterna": 1,
       "temporadaRoyaleAPI": 100,
       "semana": 3,
       "clan": "THE COLOMBIA",
@@ -279,7 +279,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -19,
+      "temporadaInterna": -7,
       "temporadaRoyaleAPI": 92,
       "semana": 4,
       "clan": "THE COLOMBIA",
@@ -293,7 +293,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -19,
+      "temporadaInterna": -7,
       "temporadaRoyaleAPI": 92,
       "semana": 3,
       "clan": "THE COLOMBIA",
@@ -307,7 +307,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -19,
+      "temporadaInterna": -7,
       "temporadaRoyaleAPI": 92,
       "semana": 2,
       "clan": "THE COLOMBIA",
@@ -320,5 +320,6 @@
       "clanTag": "#LC2LLQGU",
       "comentario": ""
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }

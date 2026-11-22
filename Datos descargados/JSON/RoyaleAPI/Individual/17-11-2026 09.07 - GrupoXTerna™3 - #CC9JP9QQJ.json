@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "Cruz del Sur",
@@ -20,7 +20,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "Cruz del Sur",
@@ -34,7 +34,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 2,
       "clan": "Cruz del Sur",
@@ -48,7 +48,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 1,
       "clan": "Cruz del Sur",
@@ -62,7 +62,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 4,
       "clan": "Cruz del Sur",
@@ -76,7 +76,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 3,
       "clan": "Cruz del Sur",
@@ -90,7 +90,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 2,
       "clan": "Cruz del Sur",
@@ -104,7 +104,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 1,
       "clan": "Cruz del Sur",
@@ -118,7 +118,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 5,
       "clan": "GrupoXTerna™3",
@@ -131,7 +131,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 4,
       "clan": "GrupoXTerna™3",
@@ -144,7 +144,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 3,
       "clan": "TeamWahaha",
@@ -158,7 +158,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 2,
       "clan": "GrupoXTerna™3",
@@ -171,7 +171,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 1,
       "clan": "GrupoXTerna™3",
@@ -184,7 +184,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -18,
+      "temporadaInterna": -6,
       "temporadaRoyaleAPI": 93,
       "semana": 4,
       "clan": "SoNs oF AnArChI",
@@ -198,7 +198,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -20,
+      "temporadaInterna": -8,
       "temporadaRoyaleAPI": 91,
       "semana": 4,
       "clan": "SoNs oF AnArChI",
@@ -212,7 +212,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 4,
       "clan": "MISTERIUS PERÚ",
@@ -226,7 +226,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 3,
       "clan": "MISTERIUS PERÚ",
@@ -240,7 +240,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -28,
+      "temporadaInterna": -16,
       "temporadaRoyaleAPI": 83,
       "semana": 1,
       "clan": "El Calabozo",
@@ -254,7 +254,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 4,
       "clan": "El Calabozo",
@@ -268,7 +268,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 3,
       "clan": "El Calabozo",
@@ -282,7 +282,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 2,
       "clan": "El Calabozo",
@@ -295,5 +295,6 @@
       "clanTag": "#QCY2VCV8",
       "comentario": ""
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }

@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 4,
       "clan": "GOTTIGANG <3",
@@ -20,7 +20,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "Infinite Void",
@@ -34,7 +34,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "Infinite Void",
@@ -48,7 +48,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "P. Gamers Team",
@@ -62,7 +62,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 4,
       "clan": "Amaru Kancha",
@@ -76,7 +76,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 3,
       "clan": "Crimson Blade",
@@ -90,7 +90,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 2,
       "clan": "Amaru Kancha",
@@ -104,7 +104,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 1,
       "clan": "FreeTime",
@@ -118,7 +118,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 5,
       "clan": "solo",
@@ -132,7 +132,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 4,
       "clan": "solo",
@@ -146,7 +146,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 3,
       "clan": "solo",
@@ -160,7 +160,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 2,
       "clan": "solo",
@@ -174,7 +174,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 1,
       "clan": "POCO FLOROS",
@@ -188,7 +188,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 4,
       "clan": "POCO FLOROS",
@@ -202,7 +202,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 3,
       "clan": "POCO FLOROS",
@@ -216,7 +216,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 2,
       "clan": "Elite Warriors!",
@@ -230,7 +230,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 1,
       "clan": "Elite Warriors!",
@@ -244,7 +244,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 4,
       "clan": "Elite Warriors!",
@@ -258,7 +258,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 3,
       "clan": "Elite Warriors!",
@@ -272,7 +272,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 20,
+      "temporadaInterna": 32,
       "temporadaRoyaleAPI": 131,
       "semana": 2,
       "clan": "Elite Warriors!",
@@ -286,7 +286,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 4,
       "clan": "legion peruana",
@@ -300,7 +300,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 3,
       "clan": "legion peruana",
@@ -314,7 +314,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 2,
       "clan": "legion peruana",
@@ -328,7 +328,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 1,
       "clan": "IOPX",
@@ -342,7 +342,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 5,
       "clan": "Clan Papu",
@@ -356,7 +356,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 4,
       "clan": "Clan Papu",
@@ -370,7 +370,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 3,
       "clan": "Clan Papu",
@@ -384,7 +384,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -14,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 97,
       "semana": 4,
       "clan": "FULL LEGEND",
@@ -398,7 +398,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -14,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 97,
       "semana": 3,
       "clan": "FULL LEGEND",
@@ -412,7 +412,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -14,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 97,
       "semana": 2,
       "clan": "FULL LEGEND",
@@ -426,7 +426,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -14,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 97,
       "semana": 1,
       "clan": "FULL LEGEND",
@@ -440,7 +440,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 96,
       "semana": 5,
       "clan": "FULL PERUVIAN",
@@ -454,7 +454,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -15,
+      "temporadaInterna": -3,
       "temporadaRoyaleAPI": 96,
       "semana": 1,
       "clan": "FULL PERUVIAN",
@@ -468,7 +468,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 4,
       "clan": "FULL PERUVIAN",
@@ -482,7 +482,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 3,
       "clan": "FULL PERUVIAN",
@@ -496,7 +496,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 2,
       "clan": "Peru Clash",
@@ -510,7 +510,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -16,
+      "temporadaInterna": -4,
       "temporadaRoyaleAPI": 95,
       "semana": 1,
       "clan": "Peru Clash",
@@ -524,7 +524,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 4,
       "clan": "Peru Clash",
@@ -538,7 +538,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 3,
       "clan": "los pitufos",
@@ -552,7 +552,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 2,
       "clan": "PERU CHAMPION 1",
@@ -566,7 +566,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 1,
       "clan": "PERU CHAMPION 1",
@@ -580,7 +580,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -18,
+      "temporadaInterna": -6,
       "temporadaRoyaleAPI": 93,
       "semana": 4,
       "clan": "PERU CHAMPION 1",
@@ -594,7 +594,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -19,
+      "temporadaInterna": -7,
       "temporadaRoyaleAPI": 92,
       "semana": 5,
       "clan": "God of War",
@@ -608,7 +608,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -20,
+      "temporadaInterna": -8,
       "temporadaRoyaleAPI": 91,
       "semana": 4,
       "clan": "God of War",
@@ -622,7 +622,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 4,
       "clan": "God of War",
@@ -636,7 +636,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 3,
       "clan": "God of War",
@@ -650,7 +650,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 2,
       "clan": "God of War",
@@ -664,7 +664,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 1,
       "clan": "God of War",
@@ -678,7 +678,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -28,
+      "temporadaInterna": -16,
       "temporadaRoyaleAPI": 83,
       "semana": 4,
       "clan": "God of War",
@@ -692,7 +692,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -28,
+      "temporadaInterna": -16,
       "temporadaRoyaleAPI": 83,
       "semana": 2,
       "clan": "God of War",
@@ -706,7 +706,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 4,
       "clan": "God of War",
@@ -720,7 +720,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 3,
       "clan": "God of War",
@@ -734,7 +734,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 2,
       "clan": "God of War",
@@ -748,7 +748,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 4,
       "clan": "God of War",
@@ -762,7 +762,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 3,
       "clan": "God of War",
@@ -776,7 +776,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 2,
       "clan": "God of War",
@@ -790,7 +790,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 1,
       "clan": "God of War",
@@ -804,7 +804,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 5,
       "clan": "God of War",
@@ -818,7 +818,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 4,
       "clan": "God of War",
@@ -832,7 +832,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 3,
       "clan": "God of War",
@@ -846,7 +846,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 2,
       "clan": "God of War",
@@ -860,7 +860,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 1,
       "clan": "God of War",
@@ -874,7 +874,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 4,
       "clan": "God of War",
@@ -888,7 +888,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 3,
       "clan": "God of War",
@@ -902,7 +902,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 2,
       "clan": "God of War",
@@ -916,7 +916,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -32,
+      "temporadaInterna": -20,
       "temporadaRoyaleAPI": 79,
       "semana": 1,
       "clan": "God of War",
@@ -930,7 +930,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 5,
       "clan": "God of War",
@@ -944,7 +944,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 4,
       "clan": "God of War",
@@ -958,7 +958,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 3,
       "clan": "God of War",
@@ -972,7 +972,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 2,
       "clan": "God of War",
@@ -986,7 +986,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 1,
       "clan": "God of War",
@@ -1000,7 +1000,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 4,
       "clan": "God of War",
@@ -1014,7 +1014,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 3,
       "clan": "God of War",
@@ -1028,7 +1028,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 2,
       "clan": "God of War",
@@ -1042,7 +1042,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 1,
       "clan": "God of War",
@@ -1056,7 +1056,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 4,
       "clan": "God of War",
@@ -1070,7 +1070,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 3,
       "clan": "God of War",
@@ -1084,7 +1084,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 2,
       "clan": "God of War",
@@ -1098,7 +1098,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 1,
       "clan": "God of War",
@@ -1112,7 +1112,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 5,
       "clan": "God of War",
@@ -1126,7 +1126,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 4,
       "clan": "God of War",
@@ -1140,7 +1140,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 3,
       "clan": "God of War",
@@ -1154,7 +1154,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 2,
       "clan": "God of War",
@@ -1168,7 +1168,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 1,
       "clan": "God of War",
@@ -1182,7 +1182,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 4,
       "clan": "God of War",
@@ -1196,7 +1196,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 3,
       "clan": "God of War",
@@ -1210,7 +1210,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 2,
       "clan": "God of War",
@@ -1224,7 +1224,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 1,
       "clan": "God of War",
@@ -1238,7 +1238,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 4,
       "clan": "God of War",
@@ -1252,7 +1252,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 3,
       "clan": "God of War",
@@ -1266,7 +1266,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 2,
       "clan": "God of War",
@@ -1280,7 +1280,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 1,
       "clan": "God of War",
@@ -1294,7 +1294,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 5,
       "clan": "God of War",
@@ -1308,7 +1308,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 4,
       "clan": "God of War",
@@ -1322,7 +1322,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 3,
       "clan": "God of War",
@@ -1336,7 +1336,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 2,
       "clan": "God of War",
@@ -1350,7 +1350,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -39,
+      "temporadaInterna": -27,
       "temporadaRoyaleAPI": 72,
       "semana": 1,
       "clan": "God of War",
@@ -1364,7 +1364,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 4,
       "clan": "God of War",
@@ -1378,7 +1378,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 3,
       "clan": "God of War",
@@ -1392,7 +1392,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 2,
       "clan": "God of War",
@@ -1406,7 +1406,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -40,
+      "temporadaInterna": -28,
       "temporadaRoyaleAPI": 71,
       "semana": 1,
       "clan": "God of War",
@@ -1420,7 +1420,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 5,
       "clan": "God of War",
@@ -1434,7 +1434,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 4,
       "clan": "God of War",
@@ -1448,7 +1448,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 3,
       "clan": "God of War",
@@ -1462,7 +1462,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 2,
       "clan": "God of War",
@@ -1476,7 +1476,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -41,
+      "temporadaInterna": -29,
       "temporadaRoyaleAPI": 70,
       "semana": 1,
       "clan": "God of War",
@@ -1490,7 +1490,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -42,
+      "temporadaInterna": -30,
       "temporadaRoyaleAPI": 69,
       "semana": 4,
       "clan": "God of War",
@@ -1504,7 +1504,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -42,
+      "temporadaInterna": -30,
       "temporadaRoyaleAPI": 69,
       "semana": 3,
       "clan": "God of War",
@@ -1518,7 +1518,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -42,
+      "temporadaInterna": -30,
       "temporadaRoyaleAPI": 69,
       "semana": 2,
       "clan": "God of War",
@@ -1532,7 +1532,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 4,
       "clan": "God of War",
@@ -1546,7 +1546,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 3,
       "clan": "God of War",
@@ -1560,7 +1560,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 2,
       "clan": "God of War",
@@ -1574,7 +1574,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -43,
+      "temporadaInterna": -31,
       "temporadaRoyaleAPI": 68,
       "semana": 1,
       "clan": "God of War",
@@ -1588,7 +1588,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -44,
+      "temporadaInterna": -32,
       "temporadaRoyaleAPI": 67,
       "semana": 4,
       "clan": "God of War",
@@ -1602,7 +1602,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -44,
+      "temporadaInterna": -32,
       "temporadaRoyaleAPI": 67,
       "semana": 3,
       "clan": "God of War",
@@ -1616,7 +1616,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 5,
       "clan": "God of War",
@@ -1630,7 +1630,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 4,
       "clan": "God of War",
@@ -1644,7 +1644,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 3,
       "clan": "God of War",
@@ -1658,7 +1658,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 2,
       "clan": "God of War",
@@ -1672,7 +1672,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 1,
       "clan": "God of War",
@@ -1685,5 +1685,6 @@
       "clanTag": "#PGLYLG80",
       "comentario": ""
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }

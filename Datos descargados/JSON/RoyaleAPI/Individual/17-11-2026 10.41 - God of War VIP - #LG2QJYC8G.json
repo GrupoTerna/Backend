@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "semana": 1,
       "clan": "UTPOINT",
@@ -20,7 +20,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 5,
       "clan": "UTPOINT",
@@ -34,7 +34,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 4,
       "clan": "UTPOINT",
@@ -48,7 +48,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 3,
       "clan": "UTPOINT",
@@ -62,7 +62,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 2,
       "clan": "UTPOINT",
@@ -76,7 +76,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 1,
       "clan": "UTPOINT",
@@ -90,7 +90,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 4,
       "clan": "UTPOINT",
@@ -104,7 +104,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 3,
       "clan": "UTPOINT",
@@ -118,7 +118,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 2,
       "clan": "UTPOINT",
@@ -132,7 +132,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 21,
+      "temporadaInterna": 33,
       "temporadaRoyaleAPI": 132,
       "semana": 1,
       "clan": "UTPOINT",
@@ -146,7 +146,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 5,
       "clan": "UTPOINT",
@@ -160,7 +160,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 4,
       "clan": "UTPOINT",
@@ -174,7 +174,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 3,
       "clan": "UTPOINT",
@@ -188,7 +188,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 2,
       "clan": "UTPOINT",
@@ -202,7 +202,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 19,
+      "temporadaInterna": 31,
       "temporadaRoyaleAPI": 130,
       "semana": 1,
       "clan": "UTPOINT",
@@ -216,7 +216,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 4,
       "clan": "UTPOINT",
@@ -230,7 +230,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 3,
       "clan": "UTPOINT",
@@ -244,7 +244,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 2,
       "clan": "UTPOINT",
@@ -258,7 +258,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 17,
+      "temporadaInterna": 29,
       "temporadaRoyaleAPI": 128,
       "semana": 1,
       "clan": "UTPOINT",
@@ -272,7 +272,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 15,
+      "temporadaInterna": 27,
       "temporadaRoyaleAPI": 126,
       "semana": 2,
       "clan": "UTPOINT",
@@ -286,7 +286,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 15,
+      "temporadaInterna": 27,
       "temporadaRoyaleAPI": 126,
       "semana": 1,
       "clan": "UTPOINT",
@@ -300,7 +300,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 4,
       "clan": "UTPOINT",
@@ -314,7 +314,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 3,
       "clan": "UTPOINT",
@@ -328,7 +328,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 2,
       "clan": "UTPOINT",
@@ -342,7 +342,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 1,
       "clan": "UTPOINT",
@@ -356,7 +356,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 5,
       "clan": "UTPOINT",
@@ -370,7 +370,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 4,
       "clan": "UTPOINT",
@@ -384,7 +384,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 3,
       "clan": "UTPOINT",
@@ -398,7 +398,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 2,
       "clan": "UTPOINT",
@@ -412,7 +412,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 1,
       "clan": "UTPOINT",
@@ -426,7 +426,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 4,
       "clan": "UTPOINT",
@@ -440,7 +440,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 12,
+      "temporadaInterna": 24,
       "temporadaRoyaleAPI": 123,
       "semana": 3,
       "clan": "UTPOINT",
@@ -454,7 +454,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 11,
+      "temporadaInterna": 23,
       "temporadaRoyaleAPI": 122,
       "semana": 4,
       "clan": "UTPOINT",
@@ -468,7 +468,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 11,
+      "temporadaInterna": 23,
       "temporadaRoyaleAPI": 122,
       "semana": 3,
       "clan": "UTPOINT",
@@ -482,7 +482,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 11,
+      "temporadaInterna": 23,
       "temporadaRoyaleAPI": 122,
       "semana": 2,
       "clan": "UTPOINT",
@@ -496,7 +496,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 5,
       "clan": "League Of Royal",
@@ -510,7 +510,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 4,
       "clan": "League Of Royal",
@@ -524,7 +524,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 3,
       "clan": "League Of Royal",
@@ -538,7 +538,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 2,
       "clan": "League Of Royal",
@@ -552,7 +552,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -4,
+      "temporadaInterna": 8,
       "temporadaRoyaleAPI": 107,
       "semana": 1,
       "clan": "League Of Royal",
@@ -566,7 +566,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -5,
+      "temporadaInterna": 7,
       "temporadaRoyaleAPI": 106,
       "semana": 4,
       "clan": "League Of Royal",
@@ -580,7 +580,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -5,
+      "temporadaInterna": 7,
       "temporadaRoyaleAPI": 106,
       "semana": 3,
       "clan": "El Pipi Club",
@@ -594,7 +594,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -5,
+      "temporadaInterna": 7,
       "temporadaRoyaleAPI": 106,
       "semana": 2,
       "clan": "El Pipi Club",
@@ -608,7 +608,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -5,
+      "temporadaInterna": 7,
       "temporadaRoyaleAPI": 106,
       "semana": 1,
       "clan": "El Pipi Club",
@@ -622,7 +622,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -6,
+      "temporadaInterna": 6,
       "temporadaRoyaleAPI": 105,
       "semana": 4,
       "clan": "Mastrdastr Perú",
@@ -636,7 +636,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -13,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 98,
       "semana": 5,
       "clan": "rossel team",
@@ -650,7 +650,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -13,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 98,
       "semana": 4,
       "clan": "rossel team",
@@ -664,7 +664,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -13,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 98,
       "semana": 3,
       "clan": "rossel team",
@@ -678,7 +678,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -13,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 98,
       "semana": 2,
       "clan": "rossel team",
@@ -692,7 +692,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -13,
+      "temporadaInterna": -1,
       "temporadaRoyaleAPI": 98,
       "semana": 1,
       "clan": "rossel team",
@@ -706,7 +706,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -14,
+      "temporadaInterna": -2,
       "temporadaRoyaleAPI": 97,
       "semana": 4,
       "clan": "rossel team",
@@ -720,7 +720,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -19,
+      "temporadaInterna": -7,
       "temporadaRoyaleAPI": 92,
       "semana": 5,
       "clan": "rossel team",
@@ -734,7 +734,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 4,
       "clan": "House Targaryen",
@@ -748,7 +748,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 3,
       "clan": "House Targaryen",
@@ -762,7 +762,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 2,
       "clan": "House Targaryen",
@@ -776,7 +776,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -27,
+      "temporadaInterna": -15,
       "temporadaRoyaleAPI": 84,
       "semana": 1,
       "clan": "House Targaryen",
@@ -790,7 +790,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -29,
+      "temporadaInterna": -17,
       "temporadaRoyaleAPI": 82,
       "semana": 4,
       "clan": "\"NOVA PERU\"",
@@ -804,7 +804,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 4,
       "clan": "NEBRASKA",
@@ -818,7 +818,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 3,
       "clan": "NEBRASKA",
@@ -832,7 +832,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 2,
       "clan": "NEBRASKA",
@@ -846,7 +846,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -30,
+      "temporadaInterna": -18,
       "temporadaRoyaleAPI": 81,
       "semana": 1,
       "clan": "NEBRASKA",
@@ -860,7 +860,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 5,
       "clan": "NEBRASKA",
@@ -874,7 +874,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -31,
+      "temporadaInterna": -19,
       "temporadaRoyaleAPI": 80,
       "semana": 4,
       "clan": "Los iluminatis",
@@ -888,7 +888,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 5,
       "clan": "White Skill ヅ",
@@ -902,7 +902,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 4,
       "clan": "White Skill ヅ",
@@ -916,7 +916,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 3,
       "clan": "White Skill ヅ",
@@ -930,7 +930,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 2,
       "clan": "White Skill ヅ",
@@ -944,7 +944,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -33,
+      "temporadaInterna": -21,
       "temporadaRoyaleAPI": 78,
       "semana": 1,
       "clan": "White Skill ヅ",
@@ -958,7 +958,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 4,
       "clan": "White Skill ヅ",
@@ -972,7 +972,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 3,
       "clan": "White Skill ヅ",
@@ -986,7 +986,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 2,
       "clan": "IMPERIO INCA",
@@ -1000,7 +1000,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -34,
+      "temporadaInterna": -22,
       "temporadaRoyaleAPI": 77,
       "semana": 1,
       "clan": "Inka eSports",
@@ -1014,7 +1014,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 4,
       "clan": "God of War VIP",
@@ -1028,7 +1028,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 3,
       "clan": "God of War VIP",
@@ -1042,7 +1042,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 2,
       "clan": "God of War VIP",
@@ -1056,7 +1056,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -35,
+      "temporadaInterna": -23,
       "temporadaRoyaleAPI": 76,
       "semana": 1,
       "clan": "God of War VIP",
@@ -1070,7 +1070,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 5,
       "clan": "God of War VIP",
@@ -1084,7 +1084,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 4,
       "clan": "God of War VIP",
@@ -1098,7 +1098,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 3,
       "clan": "God of War VIP",
@@ -1112,7 +1112,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -36,
+      "temporadaInterna": -24,
       "temporadaRoyaleAPI": 75,
       "semana": 2,
       "clan": "God of War VIP",
@@ -1126,7 +1126,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 4,
       "clan": "God of War VIP",
@@ -1140,7 +1140,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 3,
       "clan": "God of War VIP",
@@ -1154,7 +1154,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 2,
       "clan": "God of War VIP",
@@ -1168,7 +1168,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -37,
+      "temporadaInterna": -25,
       "temporadaRoyaleAPI": 74,
       "semana": 1,
       "clan": "God of War VIP",
@@ -1182,7 +1182,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -38,
+      "temporadaInterna": -26,
       "temporadaRoyaleAPI": 73,
       "semana": 4,
       "clan": "God of War VIP",
@@ -1196,7 +1196,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 5,
       "clan": "God of War VIP",
@@ -1210,7 +1210,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 4,
       "clan": "God of War VIP",
@@ -1224,7 +1224,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 3,
       "clan": "God of War VIP",
@@ -1238,7 +1238,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 2,
       "clan": "God of War VIP",
@@ -1252,7 +1252,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -47,
+      "temporadaInterna": -35,
       "temporadaRoyaleAPI": 64,
       "semana": 1,
       "clan": "God of War VIP",
@@ -1265,5 +1265,6 @@
       "clanTag": "#Y920G90P",
       "comentario": ""
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }
