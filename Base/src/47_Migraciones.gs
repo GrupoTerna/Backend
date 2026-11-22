@@ -1529,6 +1529,28 @@ function _reenumerarClanesExternosCore_(deltaMeses, runId) {
   return !incompleto;
 }
 
+// diagnosticarReenumeracion(): 22-nov-2026; MANUAL y de SOLO LECTURA (no cambia nada). Escribe en el registro el estado que bloquea o retiene la reenumeración y la guerra: propiedades REENUM_*, candado de ejecución y su antigüedad, ventana de guerra, aplazado de Clanes_Externos y activadores de continuación.
+function diagnosticarReenumeracion() {
+  var props = PropertiesService.getScriptProperties();
+  var L = function (t) { Logger.log('[Diagnóstico] ' + t); };
+  var todas = props.getProperties();
+  Object.keys(todas).sort().forEach(function (k) {
+    if (k.indexOf('REENUM_') === 0 || k.indexOf('CLANESEXT') === 0 || k === 'RUNGUERRA_ULTIMA_HORA') {
+      var v = String(todas[k]); L(k + ' = ' + (v.length > 160 ? v.slice(0, 160) + '…' : v));
+    }
+  });
+  var raw = props.getProperty('EJECUCION_EN_CURSO');
+  if (raw) {
+    try { var info = JSON.parse(raw); var seg = Math.round((Date.now() - info.inicio) / 1000); L('EJECUCION_EN_CURSO: ' + info.fn + ', iniciada hace ' + seg + ' s (vence a los ' + Math.round(CFG.LOCK_MAX_DURACION_MS / 1000) + ' s' + (seg * 1000 >= CFG.LOCK_MAX_DURACION_MS ? '; YA VENCIÓ y el siguiente la libera sola' : '') + ').'); }
+    catch (e) { L('EJECUCION_EN_CURSO ilegible: ' + raw); }
+  } else { L('EJECUCION_EN_CURSO: libre.'); }
+  L('_reenumeracionEnCurso_() = ' + _reenumeracionEnCurso_() + '; aplazado de Clanes_Externos: ' + (_reenumClanesExternosPendiente_() ? 'SÍ' : 'no'));
+  try { var v = _estadoVentanaGuerra_(); L('Ventana de guerra protegida ahora: ' + v.protegida + ' (en ventana: ' + v.enVentana + ').'); } catch (eV) { L('No se pudo leer la ventana de guerra: ' + eV.message); }
+  var ts = ScriptApp.getProjectTriggers(), n = 0;
+  ts.forEach(function (t) { var h = t.getHandlerFunction(); if (/Reenum|runGuerra|RunGuerra|ClanesExt/i.test(h)) { n++; L('Activador: ' + h + ' (' + t.getEventType() + ').'); } });
+  if (!n) L('No hay ningún activador de continuación de la reenumeración ni de runGuerra.');
+}
+
 // ----- Clanes_Externos aplazado (22-nov-2026) -----
 // El paso 34 de la reenumeración escribe unos 7 300 archivos de Drive (unos 200 por tanda de 5 min, varias horas) y mientras dura runGuerra() queda bloqueada. La usuaria puede aplazarlo: la reenumeración termina sin él y los archivos que falten se reenumeran después, sin bloquear la guerra.
 // La marca REENUM_CLANESEXT_PENDIENTE guarda { runId, delta } porque REENUM_DELTA_MESES y las demás propiedades se borran al terminar la reenumeración. Mientras exista, el índice de clanes externos y las alertas no escriben en esos archivos: mezclarían semanas con numeración nueva en archivos aún con la vieja y luego el delta se sumaría otra vez.
