@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Links del archivo de noticias de Clash Royale (Supercell)
 // @namespace    familia-terna-supercell-links
-// @version      1.0
+// @version      1.1
 // @description  En supercell.com/en/games/clashroyale/blog recorre las páginas del archivo («Next» una por una), junta de cada artículo el enlace, el título, la fecha y la categoría, y abre solo los que todavía no están en su lista de «leídos» para validar que cargan completos y tomar el resumen y la portada. Un artículo cuenta como leído solo si cargó bien y tiene título y fecha; los que fallan se reintentan la próxima vez. Descarga solo lo nuevo en un .txt y un .json (y lo copia). La lista se guarda en Tampermonkey. No guarda el contenido de los artículos: Claude abre después cada enlace.
 // @match        https://supercell.com/en/games/clashroyale/blog/
 // @match        https://supercell.com/en/games/clashroyale/blog/page/*
@@ -141,25 +141,50 @@
     return m ? (m.getAttribute('content') || '').trim() : '';
   }
 
+  // En la página de un artículo de Supercell no hay h1: el título va en un h2 (class «article_articleTitle…»), la meta
+  // «st:title» trae el mismo texto y og:title / <title> le suman « × Clash Royale». [→ Contexto_Base_Web.md §PF557 punto 12]
+  function tituloDeArticulo(doc) {
+    const quitar = function (t) { return (t || '').replace(/\s*[×|–-]\s*(Clash Royale|Supercell)\s*$/i, '').trim(); };
+    return texto(doc.querySelector('h2[class*="article_articleTitle"]')) ||
+      metaContenido(doc, 'meta[name="st:title"]') ||
+      texto(doc.querySelector('h1')) ||
+      quitar(metaContenido(doc, 'meta[property="og:title"]')) ||
+      quitar(doc.title);
+  }
+
+  // Las dos etiquetas data-test-id="tagline" del artículo son la categoría («Blog – Clash Royale») y la fecha («23 Nov 2026»).
+  function etiquetasDeArticulo(doc) {
+    const r = { categoria: '', fecha_texto: '' };
+    Array.from(doc.querySelectorAll('[data-test-id="tagline"]')).map(texto).filter(Boolean).forEach(function (t) {
+      if (fechaDe(t)) { if (!r.fecha_texto) r.fecha_texto = t; } else if (!r.categoria) r.categoria = t;
+    });
+    return r;
+  }
+
   // «Leído» = respondió 200, el HTML terminó en </html>, no es la verificación y tiene título.
-  // El título y la fecha del archivo son los de referencia; el de la página se guarda si difiere.
+  // El título, la fecha y la categoría del archivo son los de referencia (los de la página completan lo que falte);
+  // el título o la fecha de la página se guardan aparte si difieren.
   async function leerArticulo(it) {
     const r = await traerHtml(it.url.replace(ORIGEN, ''));
     if (!r.ok) return r;
     const doc = r.doc;
-    const tituloPagina = texto(doc.querySelector('h1')) || metaContenido(doc, 'meta[property="og:title"]') ||
-      (doc.title || '').replace(/\s*[|\-–]\s*Supercell.*$/i, '').trim();
+    const tituloPagina = tituloDeArticulo(doc);
     if (!tituloPagina) return { ok: false, tipo: 'incompleto', motivo: 'la página no tiene título' };
-    if (!it.titulo || !it.fecha) return { ok: false, tipo: 'incompleto', motivo: 'el archivo no trae ' + (!it.titulo ? 'título' : 'fecha') };
+    const et = etiquetasDeArticulo(doc);
+    const titulo = it.titulo || tituloPagina;
+    const fecha = it.fecha || fechaDe(et.fecha_texto);
+    if (!fecha) return { ok: false, tipo: 'incompleto', motivo: 'ni el archivo ni la página traen fecha' };
+    const fechaPagina = fechaDe(et.fecha_texto);
     return {
       ok: true,
       datos: {
         url: it.url,
-        titulo: it.titulo,
-        titulo_pagina: tituloPagina !== it.titulo ? tituloPagina : '',
-        fecha: it.fecha,
-        fecha_texto: it.fecha_texto,
-        categoria: it.categoria,
+        titulo: titulo,
+        titulo_pagina: tituloPagina !== titulo ? tituloPagina : '',
+        fecha: fecha,
+        fecha_pagina: fechaPagina && fechaPagina !== fecha ? fechaPagina : '',
+        fecha_texto: it.fecha_texto || et.fecha_texto,
+        categoria: it.categoria || et.categoria,
         resumen: metaContenido(doc, 'meta[property="og:description"]') || metaContenido(doc, 'meta[name="description"]'),
         portada: metaContenido(doc, 'meta[property="og:image"]') || it.portada || ''
       }
