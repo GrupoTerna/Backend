@@ -3,7 +3,7 @@
   "backfillPerfilHecho": false,
   "ultimaTemporadaCubierta": null,
   "ultimaSemanaCubierta": null,
-  "fechaUltimaConsulta": "17/11/2026",
+  "fechaUltimaConsulta": "22/11/2026",
   "registros": [
     {
       "temporadaInterna": 38,
@@ -3055,6 +3055,34 @@
       "cerrada": true,
       "externa": true,
       "clanTag": "#8VGLVLJU",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 2,
+      "clan": "EC",
+      "ataques": 3,
+      "fame": 500,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#9QP0UL9J",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 1,
+      "clan": "EC",
+      "ataques": 12,
+      "fame": 1900,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#9QP0UL9J",
       "comentario": ""
     }
   ],
