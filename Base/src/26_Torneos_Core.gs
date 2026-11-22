@@ -438,6 +438,12 @@ function procesarSorteos() {
  * Lo llaman PASOS_RUNALL y PASOS_RUNUPDATE (00_Main.gs) y la web al guardar el par o generar propuestas.
  */
 function procesarCambioRango() {
+  // PF286 punto 40: primero se completan las filas de CR_Lista escritas a mano (ID y Temporada), para que el par vigente y los documentos las vean. Va aquí y no como paso de PASOS_RUNALL para no mover índices.
+  try {
+    procesarCRListaNuevasFilas(_getSs());
+  } catch (eNuevasCR) {
+    Logger.log('[CambioRango] procesarCRListaNuevasFilas() falló (se continúa): ' + eNuevasCR.message);
+  }
   var idA = _getIdVigenteExtraCR('Ascenso');
   var idD = _getIdVigenteExtraCR('Descenso');
   if (!idA || !idD) {
@@ -2954,6 +2960,127 @@ function _contarParesCRListaEnSemana(datos, temporada, semana) {
   return count + 1;
 }
 
+// CR_Lista — filas escritas a mano (PF286 punto 40, 21-nov-2026; decisiones del punto 39 del contexto) [→ Contexto_Base_Web.md §PF286]
+/**
+ * _planIdsCRListaNuevasFilas_(filas) — PURA (sin hojas ni Drive). Decide qué id le toca a cada fila de CR_Lista escrita a mano sin id.
+ * filas = [{ indice, id, tipo ('Ascenso'|'Descenso'), temporada, semana, dia (yyyymmdd) }]; las que ya tienen id solo cuentan como ocupadas.
+ * Reglas: (1) un Ascenso y un Descenso sin id del mismo día (misma temporada y semana) comparten número; (2) una fila suelta se completa con la pareja que ya existe ese día si a esa pareja
+ * le falta su par, y si no hay, toma un número nuevo y se avisa que falta la pareja; (3) el número nuevo es el mayor ya usado en esa semana (de Ascensos y Descensos) más uno, para no chocar aunque
+ * haya huecos. Devuelve { asignaciones: [{ indice, id, numero, incompleto }], avisos: [texto] }.
+ */
+function _planIdsCRListaNuevasFilas_(filas) {
+  var asignaciones = [], avisos = [];
+  var usados = {};      // id completo -> true (los que ya existen y los que se asignan aquí)
+  var maxSemana = {};   // 'temporada|semana' -> mayor número usado
+  var existentes = {};  // 'temporada|semana|dia' -> { A: [numero...], D: [numero...] }
+  var nuevas = [];
+  function clave(f) { return f.temporada + '|' + f.semana; }
+  function ocupar(letra, temporada, semana, numero) {
+    usados[_idEventoConstruir_(letra, temporada, semana, numero)] = true;
+    var k = temporada + '|' + semana;
+    if (!maxSemana[k] || numero > maxSemana[k]) maxSemana[k] = numero;
+  }
+  filas.forEach(function (f) {
+    var id = String(f.id || '').trim();
+    if (id) {
+      var p = _idEventoParsear_(id);
+      if (p && (p.letra === 'A' || p.letra === 'D')) {
+        ocupar(p.letra, p.temporada, p.semana, p.numero);
+        var kd = p.temporada + '|' + p.semana + '|' + f.dia;
+        if (!existentes[kd]) existentes[kd] = { A: [], D: [] };
+        existentes[kd][p.letra].push(p.numero);
+      }
+      return;
+    }
+    if (f.tipo !== 'Ascenso' && f.tipo !== 'Descenso') { avisos.push('fila ' + f.indice + ': Tipo vacío o distinto de Ascenso/Descenso; no se le puede asignar id.'); return; }
+    if (!(f.dia > 0) || !(f.temporada > 0) || !(f.semana > 0)) { avisos.push('fila ' + f.indice + ': sin Fecha válida; no se le puede asignar id todavía.'); return; }
+    nuevas.push(f);
+  });
+
+  var grupos = {}, ordenGrupos = [];
+  nuevas.forEach(function (f) {
+    var k = clave(f) + '|' + f.dia;
+    if (!grupos[k]) { grupos[k] = { A: [], D: [] }; ordenGrupos.push(k); }
+    grupos[k][f.tipo === 'Ascenso' ? 'A' : 'D'].push(f);
+  });
+
+  function siguiente(f) { return (maxSemana[clave(f)] || 0) + 1; }
+  function asignar(f, letra, numero, incompleto) {
+    var id = _idEventoConstruir_(letra, f.temporada, f.semana, numero);
+    ocupar(letra, f.temporada, f.semana, numero);
+    asignaciones.push({ indice: f.indice, id: id, numero: numero, incompleto: !!incompleto });
+    if (incompleto) avisos.push('fila ' + f.indice + ': ' + id + ' no tiene pareja (' + (letra === 'A' ? 'Descenso' : 'Ascenso') + ') ese día; se asignó igual.');
+  }
+  ordenGrupos.forEach(function (k) {
+    var g = grupos[k], partes = k.split('|');
+    var ex = existentes[k] || { A: [], D: [] };
+    var pares = Math.min(g.A.length, g.D.length);
+    for (var i = 0; i < pares; i++) {
+      var n = siguiente(g.A[i]);
+      asignar(g.A[i], 'A', n, false);
+      asignar(g.D[i], 'D', n, false);
+    }
+    [['A', 'D'], ['D', 'A']].forEach(function (par) {
+      var letra = par[0], opuesta = par[1];
+      for (var j = pares; j < g[letra].length; j++) {
+        var f = g[letra][j], reuso = null;
+        var cand = ex[opuesta].slice().sort(function (a, b) { return a - b; });
+        for (var c = 0; c < cand.length; c++) {
+          if (!usados[_idEventoConstruir_(letra, f.temporada, f.semana, cand[c])]) { reuso = cand[c]; break; }
+        }
+        if (reuso !== null) asignar(f, letra, reuso, false);
+        else asignar(f, letra, siguiente(f), true);
+      }
+    });
+  });
+  return { asignaciones: asignaciones, avisos: avisos };
+}
+
+/**
+ * procesarCRListaNuevasFilas(ss) — PF286 punto 40. Equivalente de procesarSListaNuevasFilas() para CR_Lista: a toda fila escrita a mano sin ID y con Fecha válida le pone el ID (A_… o D_…, según el Tipo)
+ * y la Temporada si la dejaste vacía (la que escribiste se respeta, como en S_Lista). La semana sale de la Fecha. «Semanas» se deja como la escribiste: si está vacía solo se avisa en el registro (decisión del punto 39).
+ * El N° y el orden los fija _reordenarCRListaPorFecha(), que se llama solo si se asignó algo. Devuelve los ids asignados. La llama procesarCambioRango() al empezar; un error aquí no corta el resto.
+ * Sin probar en Apps Script real. [→ Contexto_Base_Web.md §PF286]
+ */
+function procesarCRListaNuevasFilas(ss) {
+  ss = ss || _getSs();
+  var sh = ss.getSheetByName(CFG.SHEETS.CR_LISTA);
+  if (!sh || sh.getLastRow() < 4) return [];
+  var n = sh.getLastRow() - 3;
+  var datos = sh.getRange(4, 1, n, CR_TOTAL_COLS).getValues();
+  var filas = [];
+  for (var i = 0; i < datos.length; i++) {
+    var d = datos[i];
+    var fecha = d[CR.FECHA - 1];
+    var fechaOk = fecha instanceof Date && !isNaN(fecha.getTime());
+    var tManual = d[CR.TEMPORADA - 1];
+    var temporada = fechaOk ? ((tManual !== '' && tManual !== null && !isNaN(Number(tManual))) ? Number(tManual) : _calcularTemporadaParaFecha(fecha)) : 0;
+    filas.push({
+      indice: i + 4,
+      id: String(d[CR.ID - 1] || '').trim(),
+      tipo: String(d[CR.TIPO - 1] || '').trim(),
+      temporada: temporada,
+      semana: fechaOk ? _calcularSemanaTorneo(fecha, temporada) : 0,
+      dia: fechaOk ? _diaClaveOrden_(fecha) : 0,
+      temporadaVacia: (tManual === '' || tManual === null || isNaN(Number(tManual))),
+      semanasVacia: !String(d[CR.SEMANAS - 1] || '').trim()
+    });
+  }
+  var plan = _planIdsCRListaNuevasFilas_(filas);
+  plan.avisos.forEach(function (a) { Logger.log('[CR_Lista] AVISO ' + a); });
+  if (!plan.asignaciones.length) return [];
+  var ids = [];
+  plan.asignaciones.forEach(function (a) {
+    var f = filas[a.indice - 4];
+    if (f.temporadaVacia) sh.getRange(a.indice, CR.TEMPORADA).setValue(f.temporada);
+    sh.getRange(a.indice, CR.ID).setValue(a.id);
+    ids.push(a.id);
+    Logger.log('[CR_Lista] Fila ' + a.indice + ': ID asignado ' + a.id + (f.semanasVacia ? ' (AVISO: la columna Semanas está vacía; se deja así)' : '') + '.');
+  });
+  try { _reordenarCRListaPorFecha(ss); } catch (eOrd) { Logger.log('[CR_Lista] No se pudo ordenar por fecha (se continúa): ' + eOrd.message); }
+  return ids;
+}
+
 // CR_Lista — autogeneración del par Ascenso/Descenso al inicio de temporada [→ Contexto_Base_Web.md §26B018]
 // MOVIDO (05-oct-2026, pedido usuario): activarTriggerAutogenerarCRLista()/desactivarTriggerAutogenerarCRLista() ya [→ Contexto_Base_Web.md §26B019]
 /**
@@ -2980,9 +3107,11 @@ function _getUltimoParCRLista() {
     if (String(datos[i][CR.TIPO - 1] || '').trim() !== 'Ascenso') continue;
     var fechaFila = datos[i][CR.FECHA - 1];
     if (!(fechaFila instanceof Date) || isNaN(fechaFila.getTime())) continue;
+    var idFilaUlt = String(datos[i][CR.ID - 1] || '').trim();
+    if (!idFilaUlt) continue; // PF286 punto 40: una fila escrita a mano sin id no debe tapar al par anterior (antes la autogeneración creía que CR_Lista estaba vacía)
     if (!fechaMasReciente || fechaFila.getTime() > fechaMasReciente.getTime()) {
       fechaMasReciente = fechaFila;
-      idAscensoMasReciente = String(datos[i][CR.ID - 1] || '').trim();
+      idAscensoMasReciente = idFilaUlt;
     }
   }
   if (!idAscensoMasReciente) return { ascenso: null, descenso: null };
