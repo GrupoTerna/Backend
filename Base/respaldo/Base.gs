@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 04:19:37 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 04:27:08 */
 
 
 
@@ -75152,21 +75152,22 @@ function _reenumerarClanesExternos_() {
   catch (e) { Logger.log('[Reenumeración] ' + nombrePaso + ': carpeta no accesible (' + e.message + '), se omite.'); return true; }
   if (!folder) { Logger.log('[Reenumeración] ' + nombrePaso + ': la carpeta ' + CLANES_EXTERNOS_CARPETA + ' no existe todavía, se omite.'); return true; }
 
-  var archivos = [];
-  var it = folder.getFiles();
-  while (it.hasNext()) {
-    var f = it.next();
-    if (/^Clan - #[0-9A-Z]+\.json$/i.test(f.getName())) archivos.push(f);
-  }
-  archivos.sort(function (a, b) { return a.getName() < b.getName() ? -1 : (a.getName() > b.getName() ? 1 : 0); });
-  if (!archivos.length) { Logger.log('[Reenumeración] ' + nombrePaso + ': no hay archivos de clan todavía, se omite.'); return true; }
-
+  // 22-nov-2026: ya NO se lista y ordena toda la carpeta en cada tanda (7287 archivos: el solo listado agotaba los 6 min antes de procesar casi nada y la tanda moría sin programar su continuación; iban 183 tras 6 tandas).
+  // Se recorre con el iterador de Drive y su token de continuación (REENUM_CLANESEXT_TOKEN): cada tanda sigue donde quedó la anterior y revisa el tiempo después de cada archivo. Si el token se pierde, se empieza de nuevo sin riesgo: los archivos ya hechos llevan reenumeracionId y se saltan.
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) { Logger.log('[Reenumeración] ' + nombrePaso + ': no se obtuvo el lock; se reintenta en la próxima continuación.'); return false; }
+  var claveToken = 'REENUM_CLANESEXT_TOKEN', claveVistos = 'REENUM_CLANESEXT_VISTOS';
+  var token = props.getProperty(claveToken);
+  var vistosPrevios = token ? (Number(props.getProperty(claveVistos)) || 0) : 0;
+  var it = null;
+  if (token) { try { it = DriveApp.continueFileIterator(token); } catch (eTok) { Logger.log('[Reenumeración] ' + nombrePaso + ': el token de continuación ya no sirve (' + eTok.message + '); se empieza de nuevo (los ya hechos se saltan).'); it = null; vistosPrevios = 0; } }
+  if (!it) it = folder.getFiles();
   var inicio = Date.now(), cambiados = 0, yaHechos = 0, omitidos = 0, incompleto = false;
   try {
-    for (var i = 0; i < archivos.length; i++) {
-      var archivo = archivos[i];
+    while (it.hasNext()) {
+      var archivo = it.next();
+      var nombreArchivo = archivo.getName();
+      if (!/^Clan - #[0-9A-Z]+\.json$/i.test(nombreArchivo)) continue;
       try {
         var doc = JSON.parse(archivo.getBlob().getDataAsString('UTF-8'));
         if (!doc || !doc.jugadores || typeof doc.jugadores !== 'object') { omitidos++; }
@@ -75176,19 +75177,23 @@ function _reenumerarClanesExternos_() {
           doc.reenumeracionId = runId;
           var texto = JSON.stringify(doc);
           archivo.setContent(texto);
-          _asegurarEscrituraCompleta_(archivo, texto, archivo.getName());
+          _asegurarEscrituraCompleta_(archivo, texto, nombreArchivo);
           cambiados++;
         }
       } catch (eArch) {
-        Logger.log('[Reenumeración] ' + nombrePaso + ': AVISO: no se pudo procesar «' + archivo.getName() + '» (' + eArch.message + '); queda sin reenumerar.');
+        Logger.log('[Reenumeración] ' + nombrePaso + ': AVISO: no se pudo procesar «' + nombreArchivo + '» (' + eArch.message + '); queda sin reenumerar.');
         omitidos++;
       }
-      if ((i + 1) < archivos.length && _reenumSinTiempo_(inicio)) { incompleto = true; break; }
+      if (_reenumSinTiempo_(inicio)) { incompleto = it.hasNext(); break; }
     }
+    if (incompleto) { props.setProperty(claveToken, it.getContinuationToken()); props.setProperty(claveVistos, String(vistosPrevios + yaHechos + cambiados + omitidos)); }
+    else { props.deleteProperty(claveToken); props.deleteProperty(claveVistos); }
   } finally {
     lock.releaseLock();
   }
-  _reenumProgreso_(nombrePaso, yaHechos, cambiados, archivos.length, 'archivos');
+  var acumVistos = vistosPrevios + yaHechos + cambiados + omitidos;
+  Logger.log('[Reenumeración]   ' + nombrePaso + ': recorridos ' + acumVistos + ' archivos en total (en tandas anteriores: ' + vistosPrevios + '; en esta tanda: ' + (yaHechos + cambiados + omitidos) + ').');
+  _anotarProgresoPaso_(nombrePaso + ': ' + acumVistos + ' archivos recorridos', acumVistos);
   Logger.log('[Reenumeración] ' + nombrePaso + ': ' + (incompleto ? 'presupuesto agotado, se reintenta en la próxima continuación. ' : '') + 'cambiados en esta pasada: ' + cambiados + ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos + ' (temporada interna += ' + deltaMeses + ').');
   return !incompleto;
 }
