@@ -134,8 +134,19 @@ function generarTodosMensajes() {
         if (rA !== rB) return rA - rB;
         return a.nombre.localeCompare(b.nombre);
       });
+      var cruzoClanPart = _clanCruzoMetaPorTag(clanesPend[ci2].clanTag); // 22-nov-2026 (pedido de la usuaria, §PF558): un clan que ya cruzó la meta no recibe pedidos de ataque
       var msjClan = _negritaWsp_('⚔ GUERRA ' + nombreDia + ' — SEMANA ' + semNum + ' ⚔') + '\n';
       msjClan += '==============================\n';
+      if (cruzoClanPart) {
+        // §PF558: clan que ya cruzó: cabecera con el aviso de cruce, la invitación a apoyar a los otros clanes Terna y, sin urgencia, quiénes aún tienen ataques disponibles. Sin puesto en medallas, sin resumen de cupos y sin línea de plazo.
+        msjClan += _negritaWsp_('🔥 ' + clanName) + '\n';
+        msjClan += _textoClanCruzoMeta_();
+        msjClan += '==============================\n';
+        msjClan += _textoListaAtaquesDisponiblesClanCruzo_(miembros, celularPorTag, prestamoPorTag);
+        msjClan += '🕒 Generado: ' + horaGeneracionMsj;
+        bloques.push({ categoria: 'Mensaje de Guerra', subcategoria: 'Particular', clan: clanName, contenido: msjClan });
+        continue;
+      }
       msjClan += _negritaWsp_('🔥 ' + clanName + ' (' + miembros.length + ' pendientes)') + '\n';
       msjClan += _textoPuestoMedallasDia_(puestosPorClan[_pronosticoTagNorm_(clanesPend[ci2].clanTag)]); // §PF532: puesto en medallas del día (vacío si no hay dato)
       msjClan += '==============================\n';
@@ -144,9 +155,7 @@ function generarTodosMensajes() {
       msjClan += _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, cuposPorClan[clanName]);
       // NUEVO (19-sep-2026, punto 7): si el clan ya cruzó la meta de la [→ Contexto_Base_Web.md §30B015]
       msjClan += '\n'; // §PF460: línea en blanco antes de la línea final para que no quede pegada a la lista
-      if (_clanCruzoMetaPorTag(clanesPend[ci2].clanTag)) { // PF407 (tanda 3): se pregunta por el Tag; el texto del mensaje sigue mostrando el nombre
-        msjClan += '🏆 ¡Este clan ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
-      } else if (pasoMedianoche) { // 14-nov-2026 (§PF457): ya pasó la medianoche de Lima, pero el día de guerra aún no cambia
+      if (pasoMedianoche) { // 14-nov-2026 (§PF457): ya pasó la medianoche de Lima, pero el día de guerra aún no cambia
         msjClan += _textoPasoMedianocheGuerra_() + '\n';
       } else {
         msjClan += _textoPlazoGuerra_(nivelUrgencia, 'Tienen') + '\n'; // §PF460: el tono sube con la hora de Lima
@@ -157,30 +166,41 @@ function generarTodosMensajes() {
 
     // --- Fila general (Subcategoría = Chat General) ---
     var msjGral = _negritaWsp_('⚔ GUERRA ' + nombreDia + ' — SEMANA ' + semNum + ' ⚔') + '\n';
-    msjGral += _negritaWsp_('⚠ ' + pendientes.length + ' jugadores aún no completan sus ataques.') + '\n';
+    // §PF558 (22-nov-2026, pedido de la usuaria): los jugadores de un clan que ya cruzó la meta no cuentan como «aún no completan»: no se les pide atacar.
+    var pendientesSinCruzar = 0;
+    for (var cp = 0; cp < clanesPend.length; cp++) {
+      if (!_clanCruzoMetaPorTag(clanesPend[cp].clanTag)) pendientesSinCruzar += clanesPend[cp].lista.length;
+    }
+    if (pendientesSinCruzar > 0) {
+      msjGral += _negritaWsp_('⚠ ' + pendientesSinCruzar + ' jugadores aún no completan sus ataques.') + '\n';
+      msjGral += 'El detalle con nombres está en el mensaje de cada clan.\n';
+    }
     // NUEVO (19-sep-2026, punto 7): cuenta cuántos de los clanes listados ya
     // cruzaron la meta, para decidir la línea final (ver más abajo).
     var clanesCruzaronMeta = 0;
     // 14-nov-2026 (pedido de la usuaria, §PF461): el Chat General se acorta a una línea de resumen por clan; los nombres, el resumen de cupos y la leyenda quedan solo en el mensaje de cada clan.
-    msjGral += 'El detalle con nombres está en el mensaje de cada clan.\n';
     for (var ci3 = 0; ci3 < clanesPend.length; ci3++) {
       var cn = clanesPend[ci3].clan;
       var ml = clanesPend[ci3].lista;
       var cnCruzoMeta = _clanCruzoMetaPorTag(clanesPend[ci3].clanTag); // PF407 (tanda 3)
       if (cnCruzoMeta) clanesCruzaronMeta++;
       msjGral += '==============================\n';
+      if (cnCruzoMeta) {
+        // §PF558: clan que ya cruzó: sin cantidad de pendientes, sin puesto en medallas y sin línea de reemplazables o reservadas; solo el aviso de cruce y la invitación a apoyar a los otros clanes Terna.
+        msjGral += _negritaWsp_('🔥 ' + cn) + '\n';
+        msjGral += '==============================\n';
+        msjGral += _textoClanCruzoMeta_();
+        continue;
+      }
       msjGral += _negritaWsp_('🔥 ' + cn + ' (' + ml.length + ' pendientes)') + '\n';
       msjGral += _textoPuestoMedallasDia_(puestosPorClan[_pronosticoTagNorm_(clanesPend[ci3].clanTag)]); // §PF532
       msjGral += '==============================\n';
       msjGral += _textoLineaClanChatGeneral_(ml);
-      if (cnCruzoMeta) {
-        msjGral += '🏆 ¡Ya cruzó la meta de la semana! Atacar hoy es opcional.\n';
-      }
     }
     // Línea final: si NINGÚN clan listado cruzó la meta, queda exactamente [→ Contexto_Base_Web.md §30B016]
     msjGral += '\n'; // §PF460: línea en blanco antes de la línea final
     if (clanesCruzaronMeta === clanesPend.length) {
-      msjGral += '🏆 Todos los clanes de este mensaje ya cruzaron la meta: atacar hoy es opcional.\n';
+      msjGral += '🏆 Todos los clanes de este mensaje ya cruzaron la meta: pueden reclamar su cofre y son bienvenidos a apoyar en la guerra de los otros clanes Terna.\n'; // §PF558: ya no se habla de «atacar hoy es opcional»
     } else if (pasoMedianoche) { // 14-nov-2026 (§PF457): pasada la medianoche no se afirma plazo ni expulsiones: no hay hora exacta de cierre
       msjGral += _textoPasoMedianocheGuerra_() + '\n';
     } else if (clanesCruzaronMeta === 0) {
@@ -784,6 +804,35 @@ function _textoLeyendaMarcasGuerra_(lista, celularPorTag, prestamoPorTag) {
   var t = '';
   if (hayWsp) t += '📌 (ω) = tiene celular registrado: se le puede etiquetar.\n';
   if (hayPrest) t += '📌 Letra entre paréntesis = cuenta prestada (inicial del préstamo).\n';
+  return t;
+}
+
+/**
+ * _textoClanCruzoMeta_() [→ Contexto_Base_Web.md §PF558]
+ * 22-nov-2026 (pedido de la usuaria): las dos líneas que van en la cabecera del mensaje de un clan que ya cruzó la meta (Particular) y en su sección del Chat General: el aviso de cruce con el cofre y la invitación a apoyar en la guerra
+ * de los otros clanes Terna. No pide ataques: seguir atacando en un clan que ya cruzó no aporta medallas. Termina en salto de línea.
+ */
+function _textoClanCruzoMeta_() {
+  return '🏆 ¡Este clan ya cruzó la meta de la semana! Ya pueden reclamar su cofre.\n' +
+         '🤝 Son bienvenidos a apoyar en la guerra de los otros clanes Terna.\n';
+}
+
+/**
+ * _textoListaAtaquesDisponiblesClanCruzo_(miembros, celularPorTag, prestamoPorTag) [→ Contexto_Base_Web.md §PF558]
+ * 22-nov-2026 (pedido de la usuaria): en el mensaje Particular de un clan que ya cruzó la meta, la lista informativa de quiénes aún tienen ataques disponibles, SIN urgencia y sin pedir que los hagan (en este clan ya no suman medallas).
+ * El orden es el de `miembros` (Faltantes desc. -> Rango -> Nombre); cada línea lleva los ataques disponibles entre paréntesis y los sufijos (ω) y de préstamo, y después va la leyenda de esas marcas. Lista vacía devuelve ''.
+ */
+function _textoListaAtaquesDisponiblesClanCruzo_(miembros, celularPorTag, prestamoPorTag) {
+  if (!miembros || !miembros.length) return '';
+  var t = _negritaWsp_('📋 Con ataques disponibles (' + miembros.length + ')') + '\n';
+  t += '↳ Solo como referencia: en este clan ya no suman medallas.\n';
+  miembros.forEach(function(p) {
+    var wsp = celularPorTag && celularPorTag[p.tag] ? ' (ω)' : '';
+    var prest = _sufijoPrestamo(prestamoPorTag && prestamoPorTag[p.tag]);
+    t += '▫ ' + p.nombre + ' (' + p.faltantes + ')' + wsp + prest + '\n';
+  });
+  t += _textoLeyendaMarcasGuerra_(miembros, celularPorTag, prestamoPorTag);
+  t += '\n';
   return t;
 }
 
