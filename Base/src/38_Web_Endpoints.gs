@@ -1696,6 +1696,26 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // Endpoint 'resumenElegidos' (Tampermonkey, «Corrección de jugadores elegidos»; 21-nov-2026, §PF555): guarda el resumen final en CSV/Tampermonkey/Log_Tampermonkey_ResumenElegidos.csv; ver _guardarResumenElegidos_() en 18_CorreccionGuerra.gs.
+  if (e && e.parameter && e.parameter.accion === 'resumenElegidos') {
+    if (e.parameter.token !== CORRECCION_GUERRA_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'No autorizado', code: 401 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    try {
+      var payloadRE = JSON.parse(e.postData.contents);
+      var resultadoRE = _guardarResumenElegidos_(payloadRE && payloadRE.lineas, payloadRE && payloadRE.tags);
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoRE))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errRE) {
+      Logger.log('[CorreccionGuerra] No se pudo guardar el resumen de jugadores elegidos: ' + (errRE.message || errRE));
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // Endpoint de importación 'Nuevos' (Tampermonkey); ver 14_Nuevos_RoyaleAPI.gs. [→ Contexto_Base_Web.md §38B096]
   if (e && e.parameter && e.parameter.accion === 'importarNuevos') {
     if (e.parameter.token !== NUEVOS_ROYALEAPI_TOKEN) {

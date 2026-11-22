@@ -199,6 +199,11 @@ var CGW_ORIGEN_PERFIL = 'perfil';
 var CGW_VISITAS_PERFIL_CSV = 'Visitas_Perfil.csv';
 var CGW_VISITAS_PERFIL_ENCABEZADOS = ['Tag', 'Primera_Visita', 'Ultima_Visita', 'Envios', 'Filas_Leidas', 'Filas_Aplicadas', 'Filas_Sin_Cambios', 'Ultimo_Cambio'];
 
+// §PF555 (21-nov-2026): el resumen final de «Corrección de jugadores elegidos» (una línea por fila) se guarda en un CSV para no depender de copiar el panel. Nombre con prefijo Log_Tampermonkey_ para que _csvSubcarpetaDe_() lo mande a la subcarpeta Tampermonkey.
+var CGW_RESUMEN_ELEGIDOS_CSV = 'Log_Tampermonkey_ResumenElegidos.csv';
+var CGW_RESUMEN_ELEGIDOS_MAX_LINEAS = 3000;
+var CGW_RESUMEN_ELEGIDOS_MAX_CARACTERES = 600;
+
 var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
 
 // §PF244 (punto 1 de §PF235): seña de «perfil no consultado». Solo se ESCRIBE (valor calculado, como Externo y ID): una fila sin dato
@@ -2714,6 +2719,32 @@ function _registrarVisitasPerfil_(visitas, ahora) {
   if (archivo) _setContentConConteo_(archivo, contenido);
   else _createFileConConteo_(carpeta, CGW_VISITAS_PERFIL_CSV, contenido, MimeType.CSV);
   return { tags: tagsEnvio.length, guardado: true };
+}
+
+/**
+ * _guardarResumenElegidos_(lineas, tags) [→ Contexto_Base_Web.md §PF555]
+ * lineas: las líneas del resumen final de «Corrección de jugadores elegidos» (texto del panel de Tampermonkey); tags: los tags de esa corrida.
+ * Reemplaza el contenido de CSV/Tampermonkey/Log_Tampermonkey_ResumenElegidos.csv con la corrida más reciente (columnas Fecha, Tags, Linea; una fila por línea).
+ * Recorta a CGW_RESUMEN_ELEGIDOS_MAX_LINEAS líneas y a CGW_RESUMEN_ELEGIDOS_MAX_CARACTERES por línea. No toma el candado: es un archivo propio y la última corrida gana.
+ * Devuelve { ok, lineas, tags, recortadas }.
+ */
+function _guardarResumenElegidos_(lineas, tags) {
+  if (!Array.isArray(lineas) || !lineas.length) return { ok: false, error: 'No llegaron líneas de resumen.' };
+  var recortadas = Math.max(0, lineas.length - CGW_RESUMEN_ELEGIDOS_MAX_LINEAS);
+  var usadas = lineas.slice(0, CGW_RESUMEN_ELEGIDOS_MAX_LINEAS);
+  var listaTags = (Array.isArray(tags) ? tags : []).map(function (t) { return String(t || '').trim(); }).filter(function (t) { return t; }).join(' ');
+  var ahora = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+  var filasCsv = [['Fecha', 'Tags', 'Linea']];
+  for (var i = 0; i < usadas.length; i++) {
+    filasCsv.push([ahora, i === 0 ? listaTags : '', String(usadas[i] === null || usadas[i] === undefined ? '' : usadas[i]).slice(0, CGW_RESUMEN_ELEGIDOS_MAX_CARACTERES)]);
+  }
+  var carpeta = _getCsvSubcarpeta_('Tampermonkey', true);
+  var it = carpeta.getFilesByName(CGW_RESUMEN_ELEGIDOS_CSV);
+  var archivo = it.hasNext() ? it.next() : null;
+  var contenido = _encodeCSV(filasCsv);
+  if (archivo) _setContentConConteo_(archivo, contenido);
+  else _createFileConConteo_(carpeta, CGW_RESUMEN_ELEGIDOS_CSV, contenido, MimeType.CSV);
+  return { ok: true, lineas: usadas.length, tags: listaTags ? listaTags.split(' ').length : 0, recortadas: recortadas };
 }
 
 /**
