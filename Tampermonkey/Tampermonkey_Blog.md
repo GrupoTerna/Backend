@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Familia Terna - Links del blog de RoyaleAPI
 // @namespace    familia-terna-blog-links
-// @version      2.1
-// @description  En royaleapi.com/blog pulsa «Show all…» hasta desplegar todas las entradas y abre solo las que todavía no están en su lista de «leídas»: de cada una toma el enlace, el título, la fecha real, el tiempo de lectura, las etiquetas y la portada, y la da por leída solo si cargó completa y con fecha. Descarga solo lo nuevo en un .txt y un .json (y lo copia). Las leídas se guardan en Tampermonkey; las que fallan se reintentan en la siguiente corrida. No guarda el contenido de las entradas: Claude abre después cada enlace.
+// @version      2.2
+// @description  En royaleapi.com/blog pulsa «Show all…» hasta desplegar todas las entradas y abre solo las que todavía no están en su lista de «leídas»: de cada una toma el enlace, el título, la fecha real, el tiempo de lectura, el resumen de una frase, las etiquetas y la portada, y la da por leída solo si cargó completa y con fecha. Descarga solo lo nuevo en un .txt y un .json (y lo copia). Las leídas se guardan en Tampermonkey; las que fallan se reintentan en la siguiente corrida. No guarda el contenido de las entradas: Claude abre después cada enlace.
 // @match        https://royaleapi.com/blog
 // @match        https://royaleapi.com/blog/
 // @match        https://royaleapi.com/blog?*
@@ -225,6 +225,7 @@
         fecha: fecha,
         fecha_texto: fechaTexto,
         lectura_min: lm ? Number(lm[1]) : null,
+        resumen: metaContenido(doc, 'meta[property="og:description"]') || metaContenido(doc, 'meta[name="description"]'),
         etiquetas: etiquetas.length ? etiquetas : e.etiquetas,
         portada: metaContenido(doc, 'meta[property="og:image"]') || e.portada || ''
       }
@@ -265,9 +266,9 @@
   function armarTxt(titulo, lista, errores, marca) {
     const l = [];
     l.push('# ' + titulo + ': ' + lista.length + ' entradas (extraído el ' + marca.fecha + ' ' + marca.hora.slice(0, 2) + ':' + marca.hora.slice(2) + ', hora de Lima)');
-    l.push('# Columnas separadas por tabulador: fecha\ttítulo\tenlace\tminutos de lectura\tetiquetas\tportada');
+    l.push('# Columnas separadas por tabulador: fecha\ttítulo\tenlace\tminutos de lectura\tetiquetas\tportada\tresumen');
     ordenar(lista).forEach(function (e) {
-      l.push([e.fecha, e.titulo, e.url, e.lectura_min == null ? '' : e.lectura_min, (e.etiquetas || []).join(', '), e.portada].join('\t'));
+      l.push([e.fecha, e.titulo, e.url, e.lectura_min == null ? '' : e.lectura_min, (e.etiquetas || []).join(', '), e.portada, (e.resumen || '').replace(/\s+/g, ' ')].join('\t'));
     });
     (errores || []).forEach(function (er) {
       l.push('# NO LEÍDA (se reintenta la próxima vez): ' + er.url + ' — ' + er.motivo);
