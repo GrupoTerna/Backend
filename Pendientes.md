@@ -26,7 +26,7 @@
 
 ### A1. Corrección de guerra: la espera por la comparación con los JSON terminó (`§PF548`)
 
-Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el código (reversibles), y la última acción tuya, correr «Corrección de jugadores elegidos» con los 28 tags (`PF234`), se hizo ese mismo día (`§PF234`).
+Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el código (reversibles), y la última acción tuya, correr «Corrección de jugadores elegidos» con los 28 tags (`PF234`) y volver a pasar los 8 que no tenían constancia de visita (`§PF552`, punto 8), se hizo ese mismo día (`§PF234`).
 
 ### A2. Corrección de guerra: casos y decisiones abiertas
 
