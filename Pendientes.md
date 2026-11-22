@@ -103,7 +103,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF160` — Correr `repararDiasConExcesoInforme()` (proyecto **Base**) con el selector nuevo (102 series) y revisar el CSV antes de aplicar; sin probar en Apps Script real: puntos (1), (2), (3), (5) y (6) de `§PF160`, `§PF487`, `§PF488`.
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 - [ ] `PF557` — Probar `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que «Show all…» despliegue todo, que cada entrada se lea con su fecha real (`meta_info`) y quede en la lista de leídas, que una segunda corrida no abra nada y solo traiga lo nuevo, y que el `.txt` traiga todas las entradas (punto 10; sin probar en el sitio real).
-- [ ] `PF557` — Probar `Tampermonkey/Tampermonkey_Supercell.md` en `supercell.com/en/games/clashroyale/blog/` real: que recorra todas las páginas con «Next», que cada artículo cargue y quede en la lista de leídos, que una segunda corrida se detenga en la página 1 y solo traiga lo nuevo, y que el `.txt` traiga todos los artículos (punto 11).
+- [ ] `PF557` — Probar `Tampermonkey/Tampermonkey_Supercell.md` en `supercell.com/en/games/clashroyale/blog/` real: que recorra todas las páginas con «Next», que cada artículo cargue y quede en la lista de leídos, que una segunda corrida se detenga en la página 1 y solo traiga lo nuevo, que el `.txt` traiga todos los artículos con título, fecha y categoría y que la corrida termine bien en la última página del archivo (puntos 11 y 12).
 
 ### B6. Clanes externos, infiltrados e índices
 
