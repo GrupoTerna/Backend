@@ -292,6 +292,18 @@ function reanudarReenumerarTemporadas() {
   _continuarRunReenumerarTemporadas();
 }
 
+// reanudarReenumerarTemporadasExcepcional(): 22-nov-2026; MANUAL. Igual que reanudarReenumerarTemporadas(), pero deja pasar el bloqueo de la ventana de guerra protegida (4:00-5:00 a.m. Lima y su margen previo) UNA sola vez.
+// La reenumeración nunca se aborta por la ventana; solo el lock de entrada la rechazaba. Mientras corre, runGuerra() queda bloqueado por REENUM_BLOQUEO, así que úsala solo si la usuaria acepta que esa guerra no se ejecute hasta que termine.
+function reanudarReenumerarTemporadasExcepcional() {
+  PropertiesService.getScriptProperties().setProperty('REENUM_EXCEPCION_VENTANA', String(Date.now()));
+  Logger.log('[Reenumeración] Reanudación EXCEPCIONAL: se autoriza una sola vez entrar en la ventana de guerra protegida.');
+  try {
+    reanudarReenumerarTemporadas();
+  } finally {
+    PropertiesService.getScriptProperties().deleteProperty('REENUM_EXCEPCION_VENTANA');
+  }
+}
+
 // liberarLockEjecucionManual(): PF258; libera a mano el lock de ejecución (EJECUCION_EN_CURSO) que dejó tomado una función que falló antes de liberarlo. Si hay una reenumeración a medias (REENUM_PASO) NO toca nada.
 function liberarLockEjecucionManual() {
   var props = PropertiesService.getScriptProperties();
