@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 04:15:10 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 04:19:37 */
 
 
 
@@ -2014,13 +2014,27 @@ function _bloquearSiReenumerando_(nombreFn) {
 // PF281 (26-oct-2026): motivo por el que _adquirirLockEjecucion() devolvió false en ESTA ejecución: 'ocupado' (lock corto ocupado u otra ejecución en curso: vale la pena reintentar) o 'otro' (reenumeración o ventana de guerra: no se reintenta). Vacío si no fue rechazada.
 var LOCK_ULTIMO_RECHAZO_ = '';
 
+// _consumirExcepcionVentanaReenum_(nombreFn): 22-nov-2026; excepción MANUAL a la ventana de guerra protegida, solo para reanudarReenumerarTemporadas(). Solo vale si reanudarReenumerarTemporadasExcepcional() (47_Migraciones.gs)
+// dejó la marca REENUM_EXCEPCION_VENTANA hace menos de 2 minutos; la marca se borra al leerla (sirve una sola vez) y cualquier otra función sigue bloqueada. Ante cualquier duda devuelve false y la protección queda como siempre.
+function _consumirExcepcionVentanaReenum_(nombreFn) {
+  if (nombreFn !== 'reanudarReenumerarTemporadas') return false;
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var marca = Number(props.getProperty('REENUM_EXCEPCION_VENTANA'));
+    props.deleteProperty('REENUM_EXCEPCION_VENTANA');
+    if (!isFinite(marca) || marca <= 0 || Date.now() - marca > 120000) return false;
+    Logger.log('[Lock] reanudarReenumerarTemporadas(): EXCEPCION MANUAL a la ventana de guerra protegida (autorizada hace ' + Math.round((Date.now() - marca) / 1000) + ' s).');
+    return true;
+  } catch (e) { return false; }
+}
+
 function _adquirirLockEjecucion(nombreFn) {
   LOCK_ULTIMO_RECHAZO_ = '';
   // PF260: con una reenumeración en curso solo pueden tomar el lock las funciones de la propia reenumeración (runGuerra incluida: escribiría con numeración mezclada).
   if (nombreFn !== 'runReenumerarTemporadas' && nombreFn !== 'reanudarReenumerarTemporadas' && _bloquearSiReenumerando_(nombreFn)) { LOCK_ULTIMO_RECHAZO_ = 'otro'; return false; }
   // VENTANA DE GUERRA PROTEGIDA (05-oct-2026): fuera de runGuerra() nada puede empezar desde
   // CFG.VENTANA_GUERRA_PRE_MARGEN_MIN minutos antes de las 4:00 a.m. Lima hasta las 5:00 a.m.
-  if (nombreFn !== 'runGuerra' && CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida) {
+  if (nombreFn !== 'runGuerra' && CFG.VENTANA_GUERRA_BLOQUEAR_OTROS && _estadoVentanaGuerra_().protegida && !_consumirExcepcionVentanaReenum_(nombreFn)) {
     Logger.log('[Lock] ' + nombreFn + '(): NO se inicia, esta dentro de la ventana de guerra protegida (' +
       Math.floor(CFG.VENTANA_GUERRA_INI_UTC_MIN / 60 - 5) + ':00-' + Math.floor(CFG.VENTANA_GUERRA_FIN_UTC_MIN / 60 - 5) +
       ':00 Lima, mas ' + CFG.VENTANA_GUERRA_PRE_MARGEN_MIN + ' min de margen previo). Solo runGuerra() puede correr ahora; ' +
@@ -73957,6 +73971,18 @@ function reanudarReenumerarTemporadas() {
   }
   if (!_adquirirLockEjecucion('reanudarReenumerarTemporadas')) return;
   _continuarRunReenumerarTemporadas();
+}
+
+// reanudarReenumerarTemporadasExcepcional(): 22-nov-2026; MANUAL. Igual que reanudarReenumerarTemporadas(), pero deja pasar el bloqueo de la ventana de guerra protegida (4:00-5:00 a.m. Lima y su margen previo) UNA sola vez.
+// La reenumeración nunca se aborta por la ventana; solo el lock de entrada la rechazaba. Mientras corre, runGuerra() queda bloqueado por REENUM_BLOQUEO, así que úsala solo si la usuaria acepta que esa guerra no se ejecute hasta que termine.
+function reanudarReenumerarTemporadasExcepcional() {
+  PropertiesService.getScriptProperties().setProperty('REENUM_EXCEPCION_VENTANA', String(Date.now()));
+  Logger.log('[Reenumeración] Reanudación EXCEPCIONAL: se autoriza una sola vez entrar en la ventana de guerra protegida.');
+  try {
+    reanudarReenumerarTemporadas();
+  } finally {
+    PropertiesService.getScriptProperties().deleteProperty('REENUM_EXCEPCION_VENTANA');
+  }
 }
 
 // liberarLockEjecucionManual(): PF258; libera a mano el lock de ejecución (EJECUCION_EN_CURSO) que dejó tomado una función que falló antes de liberarlo. Si hay una reenumeración a medias (REENUM_PASO) NO toca nada.
