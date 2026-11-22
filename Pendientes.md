@@ -189,7 +189,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] Fechas con hora de vigencia (`PF157`): ya se vieron con año y hora en Directorio y perfil (19-nov, `PF521`); faltan admin, la pastilla de tiempos y el Word del sorteo.
 - [ ] Probar en el perfil real un jugador con 0/0 donaciones. `PF163`
 - [ ] Abrir en Word real (escritorio) el `.doc` descargado con «Exportar»: comprobar que el fondo negro se vea y se imprima (depende de `<w:DisplayBackgroundShape/>`; las celdas de la tabla llevan su propio fondo por si no se aplica). `PF220`
-- [ ] `PF066` — Gráficas de `perfil.html` (22-nov-2026). Abrir un perfil y pasar el mouse (1) por un punto estimado (hueco, domingo sin dato): el tooltip debe quedarse fijo y mostrar el valor con «(estimado)»; (2) por cualquier parte de una línea de unión, morada o verde: debe salir nombre, tag y «Clan actual», y la serie debe seguir resaltándose. Solo se probó con jsdom.
+- [ ] `PF066` — Gráficas de `perfil.html` (22-nov-2026). Abrir un perfil y pasar el mouse (1) un día sin dato (p. ej. un domingo estimado) no debe llevar punto y la línea debe unir el punto anterior con el siguiente con dato (tramo punteado); (2) por cualquier parte de una línea de unión, morada o verde: debe salir nombre, tag y «Clan actual», y la serie debe seguir resaltándose. Solo se probó con jsdom.
 
 ---
 
