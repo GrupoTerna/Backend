@@ -836,6 +836,10 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
     Logger.log('[Reenumeración] NO se inició: hay una reenumeración sin terminar (REENUM_PASO = ' + pasoPendiente + ', REENUM_BLOQUEO = ' + PropertiesService.getScriptProperties().getProperty('REENUM_BLOQUEO') + '). Empezar de nuevo sumaría el delta otra vez en los pasos ya hechos. Usa reanudarReenumerarTemporadas().');
     return;
   }
+  if (_reenumClanesExternosPendiente_()) { // 22-nov-2026: otra reenumeración sumaría otro delta encima de archivos que aún tienen la numeración de antes
+    Logger.log('[Reenumeración] NO se inició: quedaron archivos de Clanes_Externos aplazados de la reenumeración anterior. Termínalos primero con reenumerarClanesExternosPendientes().');
+    return;
+  }
   if (!_adquirirLockEjecucion('runReenumerarTemporadas')) return;
 
   var refVieja = CFG.REF_DEFAULT; // getter, ya resuelve el valor activo
@@ -1461,9 +1465,17 @@ function _clanExternoReenumerarDoc_(doc, deltaMeses) {
 // Reanudable y sin sumar dos veces: cada archivo ya hecho lleva reenumeracionId = REENUM_RUN_ID y se salta (la fusión del índice, _clanExternoFusionar_(), conserva esa marca). Las alertas (Alertas_Clanes_Sospechosos.json) se recalculan en la siguiente corrida del índice, o a mano con actualizarAlertasClanesSospechosos(). Devuelve false si queda incompleto. Sin probar en Apps Script real.
 function _reenumerarClanesExternos_() {
   var props = PropertiesService.getScriptProperties();
+  // 22-nov-2026: si la usuaria aplazó este paso (aplazarReenumClanesExternos()), se salta y la reenumeración sigue con el paso 35; los archivos que falten los termina reenumerarClanesExternosPendientes().
+  if (_reenumClanesExternosPendiente_()) { Logger.log('[Reenumeración] Clanes externos: APLAZADO por la usuaria; se salta este paso. Queda para reenumerarClanesExternosPendientes().'); return true; }
   var deltaMeses = Number(props.getProperty('REENUM_DELTA_MESES'));
   var runId = props.getProperty('REENUM_RUN_ID') ||
     (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + deltaMeses);
+  return _reenumerarClanesExternosCore_(deltaMeses, runId);
+}
+
+// _reenumerarClanesExternosCore_(deltaMeses, runId): 22-nov-2026; el recorrido de los archivos de Clanes_Externos, separado para que lo use tanto el paso 34 de la reenumeración como la corrida aplazada. Devuelve false si queda incompleto.
+function _reenumerarClanesExternosCore_(deltaMeses, runId) {
+  var props = PropertiesService.getScriptProperties();
   var nombrePaso = 'Clanes externos';
 
   var folder = null;
@@ -1515,6 +1527,82 @@ function _reenumerarClanesExternos_() {
   _anotarProgresoPaso_(nombrePaso + ': ' + acumVistos + ' archivos recorridos', acumVistos);
   Logger.log('[Reenumeración] ' + nombrePaso + ': ' + (incompleto ? 'presupuesto agotado, se reintenta en la próxima continuación. ' : '') + 'cambiados en esta pasada: ' + cambiados + ', ya hechos: ' + yaHechos + ', omitidos: ' + omitidos + ' (temporada interna += ' + deltaMeses + ').');
   return !incompleto;
+}
+
+// ----- Clanes_Externos aplazado (22-nov-2026) -----
+// El paso 34 de la reenumeración escribe unos 7 300 archivos de Drive (unos 200 por tanda de 5 min, varias horas) y mientras dura runGuerra() queda bloqueada. La usuaria puede aplazarlo: la reenumeración termina sin él y los archivos que falten se reenumeran después, sin bloquear la guerra.
+// La marca REENUM_CLANESEXT_PENDIENTE guarda { runId, delta } porque REENUM_DELTA_MESES y las demás propiedades se borran al terminar la reenumeración. Mientras exista, el índice de clanes externos y las alertas no escriben en esos archivos: mezclarían semanas con numeración nueva en archivos aún con la vieja y luego el delta se sumaría otra vez.
+
+// _reenumClanesExternosPendiente_(): devuelve { runId, delta } si hay archivos de Clanes_Externos aplazados, o null.
+function _reenumClanesExternosPendiente_() {
+  try {
+    var raw = PropertiesService.getScriptProperties().getProperty('REENUM_CLANESEXT_PENDIENTE');
+    if (!raw) return null;
+    var o = JSON.parse(raw);
+    return (o && o.runId && isFinite(Number(o.delta))) ? { runId: String(o.runId), delta: Number(o.delta) } : null;
+  } catch (e) { return null; }
+}
+
+// aplazarReenumClanesExternos(): MANUAL (proyecto Base). Deja el paso 34 de la reenumeración para después. Solo vale con una reenumeración en curso que todavía no pasó el paso 34. Se puede correr con la reenumeración en marcha.
+function aplazarReenumClanesExternos() {
+  var props = PropertiesService.getScriptProperties();
+  if (_reenumClanesExternosPendiente_()) { Logger.log('[Reenumeración] Clanes externos: ya estaba aplazado. No se hizo nada.'); return; }
+  var paso = props.getProperty('REENUM_PASO');
+  var delta = Number(props.getProperty('REENUM_DELTA_MESES'));
+  if (paso === null || !isFinite(delta) || delta === 0 || !props.getProperty('REENUM_NUEVA_REF') || props.getProperty('REENUM_OFFSET_VIEJO') === null) {
+    Logger.log('[Reenumeración] No se aplazó nada: no hay una reenumeración en curso (faltan REENUM_PASO, REENUM_DELTA_MESES, REENUM_NUEVA_REF o REENUM_OFFSET_VIEJO).');
+    return;
+  }
+  var indicePaso = parseInt(paso, 10);
+  var indiceClanes = PASOS_REENUMERAR_TEMPORADAS.length - 2; // «Clanes_Externos» es el penúltimo paso de la lista
+  if (!isFinite(indicePaso) || indicePaso > indiceClanes) { Logger.log('[Reenumeración] No se aplazó nada: la reenumeración ya pasó el paso de Clanes_Externos (REENUM_PASO = ' + paso + ').'); return; }
+  var runId = props.getProperty('REENUM_RUN_ID') || (props.getProperty('REENUM_NUEVA_REF') + '|' + props.getProperty('REENUM_OFFSET_VIEJO') + '|' + delta);
+  props.setProperty('REENUM_CLANESEXT_PENDIENTE', JSON.stringify({ runId: runId, delta: delta }));
+  Logger.log('[Reenumeración] Clanes_Externos APLAZADO (delta ' + delta + '). La próxima tanda salta ese paso y sigue con el siguiente; si hay una tanda corriendo ahora, termina la suya. Cuando la reenumeración termine, corre reenumerarClanesExternosPendientes(). Hasta entonces el índice de clanes externos no escribe en esos archivos.');
+}
+
+var PASOS_CLANESEXT_PENDIENTES = [
+  function () { return _reenumerarClanesExternosPendientes_(); }
+];
+var NOMBRES_PASOS_CLANESEXT_PENDIENTES = [
+  'Clanes_Externos aplazado: suma el delta a la temporada interna de los archivos que faltan → archivos de clan con la numeración nueva'
+];
+
+// _reenumerarClanesExternosPendientes_(): paso de la cadena CLANESEXT; sigue con los archivos que faltan y, al terminar, borra la marca de aplazado. Devuelve false si queda incompleto.
+function _reenumerarClanesExternosPendientes_() {
+  var pend = _reenumClanesExternosPendiente_();
+  if (!pend) return true;
+  var completo = _reenumerarClanesExternosCore_(pend.delta, pend.runId);
+  if (completo) {
+    var props = PropertiesService.getScriptProperties();
+    props.deleteProperty('REENUM_CLANESEXT_PENDIENTE');
+    props.deleteProperty('REENUM_CLANESEXT_TOKEN');
+    props.deleteProperty('REENUM_CLANESEXT_VISTOS');
+    Logger.log('[Reenumeración] Clanes_Externos aplazado: TERMINADO. Se levanta la marca; el índice de clanes externos vuelve a escribir en esos archivos. Si quieres las alertas al día, corre actualizarAlertasClanesSospechosos().');
+  }
+  return completo;
+}
+
+// reenumerarClanesExternosPendientes(): MANUAL (proyecto Base). Termina, por tandas y con continuación automática, los archivos de Clanes_Externos que quedaron aplazados. No corre con una reenumeración en curso ni en la ventana de guerra protegida (4:00-5:00 a. m. Lima y su margen previo).
+function reenumerarClanesExternosPendientes() {
+  if (!_reenumClanesExternosPendiente_()) { Logger.log('[Reenumeración] No hay Clanes_Externos aplazado. No se hizo nada.'); return; }
+  if (!_adquirirLockEjecucion('reenumerarClanesExternosPendientes')) return;
+  PropertiesService.getScriptProperties().setProperty('CLANESEXT_PASO', '0');
+  _continuarReenumClanesExternos();
+}
+
+// _continuarReenumClanesExternos(): entrada de reenumerarClanesExternosPendientes() y de su activador de continuación.
+function _continuarReenumClanesExternos() {
+  try {
+    var completo = _ejecutarPorTandas('CLANESEXT', PASOS_CLANESEXT_PENDIENTES, CFG.REENUM_TANDA_PRESUPUESTO_MS, '_continuarReenumClanesExternos', NOMBRES_PASOS_CLANESEXT_PENDIENTES);
+    if (completo) { _liberarLockEjecucion(); Logger.log('[Reenumeración] Clanes_Externos aplazado: FIN de la cadena.'); }
+    // Si no está completo, el lock sigue tomado: _ejecutarPorTandas refrescó su hora y programó la continuación (o descartó la cadena por la ventana de guerra; en ese caso se vuelve a correr reenumerarClanesExternosPendientes()).
+  } catch (e) {
+    _borrarTriggersDeContinuacion('_continuarReenumClanesExternos');
+    _liberarLockEjecucion();
+    Logger.log('[Reenumeración] Clanes_Externos aplazado: ERROR (' + e.message + '). Lock liberado; vuelve a correr reenumerarClanesExternosPendientes(): sigue donde quedó y no suma dos veces.');
+    throw e;
+  }
 }
 
 // _subcarpetasInformesReenum_(): PF286 punto 40. Rutas de CSV que recorren los dos pasos de informes (_reenumerarInformesCSV y _reenumerarNombresInformes_): Informes, Tampermonkey y cada subcarpeta de Informes (CSV_INFORMES_SUBCARPETAS_, hoy Cruce_Meta, donde _csvInformesSubDe_() manda los Cruce_* y Cotejo_*). getFiles() no entra en subcarpetas, por eso hay que nombrarlas.

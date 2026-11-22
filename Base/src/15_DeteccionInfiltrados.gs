@@ -1115,6 +1115,8 @@ function _generarIndiceClanesExternosUnaCorrida_() {
   }
 
   // 2) Fusión de cada clan con su archivo de Clanes_Externos (solo los clanes cuya firma cambió).
+  // 22-nov-2026: no se escribe en los archivos mientras haya Clanes_Externos aplazado de una reenumeración (47_Migraciones.gs): tendrían semanas con numeración nueva y el delta pendiente se sumaría otra vez.
+  if (_reenumClanesExternosPendiente_()) { Logger.log('[IndiceClanes] INCOMPLETO: hay archivos de Clanes_Externos aplazados de la reenumeración; no se fusiona hasta que termine reenumerarClanesExternosPendientes().'); return false; }
   var tFusion = Date.now();
   var res = _clanesExternosEscribirPendientes_(estado, inicio, ahoraTxt);
   marca('Archivos de clan: ' + res.creados + ' creados, ' + res.actualizados + ' actualizados, ' + res.sinCambios + ' sin cambios, ' + res.pendientes + ' pendientes', tFusion);
@@ -1155,6 +1157,12 @@ function _generarIndiceClanesExternosUnaCorrida_() {
 function _indiceClanesCorrerProgramado_() {
   var props = PropertiesService.getScriptProperties();
   // §PF286 punto 43 (21-nov-2026): el índice NO corre mientras dura una reenumeración. Una pasada en medio leería numeración vieja y, como la lectura nueva pisa la temporada interna de cada semana, devolvería esa numeración a los archivos de clan ya reenumerados. Se retiran la continuación y el activador de seguridad; la próxima corrida semanal (martes) lo retoma. [→ Contexto_Base_Web.md §PF286]
+  if (_reenumClanesExternosPendiente_()) { // 22-nov-2026: ver _reenumClanesExternosPendiente_() (47_Migraciones.gs)
+    try { _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT); } catch (ePend) { /* sin activador que retirar */ }
+    props.deleteProperty(INDICE_CLANES_CONT_PROP);
+    Logger.log('[IndiceClanes] Pasada omitida: hay archivos de Clanes_Externos aplazados de la reenumeración. Se retoma cuando termine reenumerarClanesExternosPendientes().');
+    return;
+  }
   if (_bloquearSiReenumerando_('_indiceClanesCorrerProgramado_')) {
     try { _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT); } catch (eBloq) { /* sin activador que retirar */ }
     props.deleteProperty(INDICE_CLANES_CONT_PROP);
@@ -2052,7 +2060,7 @@ function _alertasClanesDesdeJugadoresNuevos_(tagsJugadores) {
       listaTags.push('#' + tn);
     }
     if (!listaTags.length) { res.ok = true; res.motivo = 'sin-jugadores'; return res; }
-    if (_reenumeracionEnCurso_()) { res.motivo = 'reenumerando'; Logger.log('[AlertasClanes] Miembros nuevos: hay una reenumeración en curso; las alertas de estos jugadores las cubre la corrida del índice.'); return res; }
+    if (_reenumeracionEnCurso_() || _reenumClanesExternosPendiente_()) { res.motivo = 'reenumerando'; Logger.log('[AlertasClanes] Miembros nuevos: hay una reenumeración en curso; las alertas de estos jugadores las cubre la corrida del índice.'); return res; }
 
     // 1) Clanes externos de cada jugador, leídos de su JSON individual (el mismo armado que usa el índice).
     var acum = _indiceClanesVacio_();
