@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 16:59:02 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 19:31:02 */
 
 
 
@@ -30549,6 +30549,19 @@ var CGW_ORIGEN_PERFIL = 'perfil';
 var CGW_VISITAS_PERFIL_CSV = 'Visitas_Perfil.csv';
 var CGW_VISITAS_PERFIL_ENCABEZADOS = ['Tag', 'Primera_Visita', 'Ultima_Visita', 'Envios', 'Filas_Leidas', 'Filas_Aplicadas', 'Filas_Sin_Cambios', 'Ultimo_Cambio'];
 
+// §PF555 (21-nov-2026): el registro final de cada botón de Tampermonkey se guarda en su propio CSV, para no depender de copiar el panel. Nombres con prefijo Log_Tampermonkey_ para que _csvSubcarpetaDe_() los mande a la subcarpeta Tampermonkey. Cada archivo guarda las últimas CGW_RESUMEN_MAX_CORRIDAS corridas (la más nueva primero).
+var CGW_RESUMEN_ARCHIVOS = {
+  VerificarSemana: 'Log_Tampermonkey_ResumenVerificarSemana.csv',
+  Nuevos: 'Log_Tampermonkey_ResumenNuevos.csv',
+  Elegidos: 'Log_Tampermonkey_ResumenElegidos.csv',
+  CorreccionGuerra: 'Log_Tampermonkey_ResumenCorreccionGuerra.csv'
+};
+var CGW_RESUMEN_ENCABEZADOS = ['Corrida', 'Tags', 'Linea'];
+var CGW_RESUMEN_MAX_CORRIDAS = 5;
+var CGW_RESUMEN_MAX_LINEAS = 3000; // por corrida
+var CGW_RESUMEN_MAX_LINEAS_ARCHIVO = 6000; // en todo el archivo: si se pasa, se descartan las corridas más viejas (la nueva siempre queda)
+var CGW_RESUMEN_MAX_CARACTERES = 600; // por línea
+
 var CGW_ORIGEN_DESCONOCIDO = 'desconocido';
 
 // §PF244 (punto 1 de §PF235): seña de «perfil no consultado». Solo se ESCRIBE (valor calculado, como Externo y ID): una fila sin dato
@@ -33064,6 +33077,55 @@ function _registrarVisitasPerfil_(visitas, ahora) {
   if (archivo) _setContentConConteo_(archivo, contenido);
   else _createFileConConteo_(carpeta, CGW_VISITAS_PERFIL_CSV, contenido, MimeType.CSV);
   return { tags: tagsEnvio.length, guardado: true };
+}
+
+/**
+ * _guardarResumenTampermonkey_(boton, lineas, tags) [→ Contexto_Base_Web.md §PF555]
+ * boton: una clave de CGW_RESUMEN_ARCHIVOS ('VerificarSemana', 'Nuevos', 'Elegidos' o 'CorreccionGuerra'); lineas: el registro final del panel de ese botón;
+ * tags: los tags de la corrida (solo «jugadores elegidos»). Cada botón tiene su archivo en CSV/Tampermonkey, así que no se pisan entre sí. Dentro de un
+ * archivo se conservan las últimas CGW_RESUMEN_MAX_CORRIDAS corridas, la más nueva primero (columna «Corrida» = hora de Lima del envío); las más viejas se
+ * descartan, y también si el archivo pasa de CGW_RESUMEN_MAX_LINEAS_ARCHIVO líneas (la corrida nueva nunca se descarta). Recorta cada corrida a
+ * CGW_RESUMEN_MAX_LINEAS y cada línea a CGW_RESUMEN_MAX_CARACTERES. No toma el candado: es un archivo propio de cada botón.
+ * Devuelve { ok, boton, archivo, lineas, tags, recortadas, corridas }.
+ */
+function _guardarResumenTampermonkey_(boton, lineas, tags) {
+  var nombre = CGW_RESUMEN_ARCHIVOS[String(boton || '')];
+  if (!nombre) return { ok: false, error: 'Botón desconocido: ' + boton };
+  if (!Array.isArray(lineas) || !lineas.length) return { ok: false, error: 'No llegaron líneas de resumen.' };
+  var recortadas = Math.max(0, lineas.length - CGW_RESUMEN_MAX_LINEAS);
+  var usadas = lineas.slice(0, CGW_RESUMEN_MAX_LINEAS);
+  var listaTags = (Array.isArray(tags) ? tags : []).map(function (t) { return String(t || '').trim(); }).filter(function (t) { return t; }).join(' ');
+  var ahora = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+  var nueva = { id: ahora, filas: usadas.map(function (l, k) {
+    return [ahora, k === 0 ? listaTags : '', String(l === null || l === undefined ? '' : l).slice(0, CGW_RESUMEN_MAX_CARACTERES)];
+  }) };
+
+  var carpeta = _getCsvSubcarpeta_('Tampermonkey', true);
+  var it = carpeta.getFilesByName(nombre);
+  var archivo = it.hasNext() ? it.next() : null;
+  var corridas = [nueva], porId = {}, i;
+  if (archivo) {
+    var texto = archivo.getBlob().getDataAsString('UTF-8');
+    var filasPrev = texto ? _parseCSV(texto) : [];
+    for (i = 1; i < filasPrev.length; i++) { // fila 0 = encabezados
+      var f = filasPrev[i] || [];
+      var id = String(f[0] || '').trim();
+      if (!id || id === ahora) continue; // dos envíos en el mismo segundo: queda el nuevo
+      if (!porId[id]) { porId[id] = { id: id, filas: [] }; corridas.push(porId[id]); }
+      porId[id].filas.push([id, String(f[1] || ''), String(f[2] || '')]);
+    }
+  }
+  if (corridas.length > CGW_RESUMEN_MAX_CORRIDAS) corridas = corridas.slice(0, CGW_RESUMEN_MAX_CORRIDAS);
+  var total = 0;
+  for (i = 0; i < corridas.length; i++) total += corridas[i].filas.length;
+  while (corridas.length > 1 && total > CGW_RESUMEN_MAX_LINEAS_ARCHIVO) total -= corridas.pop().filas.length;
+
+  var filasCsv = [CGW_RESUMEN_ENCABEZADOS.slice()];
+  for (i = 0; i < corridas.length; i++) filasCsv = filasCsv.concat(corridas[i].filas);
+  var contenido = _encodeCSV(filasCsv);
+  if (archivo) _setContentConConteo_(archivo, contenido);
+  else _createFileConConteo_(carpeta, nombre, contenido, MimeType.CSV);
+  return { ok: true, boton: String(boton), archivo: nombre, lineas: usadas.length, tags: listaTags ? listaTags.split(' ').length : 0, recortadas: recortadas, corridas: corridas.length };
 }
 
 /**
@@ -67395,6 +67457,26 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     } catch (errCorreccion) {
       _logTampermonkeyADrive('CorreccionGuerra', null, errCorreccion.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  // Endpoint 'resumenElegidos' (Tampermonkey, los cuatro botones; 21-nov-2026, §PF555): guarda el registro final del botón (payload.boton) en su propio CSV de CSV/Tampermonkey; ver _guardarResumenTampermonkey_() en 18_CorreccionGuerra.gs. Sin payload.boton se asume 'Elegidos' (v3.37).
+  if (e && e.parameter && e.parameter.accion === 'resumenElegidos') {
+    if (e.parameter.token !== CORRECCION_GUERRA_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'No autorizado', code: 401 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    try {
+      var payloadRE = JSON.parse(e.postData.contents);
+      var resultadoRE = _guardarResumenTampermonkey_((payloadRE && payloadRE.boton) || 'Elegidos', payloadRE && payloadRE.lineas, payloadRE && payloadRE.tags);
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoRE))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errRE) {
+      Logger.log('[CorreccionGuerra] No se pudo guardar el registro final de un botón de Tampermonkey: ' + (errRE.message || errRE));
       return ContentService
         .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
         .setMimeType(ContentService.MimeType.JSON);
