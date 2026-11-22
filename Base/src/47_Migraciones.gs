@@ -1529,6 +1529,30 @@ function _reenumerarClanesExternosCore_(deltaMeses, runId) {
   return !incompleto;
 }
 
+// destrabarReenumeracionTerminada(): 22-nov-2026; MANUAL. Quita las marcas que dejan bloqueados runGuerra() y todo lo demás cuando la reenumeración YA terminó pero quedó REENUM_PASO (o REENUM_BLOQUEO) suelto.
+// Solo actúa si no queda nada por reanudar: faltan REENUM_DELTA_MESES, REENUM_NUEVA_REF y REENUM_OFFSET_VIEJO, que solo se borran al terminar la reenumeración completa (_continuarRunReenumerarTemporadas()). Si queda alguno, NO toca nada: hay una reenumeración a medias y se reanuda con reanudarReenumerarTemporadas().
+// Caso real del 22-nov-2026: quedó REENUM_PASO = 6 (el valor de reserva de reanudarReenumerarTemporadas()) con la reenumeración ya terminada, y runGuerra() decía «hay una reenumeración en curso».
+function destrabarReenumeracionTerminada() {
+  var props = PropertiesService.getScriptProperties();
+  var pendientesDeReanudar = props.getProperty('REENUM_DELTA_MESES') !== null || props.getProperty('REENUM_NUEVA_REF') !== null || props.getProperty('REENUM_OFFSET_VIEJO') !== null;
+  if (pendientesDeReanudar) {
+    Logger.log('[Destrabar] NO se tocó nada: todavía hay datos de una reenumeración por reanudar (REENUM_DELTA_MESES = ' + props.getProperty('REENUM_DELTA_MESES') + ', REENUM_NUEVA_REF = ' + props.getProperty('REENUM_NUEVA_REF') + ', REENUM_OFFSET_VIEJO = ' + props.getProperty('REENUM_OFFSET_VIEJO') + '). Usa reanudarReenumerarTemporadas().');
+    return;
+  }
+  if (!_reenumeracionEnCurso_()) { Logger.log('[Destrabar] No hay nada que destrabar: no queda ninguna marca de reenumeración.'); return; }
+  Logger.log('[Destrabar] Marcas sueltas de una reenumeración ya terminada: REENUM_PASO = ' + props.getProperty('REENUM_PASO') + ', REENUM_BLOQUEO = ' + props.getProperty('REENUM_BLOQUEO') + '. Se borran.');
+  props.deleteProperty('REENUM_PASO');
+  props.deleteProperty('REENUM_BLOQUEO');
+  props.deleteProperty('REENUM_PASO_NOMBRE');
+  props.deleteProperty('REENUM_REINTENTO');
+  props.deleteProperty('REENUM_TANDAS_PASO');
+  props.deleteProperty('REENUM_PROGRESO_PASO');
+  try { _borrarTriggersDeContinuacion('_continuarRunReenumerarTemporadas'); } catch (eT) { /* sin activador */ }
+  var raw = props.getProperty('EJECUCION_EN_CURSO');
+  if (raw) { try { if (/Reenumerar/i.test(JSON.parse(raw).fn || '')) { _liberarLockEjecucion(); Logger.log('[Destrabar] Candado de ejecución liberado (era de la reenumeración).'); } } catch (eL) { /* candado ilegible: se deja */ } }
+  Logger.log('[Destrabar] LISTO. runGuerra() y las demás funciones ya pueden correr.' + (_reenumClanesExternosPendiente_() ? ' Quedan archivos de Clanes_Externos aplazados: termínalos después con reenumerarClanesExternosPendientes().' : ''));
+}
+
 // diagnosticarReenumeracion(): 22-nov-2026; MANUAL y de SOLO LECTURA (no cambia nada). Escribe en el registro el estado que bloquea o retiene la reenumeración y la guerra: propiedades REENUM_*, candado de ejecución y su antigüedad, ventana de guerra, aplazado de Clanes_Externos y activadores de continuación.
 function diagnosticarReenumeracion() {
   var props = PropertiesService.getScriptProperties();
