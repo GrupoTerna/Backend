@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 20:52:13 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 21:31:58 */
 
 
 
@@ -22116,6 +22116,13 @@ function _generarIndiceClanesExternosUnaCorrida_() {
  */
 function _indiceClanesCorrerProgramado_() {
   var props = PropertiesService.getScriptProperties();
+  // §PF286 punto 43 (21-nov-2026): el índice NO corre mientras dura una reenumeración. Una pasada en medio leería numeración vieja y, como la lectura nueva pisa la temporada interna de cada semana, devolvería esa numeración a los archivos de clan ya reenumerados. Se retiran la continuación y el activador de seguridad; la próxima corrida semanal (martes) lo retoma. [→ Contexto_Base_Web.md §PF286]
+  if (_bloquearSiReenumerando_('_indiceClanesCorrerProgramado_')) {
+    try { _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT); } catch (eBloq) { /* sin activador que retirar */ }
+    props.deleteProperty(INDICE_CLANES_CONT_PROP);
+    Logger.log('[IndiceClanes] Pasada omitida por la reenumeración en curso; el índice se retoma en la próxima corrida semanal.');
+    return;
+  }
   var n = Number(props.getProperty(INDICE_CLANES_CONT_PROP)) || 0;
   var completo = false;
   // §PF510: activador de seguridad. Si Apps Script mata la pasada por tiempo (ocurrió el 18-nov-2026 con 7 085 clanes), no hay catch que valga y la cadena se cortaba hasta el martes siguiente; este activador la retoma. Al terminar la pasada se reemplaza (incompleta) o se borra (completa o con error atrapado).
@@ -22750,6 +22757,12 @@ function _indiceClanesBorrarParcial_() {
   } catch (e) {
     Logger.log('[IndiceClanes] No se pudo retirar ' + INDICE_CLANES_PARCIAL_JSON + ': ' + e.message);
   }
+}
+// _descartarAvanceIndiceClanes_(): §PF286 punto 43 (21-nov-2026). La llama la reenumeración (47_Migraciones.gs) al iniciar y al terminar: retira el avance parcial del índice (guarda numeración interna vieja y ningún paso lo reenumera), la continuación programada y el contador de corridas. No toca los archivos de clan ni las firmas. [→ Contexto_Base_Web.md §PF286]
+function _descartarAvanceIndiceClanes_() {
+  _indiceClanesBorrarParcial_();
+  try { _borrarTriggersDeContinuacion(INDICE_CLANES_HANDLER_CONT); } catch (eTrg) { Logger.log('[IndiceClanes] No se pudo retirar la continuación del índice: ' + eTrg.message); }
+  PropertiesService.getScriptProperties().deleteProperty(INDICE_CLANES_CONT_PROP);
 }
 
 // ----- Alertas de clanes sospechosos: cruzar, guardar y consultar (§PF375) -----
@@ -74423,6 +74436,7 @@ function runReenumerarTemporadas(nuevaFechaRefStr) {
   props.deleteProperty('REENUM_INF_IDX'); // PF258: índice del paso de informes
   props.deleteProperty('REENUM_JSON_IDX'); // PF260: índice del paso de nombres de JSON
   Object.keys(props.getProperties()).forEach(function (k) { if (k.indexOf('REENUM_TOK_') === 0) props.deleteProperty(k); }); // PF268: marcas del paso de fichas «Semanas»
+  try { _descartarAvanceIndiceClanes_(); } catch (eIdx) { Logger.log('[Reenumeración] AVISO: no se pudo descartar el avance del índice de clanes externos (' + (eIdx.message || eIdx) + '). Borra a mano Indice_Clanes_Externos_Parcial.json de la carpeta Otros antes de que corra el índice.'); } // §PF286 punto 43: su avance guarda numeración vieja
 
   Logger.log('[Reenumeración] Ref vieja: ' + refVieja.toDateString() +
              ' | Ref nueva: ' + refNueva.toDateString() +
@@ -74442,6 +74456,7 @@ function _continuarRunReenumerarTemporadas() {
       PropertiesService.getScriptProperties().deleteProperty('REENUM_DELTA_MESES');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_NUEVA_REF');
       PropertiesService.getScriptProperties().deleteProperty('REENUM_OFFSET_VIEJO');
+      try { _descartarAvanceIndiceClanes_(); } catch (eIdx2) { /* solo es limpieza: una pasada del índice que estuviera en vuelo al iniciar pudo dejar su avance */ } // §PF286 punto 43
       PropertiesService.getScriptProperties().deleteProperty('REENUM_BLOQUEO'); // 14-nov-2026: recién aquí se levanta la segunda guarda
       _liberarLockEjecucion();
       Logger.log('[Reenumeración] FIN — completa.');
