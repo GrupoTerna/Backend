@@ -4,7 +4,7 @@
   "fechaUltimaActualizacion": "19/11/2026",
   "semanas": [
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "temporadaSupercell": "2026-06",
       "semana": 5,
@@ -19,7 +19,7 @@
       ]
     },
     {
-      "temporadaInterna": 23,
+      "temporadaInterna": 35,
       "temporadaRoyaleAPI": 134,
       "temporadaSupercell": "2026-07",
       "semana": 4,
@@ -62,7 +62,7 @@
       ]
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "temporadaSupercell": "2026-08",
       "semana": 1,
@@ -112,7 +112,7 @@
       ]
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "temporadaSupercell": "2026-08",
       "semana": 2,
@@ -806,7 +806,7 @@
       ]
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "temporadaSupercell": "2026-08",
       "semana": 3,
@@ -1500,7 +1500,7 @@
       ]
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "temporadaSupercell": "2026-08",
       "semana": 4,
@@ -2264,7 +2264,7 @@
       ]
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "temporadaSupercell": "2026-08",
       "semana": 5,
@@ -3105,7 +3105,7 @@
       ]
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "temporadaSupercell": "2026-09",
       "semana": 1,
@@ -3617,7 +3617,7 @@
       ]
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "temporadaSupercell": "2026-09",
       "semana": 2,
@@ -4262,7 +4262,7 @@
       ]
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "temporadaSupercell": "2026-09",
       "semana": 3,
@@ -4984,7 +4984,7 @@
       ]
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "temporadaSupercell": "2026-09",
       "semana": 4,
@@ -5860,7 +5860,7 @@
       ]
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "temporadaSupercell": "2026-10",
       "semana": 1,
@@ -6337,7 +6337,7 @@
       ]
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "temporadaSupercell": "2026-10",
       "semana": 2,
@@ -6996,7 +6996,7 @@
       ]
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "temporadaSupercell": "2026-10",
       "semana": 3,
@@ -7823,7 +7823,7 @@
       ]
     },
     {
-      "temporadaInterna": 26,
+      "temporadaInterna": 38,
       "temporadaRoyaleAPI": 137,
       "temporadaSupercell": "2026-10",
       "semana": 4,
@@ -8811,7 +8811,7 @@
       ]
     },
     {
-      "temporadaInterna": 27,
+      "temporadaInterna": 39,
       "temporadaRoyaleAPI": 138,
       "temporadaSupercell": "2026-11",
       "semana": 1,
@@ -9442,7 +9442,7 @@
       ]
     },
     {
-      "temporadaInterna": 27,
+      "temporadaInterna": 39,
       "temporadaRoyaleAPI": 138,
       "temporadaSupercell": "2026-11",
       "semana": 2,
@@ -10387,5 +10387,6 @@
         }
       ]
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }
