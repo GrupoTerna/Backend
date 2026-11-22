@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "18/11/2026",
   "registros": [
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 4,
       "clan": "matapollos",
@@ -20,7 +20,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -17,
+      "temporadaInterna": -5,
       "temporadaRoyaleAPI": 94,
       "semana": 3,
       "clan": "matapollos",
@@ -34,7 +34,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 27,
+      "temporadaInterna": 39,
       "temporadaRoyaleAPI": 138,
       "semana": 3,
       "clan": "GrupoXTerna™2",
@@ -46,5 +46,6 @@
       "clanTag": "#GYCU9YRG",
       "comentario": ""
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }

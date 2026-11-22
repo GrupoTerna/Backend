@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 1,
       "clan": "PERU ROYALE II",
@@ -20,7 +20,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 5,
       "clan": "ＳＯＹ ＬＥＹＥＮＤＡ™",
@@ -34,7 +34,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 4,
       "clan": "ＳＯＹ ＬＥＹＥＮＤＡ™",
@@ -48,7 +48,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 3,
       "clan": "GrupoXTerna™3",
@@ -61,7 +61,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 22,
+      "temporadaInterna": 34,
       "temporadaRoyaleAPI": 133,
       "semana": 2,
       "clan": "GrupoXTerna™3",
@@ -74,7 +74,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 4,
       "clan": "LosGordosADT",
@@ -88,7 +88,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 3,
       "clan": "LosGordosADT",
@@ -102,7 +102,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 2,
       "clan": "LosGordosADT",
@@ -116,7 +116,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 14,
+      "temporadaInterna": 26,
       "temporadaRoyaleAPI": 125,
       "semana": 1,
       "clan": "LosGordosADT",
@@ -130,7 +130,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 5,
       "clan": "LosGordosADT",
@@ -144,7 +144,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 4,
       "clan": "LosGordosADT",
@@ -158,7 +158,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 3,
       "clan": "InkaKola",
@@ -172,7 +172,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 13,
+      "temporadaInterna": 25,
       "temporadaRoyaleAPI": 124,
       "semana": 2,
       "clan": "InkaKola",
@@ -186,7 +186,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 20,
       "temporadaRoyaleAPI": 119,
       "semana": 4,
       "clan": "★Santa≛Grifa★",
@@ -200,7 +200,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 20,
       "temporadaRoyaleAPI": 119,
       "semana": 3,
       "clan": "★Santa≛Grifa★",
@@ -214,7 +214,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 20,
       "temporadaRoyaleAPI": 119,
       "semana": 2,
       "clan": "★Santa≛Grifa★",
@@ -228,7 +228,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 8,
+      "temporadaInterna": 20,
       "temporadaRoyaleAPI": 119,
       "semana": 1,
       "clan": "★Santa≛Grifa★",
@@ -242,7 +242,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 7,
+      "temporadaInterna": 19,
       "temporadaRoyaleAPI": 118,
       "semana": 5,
       "clan": "★Santa≛Grifa★",
@@ -256,7 +256,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 7,
+      "temporadaInterna": 19,
       "temporadaRoyaleAPI": 118,
       "semana": 4,
       "clan": "★Santa≛Grifa★",
@@ -270,7 +270,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 4,
       "clan": "Perú / Nova TM",
@@ -284,7 +284,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 2,
+      "temporadaInterna": 14,
       "temporadaRoyaleAPI": 113,
       "semana": 3,
       "clan": "Perú / Nova TM",
@@ -297,5 +297,6 @@
       "clanTag": "#9G88G9U2",
       "comentario": ""
     }
-  ]
+  ],
+  "reenumeracionId": "1795320518442"
 }
