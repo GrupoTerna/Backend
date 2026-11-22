@@ -1696,7 +1696,7 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
-  // Endpoint 'resumenElegidos' (Tampermonkey, «Corrección de jugadores elegidos»; 21-nov-2026, §PF555): guarda el resumen final en CSV/Tampermonkey/Log_Tampermonkey_ResumenElegidos.csv; ver _guardarResumenElegidos_() en 18_CorreccionGuerra.gs.
+  // Endpoint 'resumenElegidos' (Tampermonkey, los cuatro botones; 21-nov-2026, §PF555): guarda el registro final del botón (payload.boton) en su propio CSV de CSV/Tampermonkey; ver _guardarResumenTampermonkey_() en 18_CorreccionGuerra.gs. Sin payload.boton se asume 'Elegidos' (v3.37).
   if (e && e.parameter && e.parameter.accion === 'resumenElegidos') {
     if (e.parameter.token !== CORRECCION_GUERRA_TOKEN) {
       return ContentService
@@ -1705,12 +1705,12 @@ function doPost(e) {
     }
     try {
       var payloadRE = JSON.parse(e.postData.contents);
-      var resultadoRE = _guardarResumenElegidos_(payloadRE && payloadRE.lineas, payloadRE && payloadRE.tags);
+      var resultadoRE = _guardarResumenTampermonkey_((payloadRE && payloadRE.boton) || 'Elegidos', payloadRE && payloadRE.lineas, payloadRE && payloadRE.tags);
       return ContentService
         .createTextOutput(JSON.stringify(resultadoRE))
         .setMimeType(ContentService.MimeType.JSON);
     } catch (errRE) {
-      Logger.log('[CorreccionGuerra] No se pudo guardar el resumen de jugadores elegidos: ' + (errRE.message || errRE));
+      Logger.log('[CorreccionGuerra] No se pudo guardar el registro final de un botón de Tampermonkey: ' + (errRE.message || errRE));
       return ContentService
         .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
         .setMimeType(ContentService.MimeType.JSON);
