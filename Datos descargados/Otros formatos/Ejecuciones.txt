@@ -1,0 +1,1051 @@
+Ejecuciones
+Se muestra(n) 50 ejecuciones de muchas en los últimos 7 días
+Mostrar en tiempo real:
+
+Tipo: "Editor" or "Basada en el tiempo"
+Implementación
+Función
+Tipo
+Hora de inicio
+Duración
+Estado
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 4:29:03 a.m.	69.738 s	
+En proceso
+Registros de Cloud
+22 nov 2026, 4:29:10 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 34/35
+22 nov 2026, 4:29:10 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 33/35; paso 34/35 EN CURSO: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva (la tanda anterior lo dejó incompleto; esta es la tanda 8 de este paso). Progreso guardado al cierre de la tanda anterior: Clanes externos: 529 de 7287 archivos.
+22 nov 2026, 4:29:10 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+Encabezado	reanudarReenumerarTemporadasExcepcional	Editor	22 nov 2026, 4:22:51 a.m.	306.756 s	
+Completada
+Registros de Cloud
+22 nov 2026, 4:22:54 a.m.	Información	[Reenumeración] Reanudación EXCEPCIONAL: se autoriza una sola vez entrar en la ventana de guerra protegida.
+22 nov 2026, 4:22:55 a.m.	Información	[Lock] reanudarReenumerarTemporadas(): EXCEPCION MANUAL a la ventana de guerra protegida (autorizada hace 1 s).
+22 nov 2026, 4:22:55 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 34/35
+22 nov 2026, 4:22:55 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 33/35; paso 34/35 EN CURSO: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva (la tanda anterior lo dejó incompleto; esta es la tanda 7 de este paso). Progreso guardado al cierre de la tanda anterior: Clanes externos: 183 de 7287 archivos.
+22 nov 2026, 4:22:55 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+22 nov 2026, 4:27:56 a.m.	Información	[Reenumeración]   Clanes externos: acumulado 529 de 7287 archivos (7 %); en tandas anteriores: 445; faltan 6758.
+22 nov 2026, 4:27:56 a.m.	Información	[Reenumeración]   Clanes externos: en esta tanda: 84 archivos.
+22 nov 2026, 4:27:56 a.m.	Información	[Reenumeración] Clanes externos: presupuesto agotado, se reintenta en la próxima continuación. cambiados en esta pasada: 84, ya hechos: 445, omitidos: 0 (temporada interna += 12).
+22 nov 2026, 4:27:56 a.m.	Información	[REENUM] Paso 34/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 4:27:56 a.m.	Información	[REENUM] Paso 34/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 4:27:56 a.m.	Información	[REENUM]   Avance del paso 34/35 (tanda 7 de este paso): AVANZÓ. Tanda anterior: Clanes externos: 183 de 7287 archivos. Ahora: Clanes externos: 529 de 7287 archivos.
+Encabezado	reanudarReenumerarTemporadas	Editor	22 nov 2026, 4:13:00 a.m.	3.399 s	
+Completada
+Registros de Cloud
+22 nov 2026, 4:13:03 a.m.	Información	[Lock] reanudarReenumerarTemporadas(): NO se inicia, esta dentro de la ventana de guerra protegida (4:00-5:00 Lima, mas 20 min de margen previo). Solo runGuerra() puede correr ahora; reintentar despues de las 5:00 a.m.
+Encabezado	cancelarEjecucion	Editor	22 nov 2026, 4:12:25 a.m.	9.911 s	
+Completada
+Registros de Cloud
+22 nov 2026, 4:12:35 a.m.	Información	[Cancelar] Ejecución cancelada manualmente. Triggers de continuación borrados. Progreso de /players, de clanes y de battlelog/upcomingchests borrado. Lock liberado. Ya puedes ejecutar runAll()/runUpdate()/runGuerraRapido()/runSorteos()/runSyncCSV() desde cero.
+Encabezado	cancelarEjecucion	Editor	22 nov 2026, 4:11:59 a.m.	11.926 s	
+Completada
+Registros de Cloud
+22 nov 2026, 4:12:11 a.m.	Información	[Cancelar] Ejecución cancelada manualmente. Triggers de continuación borrados. Progreso de /players, de clanes y de battlelog/upcomingchests borrado. Lock liberado. Ya puedes ejecutar runAll()/runUpdate()/runGuerraRapido()/runSorteos()/runSyncCSV() desde cero.
+Encabezado	reanudarReenumerarTemporadas	Editor	22 nov 2026, 4:10:59 a.m.	3.544 s	
+Completada
+Registros de Cloud
+22 nov 2026, 4:11:03 a.m.	Información	[Lock] reanudarReenumerarTemporadas(): NO se inicia, esta dentro de la ventana de guerra protegida (4:00-5:00 Lima, mas 20 min de margen previo). Solo runGuerra() puede correr ahora; reintentar despues de las 5:00 a.m.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:58:19 a.m.	361.372 s	
+En tiempo de espera
+Registros de Cloud
+22 nov 2026, 2:58:28 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 34/35
+22 nov 2026, 2:58:28 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 33/35; paso 34/35 EN CURSO: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva (la tanda anterior lo dejó incompleto; esta es la tanda 7 de este paso). Progreso guardado al cierre de la tanda anterior: Clanes externos: 183 de 7287 archivos.
+22 nov 2026, 2:58:28 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+22 nov 2026, 3:04:20 a.m.	Error	Excedió el tiempo máximo de ejecución.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:52:28 a.m.	309.073 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:52:35 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 34/35
+22 nov 2026, 2:52:35 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 33/35; paso 34/35 EN CURSO: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva (la tanda anterior lo dejó incompleto; esta es la tanda 6 de este paso). Progreso guardado al cierre de la tanda anterior: Clanes externos: 232 de 7287 archivos.
+22 nov 2026, 2:52:35 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+22 nov 2026, 2:57:35 a.m.	Información	[Reenumeración]   Clanes externos: acumulado 183 de 7287 archivos (3 %); en tandas anteriores: 183; faltan 7104.
+22 nov 2026, 2:57:35 a.m.	Información	[Reenumeración]   Clanes externos: en esta tanda: 0 archivos.
+22 nov 2026, 2:57:35 a.m.	Información	[Reenumeración] Clanes externos: presupuesto agotado, se reintenta en la próxima continuación. cambiados en esta pasada: 0, ya hechos: 183, omitidos: 0 (temporada interna += 12).
+22 nov 2026, 2:57:35 a.m.	Información	[REENUM] Paso 34/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+22 nov 2026, 2:57:35 a.m.	Información	[REENUM] Paso 34/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:57:35 a.m.	Información	[REENUM]   Avance del paso 34/35 (tanda 6 de este paso): RETROCEDIÓ. Tanda anterior: Clanes externos: 232 de 7287 archivos. Ahora: Clanes externos: 183 de 7287 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:45:40 a.m.	307.715 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:45:45 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 34/35
+22 nov 2026, 2:45:45 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 33/35; paso 34/35 EN CURSO: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva (la tanda anterior lo dejó incompleto; esta es la tanda 5 de este paso). Progreso guardado al cierre de la tanda anterior: Clanes externos: 445 de 7287 archivos.
+22 nov 2026, 2:45:45 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+22 nov 2026, 2:50:45 a.m.	Información	[Reenumeración]   Clanes externos: acumulado 232 de 7287 archivos (3 %); en tandas anteriores: 232; faltan 7055.
+22 nov 2026, 2:50:45 a.m.	Información	[Reenumeración]   Clanes externos: en esta tanda: 0 archivos.
+22 nov 2026, 2:50:45 a.m.	Información	[Reenumeración] Clanes externos: presupuesto agotado, se reintenta en la próxima continuación. cambiados en esta pasada: 0, ya hechos: 232, omitidos: 0 (temporada interna += 12).
+22 nov 2026, 2:50:45 a.m.	Información	[REENUM] Paso 34/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+22 nov 2026, 2:50:45 a.m.	Información	[REENUM] Paso 34/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:50:45 a.m.	Información	[REENUM]   Avance del paso 34/35 (tanda 5 de este paso): RETROCEDIÓ. Tanda anterior: Clanes externos: 445 de 7287 archivos. Ahora: Clanes externos: 232 de 7287 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:39:58 a.m.	305.448 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:40:00 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 34/35
+22 nov 2026, 2:40:01 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 33/35; paso 34/35 EN CURSO: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva (la tanda anterior lo dejó incompleto; esta es la tanda 4 de este paso). Progreso guardado al cierre de la tanda anterior: Clanes externos: 274 de 7287 archivos.
+22 nov 2026, 2:40:01 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+22 nov 2026, 2:45:01 a.m.	Información	[Reenumeración]   Clanes externos: acumulado 445 de 7287 archivos (6 %); en tandas anteriores: 274; faltan 6842.
+22 nov 2026, 2:45:01 a.m.	Información	[Reenumeración]   Clanes externos: en esta tanda: 171 archivos.
+22 nov 2026, 2:45:01 a.m.	Información	[Reenumeración] Clanes externos: presupuesto agotado, se reintenta en la próxima continuación. cambiados en esta pasada: 171, ya hechos: 274, omitidos: 0 (temporada interna += 12).
+22 nov 2026, 2:45:01 a.m.	Información	[REENUM] Paso 34/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 2:45:01 a.m.	Información	[REENUM] Paso 34/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:45:01 a.m.	Información	[REENUM]   Avance del paso 34/35 (tanda 4 de este paso): AVANZÓ. Tanda anterior: Clanes externos: 274 de 7287 archivos. Ahora: Clanes externos: 445 de 7287 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:33:29 a.m.	306.276 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:33:32 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 34/35
+22 nov 2026, 2:33:32 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 33/35; paso 34/35 EN CURSO: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva (la tanda anterior lo dejó incompleto; esta es la tanda 3 de este paso). Progreso guardado al cierre de la tanda anterior: Clanes externos: 61 de 7287 archivos.
+22 nov 2026, 2:33:32 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+22 nov 2026, 2:38:33 a.m.	Información	[Reenumeración]   Clanes externos: acumulado 274 de 7287 archivos (4 %); en tandas anteriores: 61; faltan 7013.
+22 nov 2026, 2:38:33 a.m.	Información	[Reenumeración]   Clanes externos: en esta tanda: 213 archivos.
+22 nov 2026, 2:38:33 a.m.	Información	[Reenumeración] Clanes externos: presupuesto agotado, se reintenta en la próxima continuación. cambiados en esta pasada: 213, ya hechos: 61, omitidos: 0 (temporada interna += 12).
+22 nov 2026, 2:38:33 a.m.	Información	[REENUM] Paso 34/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 2:38:33 a.m.	Información	[REENUM] Paso 34/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:38:33 a.m.	Información	[REENUM]   Avance del paso 34/35 (tanda 3 de este paso): AVANZÓ. Tanda anterior: Clanes externos: 61 de 7287 archivos. Ahora: Clanes externos: 274 de 7287 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:27:45 a.m.	309.056 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:27:50 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 34/35
+22 nov 2026, 2:27:51 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 33/35; paso 34/35 EN CURSO: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva (la tanda anterior lo dejó incompleto; esta es la tanda 2 de este paso). Progreso guardado al cierre de la tanda anterior: Clanes externos: 59 de 7287 archivos.
+22 nov 2026, 2:27:51 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+22 nov 2026, 2:32:52 a.m.	Información	[Reenumeración]   Clanes externos: acumulado 61 de 7287 archivos (1 %); en tandas anteriores: 59; faltan 7226.
+22 nov 2026, 2:32:52 a.m.	Información	[Reenumeración]   Clanes externos: en esta tanda: 2 archivos.
+22 nov 2026, 2:32:52 a.m.	Información	[Reenumeración] Clanes externos: presupuesto agotado, se reintenta en la próxima continuación. cambiados en esta pasada: 2, ya hechos: 59, omitidos: 0 (temporada interna += 12).
+22 nov 2026, 2:32:52 a.m.	Información	[REENUM] Paso 34/35: incompleto tras 301 s en su última llamada; la tanda lleva 302 s de 240 s.
+22 nov 2026, 2:32:52 a.m.	Información	[REENUM] Paso 34/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:32:52 a.m.	Información	[REENUM]   Avance del paso 34/35 (tanda 2 de este paso): AVANZÓ. Tanda anterior: Clanes externos: 59 de 7287 archivos. Ahora: Clanes externos: 61 de 7287 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:21:29 a.m.	305.046 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:21:32 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 26/35
+22 nov 2026, 2:21:32 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 25/35; paso 26/35 POR EMPEZAR: Finalizar: cambia la Ref y el offset de RoyaleAPI, sube la versión de la caché del cruce de meta y mueve NUEVOS_CIERRE_SEMANA_T<n> → numeración nueva activa (la tanda anterior cerró el paso 25 y se quedó sin tiempo).
+22 nov 2026, 2:21:32 a.m.	Información	[REENUM] Reanudando en el paso 26: cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.
+22 nov 2026, 2:21:32 a.m.	Información	[Captura] INICIO (tandas, edad maxima del checkpoint 2700 s)
+22 nov 2026, 2:21:33 a.m.	Información	[API] Iniciando _fetchAllClanData para 4 clanes...
+22 nov 2026, 2:21:33 a.m.	Información	[API] Consultando clan: #GCRG8L00
+22 nov 2026, 2:21:34 a.m.	Información	[API][PERIODO] Grupo乂Terna™ (#GCRG8L00) | ts Lima 2026-11-22 02:21:34 | sectionIndex=2 periodIndex=19 periodType=warDay | Temporada(bot)=n/d Semana=3 Dia=S | DiaGuerra=n/d | participantes=159 sum(decksUsedToday)=167 sum(decksUsed)=556 sum(fame)=91000
+22 nov 2026, 2:21:34 a.m.	Información	[API] OK clan #GCRG8L00 | miembros: 46
+22 nov 2026, 2:21:35 a.m.	Información	[API] Consultando clan: #GYCU9YRG
+22 nov 2026, 2:21:36 a.m.	Información	[API][PERIODO] GrupoXTerna™2 (#GYCU9YRG) | ts Lima 2026-11-22 02:21:36 | sectionIndex=2 periodIndex=19 periodType=warDay | Temporada(bot)=n/d Semana=3 Dia=S | DiaGuerra=n/d | participantes=221 sum(decksUsedToday)=173 sum(decksUsed)=526 sum(fame)=83175
+22 nov 2026, 2:21:36 a.m.	Información	[API] OK clan #GYCU9YRG | miembros: 41
+22 nov 2026, 2:21:36 a.m.	Información	[API] Consultando clan: #GQQPPJGR
+22 nov 2026, 2:21:37 a.m.	Información	[API] HTTP 404 para /clans/%23GQQPPJGR/currentriverrace | Respuesta: {"reason":"notFound"}
+22 nov 2026, 2:21:37 a.m.	Información	[API][PERIODO] GrupoXTerna™3 (#GQQPPJGR) | ts Lima 2026-11-22 02:21:37 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+22 nov 2026, 2:21:37 a.m.	Información	[API] OK clan #GQQPPJGR | miembros: 1
+22 nov 2026, 2:21:37 a.m.	Información	[API] Clan #GQQPPJGR SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 1 miembros): no se cuenta como falla de la API.
+22 nov 2026, 2:21:39 a.m.	Información	[API] Consultando clan: #GG99LCJY
+22 nov 2026, 2:21:40 a.m.	Información	[API] HTTP 404 para /clans/%23GG99LCJY/currentriverrace | Respuesta: {"reason":"notFound"}
+22 nov 2026, 2:21:40 a.m.	Información	[API][PERIODO] Mini乂Ternas™ (#GG99LCJY) | ts Lima 2026-11-22 02:21:40 | SIN currentriverrace valido (API fallo/404 o sin periodIndex): no hay sectionIndex/periodIndex para este clan en esta corrida.
+22 nov 2026, 2:21:40 a.m.	Información	[API] OK clan #GG99LCJY | miembros: 6
+22 nov 2026, 2:21:40 a.m.	Información	[API] Clan #GG99LCJY SIN GUERRA ABIERTA (HTTP 404 en /currentriverrace, 6 miembros): no se cuenta como falla de la API.
+22 nov 2026, 2:21:40 a.m.	Información	[API][PERIODO] RESUMEN periodIndex por clan: #GCRG8L00=19, #GYCU9YRG=19, #GQQPPJGR=sin dato, #GG99LCJY=sin dato -> los clanes con dato coinciden. | SIN currentriverrace: #GQQPPJGR, #GG99LCJY (404 o fuera de la carrera; no se escribe nada para ellos); sin guerra abierta (404, §PF379): #GQQPPJGR, #GG99LCJY.
+22 nov 2026, 2:21:49 a.m.	Información	[Archivo] T-27  S-03 P.I-19-S 22-11-2026 02.21 - Grupo乂Terna™ - clans.json: archivo nuevo → 15 clave(s) [location:4, memberList:46]
+22 nov 2026, 2:21:49 a.m.	Información	[Cache] Creado en Drive (nuevo periodo T-27  S-03 P.I-19): T-27  S-03 P.I-19-S 22-11-2026 02.21 - Grupo乂Terna™ - clans.json
+22 nov 2026, 2:21:53 a.m.	Información	[Archivo] T-27  S-03 P.I-19-S 21-11-2026 04.52 - Grupo乂Terna™ - currentriverrace.json: archivo nuevo → 7 clave(s) [clan:8, clans:5, periodLogs:10]
+22 nov 2026, 2:21:53 a.m.	Información	[Cache] Creado en Drive (nuevo periodo T-27  S-03 P.I-19): T-27  S-03 P.I-19-S 21-11-2026 04.52 - Grupo乂Terna™ - currentriverrace.json
+22 nov 2026, 2:21:56 a.m.	Información	[Archivo] T-27  S-03 P.I-19-S 22-11-2026 02.21 - GrupoXTerna™2 - clans.json: archivo nuevo → 15 clave(s) [location:4, memberList:41]
+22 nov 2026, 2:21:56 a.m.	Información	[Cache] Creado en Drive (nuevo periodo T-27  S-03 P.I-19): T-27  S-03 P.I-19-S 22-11-2026 02.21 - GrupoXTerna™2 - clans.json
+22 nov 2026, 2:22:00 a.m.	Información	[Archivo] T-27  S-03 P.I-19-S 21-11-2026 04.42 - GrupoXTerna™2 - currentriverrace.json: archivo nuevo → 7 clave(s) [clan:8, clans:5, periodLogs:10]
+22 nov 2026, 2:22:00 a.m.	Información	[Cache] Creado en Drive (nuevo periodo T-27  S-03 P.I-19): T-27  S-03 P.I-19-S 21-11-2026 04.42 - GrupoXTerna™2 - currentriverrace.json
+22 nov 2026, 2:22:03 a.m.	Información	[Archivo] T-27  S-03 P.I-19-S 22-11-2026 02.22 - GrupoXTerna™3 - clans.json: archivo nuevo → 15 clave(s) [location:4, memberList:1]
+22 nov 2026, 2:22:03 a.m.	Información	[Cache] Creado en Drive (nuevo periodo T-27  S-03 P.I-19): T-27  S-03 P.I-19-S 22-11-2026 02.22 - GrupoXTerna™3 - clans.json
+22 nov 2026, 2:22:07 a.m.	Información	[Archivo] T-27  S-03 P.I-19-S 22-11-2026 02.22 - Mini乂Ternas™ - clans.json: archivo nuevo → 15 clave(s) [location:4, memberList:6]
+22 nov 2026, 2:22:07 a.m.	Información	[Cache] Creado en Drive (nuevo periodo T-27  S-03 P.I-19): T-27  S-03 P.I-19-S 22-11-2026 02.22 - Mini乂Ternas™ - clans.json
+22 nov 2026, 2:22:10 a.m.	Información	[Log] Entrada registrada en Log_ScriptTerna.json: _guardarJsonClanesDesdeCaptura_()
+22 nov 2026, 2:22:10 a.m.	Información	[Captura][JSON] 6 archivo(s) escrito(s) en 25.8 s
+22 nov 2026, 2:22:12 a.m.	Información	[Captura] FIN (tandas, 39 s)
+22 nov 2026, 2:22:12 a.m.	Información	[REENUM] Ejecutando paso 26/35: Finalizar: cambia la Ref y el offset de RoyaleAPI, sube la versión de la caché del cruce de meta y mueve NUEVOS_CIERRE_SEMANA_T<n> → numeración nueva activa
+22 nov 2026, 2:22:14 a.m.	Información	[Reenumeración] Avance de verificarCrrVsBackup* (VCRR_ESTADO) y de la corrección de Guerra (CORRGUERRA_ESTADO) descartados.
+22 nov 2026, 2:22:14 a.m.	Información	[Reenumeración] Cursores de Semana por días (RS_CURSOR_*), instantánea de la última guerra previa descartados y 150 clave(s) de PRIMERA_CONSULTA_RR pasadas a la numeración nueva (T += 12).
+22 nov 2026, 2:22:14 a.m.	Información	[Reenumeración] Índice de cruce de meta descartado y 4 marca(s) NUEVOS_CIERRE_SEMANA_T<n> pasadas a la numeración nueva (T += 12).
+22 nov 2026, 2:22:15 a.m.	Información	[Extra] Actualizando - Temporada:39
+22 nov 2026, 2:22:20 a.m.	Información	[Extra] updateExtraSheet completado. Columnas detectadas: 23
+22 nov 2026, 2:22:20 a.m.	Información	[Calendario] Generando calendario del mes actual...
+22 nov 2026, 2:22:23 a.m.	Información	[Calendario_2] Sincronización completada.
+22 nov 2026, 2:22:24 a.m.	Información	[Calendario] Día resaltado correctamente: 21-nov
+22 nov 2026, 2:22:24 a.m.	Información	[Calendario] Generado para noviembre 2026 (5 semanas)
+22 nov 2026, 2:22:24 a.m.	Información	[Calendario] Completado.
+22 nov 2026, 2:22:24 a.m.	Información	[Reenumeración] Ref activo actualizado a 2023-09-04 | Offset RoyaleAPI actualizado de 111 a 99 | Extra y Calendario refrescados.
+22 nov 2026, 2:22:24 a.m.	Información	[REENUM] Paso 26/35: terminado tras 13 s en su última llamada; la tanda lleva 52 s de 240 s.
+22 nov 2026, 2:22:25 a.m.	Información	[REENUM] Ejecutando paso 27/35: Historial_I/S, Historial_A/D y Comentarios: recalcula Temporada, Semana y Día desde la Fecha (no suma delta) → columnas con la numeración nueva
+22 nov 2026, 2:22:26 a.m.	Información	[TSD] Historial_I/S: 702 fila(s) revisadas, 0 sin Fecha válida, 0 sin temporada calculable.
+22 nov 2026, 2:22:27 a.m.	Información	[TSD] Historial_A/D: 87 fila(s) revisadas, 0 sin Fecha válida, 0 sin temporada calculable.
+22 nov 2026, 2:22:27 a.m.	Información	[TSD] Comentarios: 111 fila(s) revisadas, 0 sin Fecha válida, 0 sin temporada calculable.
+22 nov 2026, 2:22:27 a.m.	Información	[REENUM] Paso 27/35: terminado tras 2 s en su última llamada; la tanda lleva 55 s de 240 s.
+22 nov 2026, 2:22:28 a.m.	Información	[REENUM] Ejecutando paso 28/35: Fichas T<n>_S<m> de la columna Semanas de T_Lista, S_Lista y CR_Lista y sus Backup_*.csv: suma el delta → fichas apuntando a la semana correcta
+22 nov 2026, 2:22:29 a.m.	Información	[Reenumeración] Fichas «Semanas» de T_Lista: terminado (T += 12).
+22 nov 2026, 2:22:29 a.m.	Información	[Reenumeración]   Fichas «Semanas» de T_Lista (destino 1 de 6): acumulado 14 de 14 fichas (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 2:22:29 a.m.	Información	[Reenumeración]   Fichas «Semanas» de T_Lista (destino 1 de 6): en esta tanda: 14 fichas.
+22 nov 2026, 2:22:33 a.m.	Información	[Archivo] Backup_T_Lista.csv: 7 fila(s) → 7 fila(s)
+22 nov 2026, 2:22:33 a.m.	Información	[Reenumeración] Fichas «Semanas» de Backup_T_Lista.csv: terminado (T += 12).
+22 nov 2026, 2:22:33 a.m.	Información	[Reenumeración]   Fichas «Semanas» de Backup_T_Lista.csv (destino 2 de 6): acumulado 14 de 14 fichas (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 2:22:33 a.m.	Información	[Reenumeración]   Fichas «Semanas» de Backup_T_Lista.csv (destino 2 de 6): en esta tanda: 14 fichas.
+22 nov 2026, 2:22:33 a.m.	Información	[Reenumeración] Fichas «Semanas» de S_Lista: terminado (T += 12).
+22 nov 2026, 2:22:33 a.m.	Información	[Reenumeración]   Fichas «Semanas» de S_Lista (destino 3 de 6): acumulado 2 de 2 fichas (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 2:22:33 a.m.	Información	[Reenumeración]   Fichas «Semanas» de S_Lista (destino 3 de 6): en esta tanda: 2 fichas.
+22 nov 2026, 2:22:36 a.m.	Información	[Archivo] Backup_S_Lista.csv: 2 fila(s) → 2 fila(s)
+22 nov 2026, 2:22:36 a.m.	Información	[Reenumeración] Fichas «Semanas» de Backup_S_Lista.csv: terminado (T += 12).
+22 nov 2026, 2:22:36 a.m.	Información	[Reenumeración]   Fichas «Semanas» de Backup_S_Lista.csv (destino 4 de 6): acumulado 2 de 2 fichas (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 2:22:36 a.m.	Información	[Reenumeración]   Fichas «Semanas» de Backup_S_Lista.csv (destino 4 de 6): en esta tanda: 2 fichas.
+22 nov 2026, 2:22:37 a.m.	Información	[Reenumeración] Fichas «Semanas» de CR_Lista: terminado (T += 12).
+22 nov 2026, 2:22:37 a.m.	Información	[Reenumeración]   Fichas «Semanas» de CR_Lista (destino 5 de 6): acumulado 36 de 36 fichas (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 2:22:37 a.m.	Información	[Reenumeración]   Fichas «Semanas» de CR_Lista (destino 5 de 6): en esta tanda: 36 fichas.
+22 nov 2026, 2:22:39 a.m.	Información	[Archivo] Backup_CR_Lista.csv: 8 fila(s) → 8 fila(s)
+22 nov 2026, 2:22:40 a.m.	Información	[Reenumeración] Fichas «Semanas» de Backup_CR_Lista.csv: terminado (T += 12).
+22 nov 2026, 2:22:40 a.m.	Información	[Reenumeración]   Fichas «Semanas» de Backup_CR_Lista.csv (destino 6 de 6): acumulado 36 de 36 fichas (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 2:22:40 a.m.	Información	[Reenumeración]   Fichas «Semanas» de Backup_CR_Lista.csv (destino 6 de 6): en esta tanda: 36 fichas.
+22 nov 2026, 2:22:40 a.m.	Información	[REENUM] Paso 28/35: terminado tras 12 s en su última llamada; la tanda lleva 68 s de 240 s.
+22 nov 2026, 2:22:40 a.m.	Información	[REENUM] Ejecutando paso 29/35: Nombres de informes históricos con T<n>S<m> o T<n>_PI<m> (CSV/Informes, CSV/Tampermonkey y CSV/Informes/Cruce_Meta): suma el delta al número de temporada del nombre → nombres con la numeración nueva
+22 nov 2026, 2:23:05 a.m.	Información	[Reenumeración] Nombres de informes: 9 archivo(s) con temporada en el nombre (renombrados ahora: 9, ya hechos: 0, sin tocar por quedar negativos: 0) (T += 12).
+22 nov 2026, 2:23:05 a.m.	Información	[Reenumeración]   Nombres de informes: acumulado 9 de 9 archivos (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 2:23:05 a.m.	Información	[Reenumeración]   Nombres de informes: en esta tanda: 9 archivos.
+22 nov 2026, 2:23:05 a.m.	Información	[REENUM] Paso 29/35: terminado tras 24 s en su última llamada; la tanda lleva 93 s de 240 s.
+22 nov 2026, 2:23:05 a.m.	Información	[REENUM] Ejecutando paso 30/35: Temporada de T_Lista, S_Lista y CR_Lista recalculada por fecha (y ficha de Semanas si repetía el valor equivocado) y sus respaldos → filas que ya venían desfasadas quedan con la temporada de su fecha
+22 nov 2026, 2:23:06 a.m.	Información	[Temporada T_Lista] Fila 3 (25/10/2026, id T_26_S_03_N_01): Temporada 38 ya correcta · id esperado con migrarIdsEvento(): T_38_S_03_N_01
+22 nov 2026, 2:23:06 a.m.	Información	[Temporada T_Lista] Fila 4 (30/08/2026, id T_24_S_04_N_02): Temporada 36 ya correcta · id esperado con migrarIdsEvento(): T_36_S_04_N_02
+22 nov 2026, 2:23:06 a.m.	Información	[Temporada T_Lista] Fila 5 (30/08/2026, id T_24_S_04_N_01): Temporada 36 ya correcta · id esperado con migrarIdsEvento(): T_36_S_04_N_01
+22 nov 2026, 2:23:06 a.m.	Información	[Temporada T_Lista] Fila 6 (16/08/2026, id T_24_S_02_N_01): Temporada 36 ya correcta · id esperado con migrarIdsEvento(): T_36_S_02_N_01
+22 nov 2026, 2:23:06 a.m.	Información	[Temporada T_Lista] Fila 7 (02/08/2026, id T_23_S_04_N_01): Temporada 35 ya correcta · id esperado con migrarIdsEvento(): T_35_S_04_N_01
+22 nov 2026, 2:23:06 a.m.	Información	[Temporada T_Lista] Fila 8 (19/07/2026, id T_23_S_02_N_01): Temporada 35 ya correcta · id esperado con migrarIdsEvento(): T_35_S_02_N_01
+22 nov 2026, 2:23:06 a.m.	Información	[Temporada T_Lista] Fila 9 (05/07/2026, id T_22_S_05_N_01): Temporada 34 ya correcta · id esperado con migrarIdsEvento(): T_34_S_05_N_01
+22 nov 2026, 2:23:06 a.m.	Información	[Temporada T_Lista] Resumen: 0 temporada(s) por corregir, 0 ficha(s) de Semanas, 0 aviso(s).
+22 nov 2026, 2:23:08 a.m.	Información	[Archivo] Backup_T_Lista.csv: 7 fila(s) → 7 fila(s)
+22 nov 2026, 2:23:09 a.m.	Información	[Backup] Backup_T_Lista.csv sincronizado (7 filas de dato).
+22 nov 2026, 2:23:09 a.m.	Información	[Temporada T_Lista] Respaldo CSV de T_Lista rehecho desde la hoja.
+22 nov 2026, 2:23:09 a.m.	Información	[Temporada T_Lista] Terminado.
+22 nov 2026, 2:23:09 a.m.	Información	[Temporada S_Lista] Fila 3 (25/10/2026, id S_26_S_03_N_01): Temporada 38 ya correcta · id esperado con migrarIdsEvento(): S_38_S_03_N_01
+22 nov 2026, 2:23:09 a.m.	Información	[Temporada S_Lista] Fila 4 (08/09/2026, id S_25_S_01_N_01): Temporada 37 ya correcta · id esperado con migrarIdsEvento(): S_37_S_01_N_01
+22 nov 2026, 2:23:09 a.m.	Información	[Temporada S_Lista] Resumen: 0 temporada(s) por corregir, 0 ficha(s) de Semanas, 0 aviso(s).
+22 nov 2026, 2:23:11 a.m.	Información	[Archivo] Backup_S_Lista.csv: 2 fila(s) → 2 fila(s)
+22 nov 2026, 2:23:11 a.m.	Información	[Backup] Backup_S_Lista.csv sincronizado (2 filas de dato).
+22 nov 2026, 2:23:14 a.m.	Información	[Temporada S_Lista] Respaldo CSV de S_Lista rehecho desde la hoja.
+22 nov 2026, 2:23:14 a.m.	Información	[Temporada S_Lista] Terminado.
+22 nov 2026, 2:23:14 a.m.	Información	[Temporada CR_Lista] Fila 4 (07/12/2026, id A_28_S_01_N_01): Temporada 40 ya correcta · id esperado con migrarIdsEvento(): A_40_S_01_N_01
+22 nov 2026, 2:23:14 a.m.	Información	[Temporada CR_Lista] Fila 5 (07/12/2026, id D_28_S_01_N_01): Temporada 40 ya correcta · id esperado con migrarIdsEvento(): D_40_S_01_N_01
+22 nov 2026, 2:23:14 a.m.	Información	[Temporada CR_Lista] Fila 6 (02/11/2026, id A_27_S_01_N_01): Temporada 39 ya correcta · id esperado con migrarIdsEvento(): A_39_S_01_N_01
+22 nov 2026, 2:23:14 a.m.	Información	[Temporada CR_Lista] Fila 7 (02/11/2026, id D_27_S_01_N_01): Temporada 39 ya correcta · id esperado con migrarIdsEvento(): D_39_S_01_N_01
+22 nov 2026, 2:23:14 a.m.	Información	[Temporada CR_Lista] Fila 8 (05/10/2026, id A_26_S_01_N_01): Temporada 38 ya correcta · id esperado con migrarIdsEvento(): A_38_S_01_N_01
+22 nov 2026, 2:23:15 a.m.	Información	[Temporada CR_Lista] Fila 9 (05/10/2026, id D_26_S_01_N_01): Temporada 38 ya correcta · id esperado con migrarIdsEvento(): D_38_S_01_N_01
+22 nov 2026, 2:23:15 a.m.	Información	[Temporada CR_Lista] Fila 10 (16/09/2026, id A_25_S_01_N_01): Temporada 37 ya correcta · AVISO: la semana del id es la 1 y la de la fecha es la 2 (no se cambia aquí; si es lo que quieres, corre forzarSemanaIdEvento('A_25_S_01_N_01', 2)) · id esperado con migrarIdsEvento(): A_37_S_01_N_01
+22 nov 2026, 2:23:15 a.m.	Información	[Temporada CR_Lista] Fila 11 (16/09/2026, id D_25_S_01_N_01): Temporada 37 ya correcta · AVISO: la semana del id es la 1 y la de la fecha es la 2 (no se cambia aquí; si es lo que quieres, corre forzarSemanaIdEvento('D_25_S_01_N_01', 2)) · id esperado con migrarIdsEvento(): D_37_S_01_N_01
+22 nov 2026, 2:23:15 a.m.	Información	[Temporada CR_Lista] Resumen: 0 temporada(s) por corregir, 0 ficha(s) de Semanas, 2 aviso(s).
+22 nov 2026, 2:23:17 a.m.	Información	[Archivo] Backup_CR_Lista.csv: 8 fila(s) → 8 fila(s)
+22 nov 2026, 2:23:17 a.m.	Información	[Backup] Backup_CR_Lista.csv sincronizado (8 filas de dato).
+22 nov 2026, 2:23:17 a.m.	Información	[Setup] CR_Lista: dropdown de Tipo (Ascenso/Descenso) aplicado.
+22 nov 2026, 2:23:17 a.m.	Información	[Setup] CR_Lista: dropdown de Estado (Planificado/Realizado) aplicado.
+22 nov 2026, 2:23:17 a.m.	Información	[Temporada CR_Lista] Respaldo CSV de CR_Lista rehecho desde la hoja.
+22 nov 2026, 2:23:17 a.m.	Información	[Temporada CR_Lista] Terminado.
+22 nov 2026, 2:23:17 a.m.	Información	[REENUM] Paso 30/35: terminado tras 12 s en su última llamada; la tanda lleva 105 s de 240 s.
+22 nov 2026, 2:23:18 a.m.	Información	[REENUM] Ejecutando paso 31/35: Ids de evento de T_Lista, S_Lista y CR_Lista: rehace cada id con la temporada de su fila y reescribe las citas en T_Asistencia, S_Asistencia, T_Resoluciones y Extra, y sus respaldos → ids con la numeración nueva en todas las hojas
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento] T_Lista: 7 fila(s), 7 id(s) a reescribir (0 con número nuevo por choque), 0 aviso(s).
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 3: T_26_S_03_N_01 → T_38_S_03_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 4: T_24_S_04_N_02 → T_36_S_04_N_02
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 5: T_24_S_04_N_01 → T_36_S_04_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 6: T_24_S_02_N_01 → T_36_S_02_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 7: T_23_S_04_N_01 → T_35_S_04_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 8: T_23_S_02_N_01 → T_35_S_02_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 9: T_22_S_05_N_01 → T_34_S_05_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento] S_Lista: 2 fila(s), 2 id(s) a reescribir (0 con número nuevo por choque), 0 aviso(s).
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 3: S_26_S_03_N_01 → S_38_S_03_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 4: S_25_S_01_N_01 → S_37_S_01_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento] CR_Lista: 8 fila(s), 8 id(s) a reescribir (0 con número nuevo por choque), 0 aviso(s).
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 4: A_28_S_01_N_01 → A_40_S_01_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 5: D_28_S_01_N_01 → D_40_S_01_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 6: A_27_S_01_N_01 → A_39_S_01_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 7: D_27_S_01_N_01 → D_39_S_01_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 8: A_26_S_01_N_01 → A_38_S_01_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 9: D_26_S_01_N_01 → D_38_S_01_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 10: A_25_S_01_N_01 → A_37_S_01_N_01
+22 nov 2026, 2:23:19 a.m.	Información	[Ids evento]   fila 11: D_25_S_01_N_01 → D_37_S_01_N_01
+22 nov 2026, 2:23:20 a.m.	Información	[Ids evento] T_Asistencia (columna 3): 111 cita(s) a reescribir, 0 sin id correspondiente.
+22 nov 2026, 2:23:20 a.m.	Información	[Ids evento] S_Asistencia (columna 3): 1 cita(s) a reescribir, 0 sin id correspondiente.
+22 nov 2026, 2:23:20 a.m.	Información	[Ids evento] S_Lista (columna 6): 0 cita(s) a reescribir, 0 sin id correspondiente.
+22 nov 2026, 2:23:21 a.m.	Información	[Ids evento] Historial_A/D (columna 24): 0 cita(s) a reescribir, 0 sin id correspondiente.
+22 nov 2026, 2:23:21 a.m.	Información	[Ids evento] Extra (Vigente_ID): 2 valor(es) a reescribir.
+22 nov 2026, 2:23:21 a.m.	Información	[Ids evento] T_Lista: columna de ids reescrita (7 celda(s)).
+22 nov 2026, 2:23:21 a.m.	Información	[Ids evento] S_Lista: columna de ids reescrita (2 celda(s)).
+22 nov 2026, 2:23:21 a.m.	Información	[Ids evento] CR_Lista: columna de ids reescrita (8 celda(s)).
+22 nov 2026, 2:23:24 a.m.	Información	[Archivo] Backup_T_Lista.csv: 7 fila(s) → 7 fila(s)
+22 nov 2026, 2:23:24 a.m.	Información	[Backup] Backup_T_Lista.csv sincronizado (7 filas de dato).
+22 nov 2026, 2:23:26 a.m.	Información	[Archivo] Backup_S_Lista.csv: 2 fila(s) → 2 fila(s)
+22 nov 2026, 2:23:26 a.m.	Información	[Backup] Backup_S_Lista.csv sincronizado (2 filas de dato).
+22 nov 2026, 2:23:31 a.m.	Información	[Archivo] Backup_CR_Lista.csv: 8 fila(s) → 8 fila(s)
+22 nov 2026, 2:23:31 a.m.	Información	[Backup] Backup_CR_Lista.csv sincronizado (8 filas de dato).
+22 nov 2026, 2:23:31 a.m.	Información	[Setup] CR_Lista: dropdown de Tipo (Ascenso/Descenso) aplicado.
+22 nov 2026, 2:23:31 a.m.	Información	[Setup] CR_Lista: dropdown de Estado (Planificado/Realizado) aplicado.
+22 nov 2026, 2:23:35 a.m.	Información	[Archivo] Backup_T_Asistencia.csv: 111 fila(s) → 111 fila(s)
+22 nov 2026, 2:23:35 a.m.	Información	[Backup] Backup_T_Asistencia.csv sincronizado (111 filas de dato).
+22 nov 2026, 2:23:38 a.m.	Información	[Archivo] Backup_S_Asistencia.csv: 1 fila(s) → 1 fila(s)
+22 nov 2026, 2:23:38 a.m.	Información	[Backup] Backup_S_Asistencia.csv sincronizado (1 filas de dato).
+22 nov 2026, 2:23:39 a.m.	Información	[ALERTA PROTECCIÓN] SKIP sobreescritura de Backup_Extra.csv (Hoja tiene 19 filas de dato, CSV tiene 23). No se guardó.
+22 nov 2026, 2:23:39 a.m.	Información	[Ids evento] Terminado: 17 id(s) reescrito(s). Backup_T_Resoluciones.csv se rehace con la sincronización diaria de respaldos.
+22 nov 2026, 2:23:39 a.m.	Información	[REENUM] Paso 31/35: terminado tras 21 s en su última llamada; la tanda lleva 127 s de 240 s.
+22 nov 2026, 2:23:40 a.m.	Información	[REENUM] Ejecutando paso 32/35: Temporada y Fecha de T_Asistencia y S_Asistencia tomadas de su torneo o sorteo (el id es la llave) y sus respaldos → asistencias coherentes con sus listas
+22 nov 2026, 2:23:41 a.m.	Información	[Asistencia T_Asistencia] Resumen: 0 fila(s) de T_Asistencia por corregir en 0 torneo(s), 0 id(s) sin torneo, 0 repetido(s).
+22 nov 2026, 2:23:44 a.m.	Información	[Archivo] Backup_T_Asistencia.csv: 111 fila(s) → 111 fila(s)
+22 nov 2026, 2:23:44 a.m.	Información	[Backup] Backup_T_Asistencia.csv sincronizado (111 filas de dato).
+22 nov 2026, 2:23:44 a.m.	Información	[Asistencia T_Asistencia] Respaldo CSV de T_Asistencia rehecho desde la hoja.
+22 nov 2026, 2:23:44 a.m.	Información	[Asistencia T_Asistencia] Terminado.
+22 nov 2026, 2:23:44 a.m.	Información	[Asistencia S_Asistencia] AVISO: el id T_34_S_05_N_01 de S_Asistencia no está en S_Lista; no se toca.
+22 nov 2026, 2:23:44 a.m.	Información	[Asistencia S_Asistencia] Resumen: 0 fila(s) de S_Asistencia por corregir en 0 torneo(s), 1 id(s) sin torneo, 0 repetido(s).
+22 nov 2026, 2:23:46 a.m.	Información	[Archivo] Backup_S_Asistencia.csv: 1 fila(s) → 1 fila(s)
+22 nov 2026, 2:23:46 a.m.	Información	[Backup] Backup_S_Asistencia.csv sincronizado (1 filas de dato).
+22 nov 2026, 2:23:46 a.m.	Información	[Asistencia S_Asistencia] Respaldo CSV de S_Asistencia rehecho desde la hoja.
+22 nov 2026, 2:23:46 a.m.	Información	[Asistencia S_Asistencia] Terminado.
+22 nov 2026, 2:23:46 a.m.	Información	[REENUM] Paso 32/35: terminado tras 6 s en su última llamada; la tanda lleva 134 s de 240 s.
+22 nov 2026, 2:23:47 a.m.	Información	[REENUM] Ejecutando paso 33/35: HistorialGuerra, JSON grupales por clan (Drive): suma el delta a la temporada interna de cada semana, junta las semanas repetidas y quita las alternativas ya resueltas → todos los JSON grupales con la numeración nueva
+22 nov 2026, 2:23:48 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 2:23:55 a.m.	Información	[Reenumeración]   JSON grupal por clan: acumulado 4 de 4 archivos (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 2:23:55 a.m.	Información	[Reenumeración]   JSON grupal por clan: en esta tanda: 4 archivos.
+22 nov 2026, 2:23:55 a.m.	Información	[Reenumeración] JSON grupal por clan: cambiados en esta pasada: 4, ya hechos: 0, omitidos: 0; semanas repetidas juntadas: 0; alternativas resueltas quitadas: 0 (revisiones cerradas: 0); valores distintos enviados a revisión: 0 (temporadaInterna += 12).
+22 nov 2026, 2:23:55 a.m.	Información	[REENUM] Paso 33/35: terminado tras 7 s en su última llamada; la tanda lleva 142 s de 240 s.
+22 nov 2026, 2:23:55 a.m.	Información	[REENUM] Ejecutando paso 34/35: Clanes_Externos (Otros, un archivo por clan): suma el delta a la temporada interna de cada semana de cada jugador → archivos de clan con la numeración nueva
+22 nov 2026, 2:26:33 a.m.	Información	[Reenumeración]   Clanes externos: acumulado 59 de 7287 archivos (1 %); en tandas anteriores: 0; faltan 7228.
+22 nov 2026, 2:26:33 a.m.	Información	[Reenumeración]   Clanes externos: en esta tanda: 59 archivos.
+22 nov 2026, 2:26:33 a.m.	Información	[Reenumeración] Clanes externos: presupuesto agotado, se reintenta en la próxima continuación. cambiados en esta pasada: 59, ya hechos: 0, omitidos: 0 (temporada interna += 12).
+22 nov 2026, 2:26:33 a.m.	Información	[REENUM] Paso 34/35: incompleto tras 157 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 2:26:33 a.m.	Información	[REENUM] Paso 34/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:26:33 a.m.	Información	[REENUM]   Avance del paso 34/35 (tanda 1 de este paso): al cierre: Clanes externos: 59 de 7287 archivos. (Sin tanda anterior comparable de este paso.)
+22 nov 2026, 2:26:33 a.m.	Información	[CSV] Revisión posterior de los CSV escritos SALTADA: quedan menos de 60 s de presupuesto.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:14:48 a.m.	291.422 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:14:56 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 2:14:56 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 13 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 324 de 342 carpetas.
+22 nov 2026, 2:14:56 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 2:19:38 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 342 de 342 carpetas (100 %); en tandas anteriores: 324; faltan 0.
+22 nov 2026, 2:19:38 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 18 carpetas.
+22 nov 2026, 2:19:38 a.m.	Información	[Reenumeración] JSON Drive: 342 carpeta(s) recorridas (renombrados en esta pasada: 77, sin renombrar por quedar negativos: 0) (T-NN += 12).
+22 nov 2026, 2:19:38 a.m.	Información	[REENUM] Paso 25/35: terminado tras 281 s en su última llamada; la tanda lleva 282 s de 240 s.
+22 nov 2026, 2:19:38 a.m.	Información	[REENUM] Paso 25/35 COMPLETO tras 13 tandas.
+22 nov 2026, 2:19:39 a.m.	Información	[REENUM] Presupuesto de tiempo agotado tras completar el paso 25/35. Queda: paso 26/35 POR EMPEZAR. Se programa continuación automática en 10s.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:08:25 a.m.	306.204 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:08:29 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 2:08:29 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 12 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 300 de 342 carpetas.
+22 nov 2026, 2:08:29 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 2:13:29 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 116). Se reintenta en la próxima continuación.
+22 nov 2026, 2:13:29 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 324 de 342 carpetas (95 %); en tandas anteriores: 300; faltan 18.
+22 nov 2026, 2:13:29 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 24 carpetas.
+22 nov 2026, 2:13:30 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 2:13:30 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:13:30 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 12 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 300 de 342 carpetas. Ahora: JSON Drive: 324 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 2:01:23 a.m.	316.562 s	
+Completada
+Registros de Cloud
+22 nov 2026, 2:01:33 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 2:01:34 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 11 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 278 de 342 carpetas.
+22 nov 2026, 2:01:34 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 2:06:38 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 99). Se reintenta en la próxima continuación.
+22 nov 2026, 2:06:38 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 300 de 342 carpetas (88 %); en tandas anteriores: 278; faltan 42.
+22 nov 2026, 2:06:38 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 22 carpetas.
+22 nov 2026, 2:06:38 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 304 s en su última llamada; la tanda lleva 305 s de 240 s.
+22 nov 2026, 2:06:38 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:06:38 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 11 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 278 de 342 carpetas. Ahora: JSON Drive: 300 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:55:56 a.m.	308.554 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:56:02 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:56:02 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 10 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 249 de 342 carpetas.
+22 nov 2026, 1:56:02 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 2:01:03 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 147). Se reintenta en la próxima continuación.
+22 nov 2026, 2:01:03 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 278 de 342 carpetas (81 %); en tandas anteriores: 249; faltan 64.
+22 nov 2026, 2:01:03 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 29 carpetas.
+22 nov 2026, 2:01:03 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 2:01:03 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 2:01:03 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 10 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 249 de 342 carpetas. Ahora: JSON Drive: 278 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:48:41 a.m.	307.157 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:48:45 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:48:45 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 9 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 227 de 342 carpetas.
+22 nov 2026, 1:48:45 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:53:47 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 109). Se reintenta en la próxima continuación.
+22 nov 2026, 1:53:47 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 249 de 342 carpetas (73 %); en tandas anteriores: 227; faltan 93.
+22 nov 2026, 1:53:47 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 22 carpetas.
+22 nov 2026, 1:53:47 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 302 s en su última llamada; la tanda lleva 302 s de 240 s.
+22 nov 2026, 1:53:47 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:53:47 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 9 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 227 de 342 carpetas. Ahora: JSON Drive: 249 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:43:04 a.m.	306.436 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:43:08 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:43:08 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 8 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 160 de 342 carpetas.
+22 nov 2026, 1:43:08 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:48:08 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 232). Se reintenta en la próxima continuación.
+22 nov 2026, 1:48:08 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 227 de 342 carpetas (66 %); en tandas anteriores: 160; faltan 115.
+22 nov 2026, 1:48:08 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 67 carpetas.
+22 nov 2026, 1:48:08 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 300 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 1:48:08 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:48:08 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 8 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 160 de 342 carpetas. Ahora: JSON Drive: 227 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:36:57 a.m.	307.858 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:37:01 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:37:01 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 7 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 131 de 342 carpetas.
+22 nov 2026, 1:37:01 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:42:02 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 144). Se reintenta en la próxima continuación.
+22 nov 2026, 1:42:02 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 160 de 342 carpetas (47 %); en tandas anteriores: 131; faltan 182.
+22 nov 2026, 1:42:02 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 29 carpetas.
+22 nov 2026, 1:42:02 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 1:42:02 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:42:02 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 7 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 131 de 342 carpetas. Ahora: JSON Drive: 160 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:30:45 a.m.	305.755 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:30:49 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:30:49 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 6 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 110 de 342 carpetas.
+22 nov 2026, 1:30:49 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:35:49 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 115). Se reintenta en la próxima continuación.
+22 nov 2026, 1:35:49 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 131 de 342 carpetas (38 %); en tandas anteriores: 110; faltan 211.
+22 nov 2026, 1:35:49 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 21 carpetas.
+22 nov 2026, 1:35:49 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 300 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 1:35:49 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:35:49 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 6 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 110 de 342 carpetas. Ahora: JSON Drive: 131 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:23:27 a.m.	309.814 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:23:33 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:23:33 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 5 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 87 de 342 carpetas.
+22 nov 2026, 1:23:33 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:28:35 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 120). Se reintenta en la próxima continuación.
+22 nov 2026, 1:28:35 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 110 de 342 carpetas (32 %); en tandas anteriores: 87; faltan 232.
+22 nov 2026, 1:28:35 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 23 carpetas.
+22 nov 2026, 1:28:35 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 301 s en su última llamada; la tanda lleva 302 s de 240 s.
+22 nov 2026, 1:28:35 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:28:35 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 5 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 87 de 342 carpetas. Ahora: JSON Drive: 110 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:16:54 a.m.	307.559 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:16:58 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:16:58 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 4 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 82 de 342 carpetas.
+22 nov 2026, 1:16:58 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:21:59 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 25). Se reintenta en la próxima continuación.
+22 nov 2026, 1:21:59 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 87 de 342 carpetas (25 %); en tandas anteriores: 82; faltan 255.
+22 nov 2026, 1:21:59 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 5 carpetas.
+22 nov 2026, 1:21:59 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 1:21:59 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:21:59 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 4 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 82 de 342 carpetas. Ahora: JSON Drive: 87 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:10:12 a.m.	306.234 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:10:15 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:10:15 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 3 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 58 de 342 carpetas.
+22 nov 2026, 1:10:15 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:15:16 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 119). Se reintenta en la próxima continuación.
+22 nov 2026, 1:15:16 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 82 de 342 carpetas (24 %); en tandas anteriores: 58; faltan 260.
+22 nov 2026, 1:15:16 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 24 carpetas.
+22 nov 2026, 1:15:17 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 301 s en su última llamada; la tanda lleva 302 s de 240 s.
+22 nov 2026, 1:15:17 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:15:17 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 3 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 58 de 342 carpetas. Ahora: JSON Drive: 82 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 1:04:53 a.m.	308.476 s	
+Completada
+Registros de Cloud
+22 nov 2026, 1:04:59 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 25/35
+22 nov 2026, 1:04:59 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 24/35; paso 25/35 EN CURSO: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados (la tanda anterior lo dejó incompleto; esta es la tanda 2 de este paso). Progreso guardado al cierre de la tanda anterior: JSON Drive: 27 de 342 carpetas.
+22 nov 2026, 1:04:59 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:09:59 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 171). Se reintenta en la próxima continuación.
+22 nov 2026, 1:09:59 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 58 de 342 carpetas (17 %); en tandas anteriores: 27; faltan 284.
+22 nov 2026, 1:09:59 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 31 carpetas.
+22 nov 2026, 1:09:59 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 1:09:59 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:09:59 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 2 de este paso): AVANZÓ. Tanda anterior: JSON Drive: 27 de 342 carpetas. Ahora: JSON Drive: 58 de 342 carpetas.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 12:58:48 a.m.	305.481 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:58:51 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 24/35
+22 nov 2026, 12:58:51 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 23/35; paso 24/35 EN CURSO: Informes CSV de CSV/Informes, CSV/Tampermonkey y CSV/Informes/Cruce_Meta: suma el delta a la columna Temporada y recalcula ID → todos los informes con columna Temporada actualizados (la tanda anterior lo dejó incompleto; esta es la tanda 3 de este paso). Progreso guardado al cierre de la tanda anterior: Informes: 213 de 280 archivos.
+22 nov 2026, 12:58:51 a.m.	Información	[REENUM] Ejecutando paso 24/35: Informes CSV de CSV/Informes, CSV/Tampermonkey y CSV/Informes/Cruce_Meta: suma el delta a la columna Temporada y recalcula ID → todos los informes con columna Temporada actualizados
+22 nov 2026, 12:58:56 a.m.	Información	[Archivo] Cruce_CRR_vs_Backup 2026-11-14 11.21.02 (crear filas por lista, aplicado).csv: 2 fila(s) → 2 fila(s)
+22 nov 2026, 12:58:59 a.m.	Información	[Archivo] Cruce_CRR_vs_Backup 2026-11-14 12.56.51 (descarte, informe).csv: 16 fila(s) → 16 fila(s)
+22 nov 2026, 12:59:00 a.m.	Información	[Archivo] Cruce_CRR_vs_Backup 2026-11-14 12.57.17 (descarte, aplicado).csv: 16 fila(s) → 16 fila(s)
+22 nov 2026, 12:59:02 a.m.	Información	[Archivo] Cruce_CRR_vs_Backup 2026-11-14 12.57.56 (crear filas por lista, informe).csv: 6 fila(s) → 6 fila(s)
+22 nov 2026, 12:59:04 a.m.	Información	[Archivo] Cruce_CRR_vs_Backup 2026-11-14 12.59.44 (crear filas por lista, aplicado).csv: 6 fila(s) → 6 fila(s)
+22 nov 2026, 12:59:06 a.m.	Información	[Archivo] Cruce_CRR_vs_Backup 2026-11-14 13.39.54 (descarte, informe).csv: 20 fila(s) → 20 fila(s)
+22 nov 2026, 12:59:07 a.m.	Información	[Archivo] Cruce_CRR_vs_Backup 2026-11-14 13.40.19 (descarte, aplicado).csv: 20 fila(s) → 20 fila(s)
+22 nov 2026, 12:59:09 a.m.	Información	[Archivo] Cruce_SinResolver_Historial 2026-10-18 23.37.52 (informe).csv: 163 fila(s) → 163 fila(s)
+22 nov 2026, 12:59:11 a.m.	Información	[Archivo] Reparacion_AtaquesHoy_Guerra_JSON 2026-09-29 16.23.14 (informe).csv: 137 fila(s) → 137 fila(s)
+22 nov 2026, 12:59:13 a.m.	Información	[Archivo] Reparacion_AtaquesHoy_Guerra_JSON 2026-09-29 16.24.19 (aplicado).csv: 137 fila(s) → 137 fila(s)
+22 nov 2026, 12:59:14 a.m.	Información	[Archivo] Reparacion_AtaquesHoy_Guerra_JSON 2026-10-05 16.39.39 (informe).csv: 7 fila(s) → 7 fila(s)
+22 nov 2026, 12:59:16 a.m.	Información	[Archivo] Reparacion_AtaquesHoy_Guerra_JSON 2026-10-05 17.14.37 (aplicado).csv: 7 fila(s) → 7 fila(s)
+22 nov 2026, 12:59:18 a.m.	Información	[Archivo] Reparacion_AtaquesHoy_Guerra_JSON 2026-10-11 21.31.46 (aplicado).csv: 7 fila(s) → 7 fila(s)
+22 nov 2026, 12:59:19 a.m.	Información	[Archivo] Reparacion_AtaquesSemanaAnomalias 2026-10-19 01.19.58 (informe).csv: 4 fila(s) → 4 fila(s)
+22 nov 2026, 12:59:21 a.m.	Información	[Archivo] Reparacion_AtaquesSemanaAnomalias 2026-10-19 01.21.19 (aplicado).csv: 4 fila(s) → 4 fila(s)
+22 nov 2026, 12:59:22 a.m.	Información	[Archivo] Reparacion_AtaquesSemanaAnomalias 2026-10-19 01.21.50 (informe).csv: 4 fila(s) → 4 fila(s)
+22 nov 2026, 12:59:23 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 1:00:27 a.m.	Información	[Reenumeración]   Informes: acumulado 280 de 280 archivos (100 %); en tandas anteriores: 213; faltan 0.
+22 nov 2026, 1:00:27 a.m.	Información	[Reenumeración]   Informes: en esta tanda: 67 archivos.
+22 nov 2026, 1:00:27 a.m.	Información	[Reenumeración] Informes: 280 archivo(s) en la carpeta (cambiados en esta pasada: 54 con 59222 fila(s), ya hechos: 0, sin columna Temporada o sin filas enteras: 13, con error: 0) (Temporada += 12).
+22 nov 2026, 1:00:27 a.m.	Información	[REENUM] Paso 24/35: terminado tras 96 s en su última llamada; la tanda lleva 96 s de 240 s.
+22 nov 2026, 1:00:27 a.m.	Información	[REENUM] Paso 24/35 COMPLETO tras 3 tandas.
+22 nov 2026, 1:00:27 a.m.	Información	[REENUM] Ejecutando paso 25/35: Nombres de JSON y carpetas T-NN de Drive: suma el delta al número de temporada del nombre → todos los T-NN renombrados
+22 nov 2026, 1:03:51 a.m.	Información	[Reenumeración] JSON Drive: presupuesto agotado (renombrados en esta pasada: 111). Se reintenta en la próxima continuación.
+22 nov 2026, 1:03:51 a.m.	Información	[Reenumeración]   JSON Drive: acumulado 27 de 342 carpetas (8 %); en tandas anteriores: 0; faltan 315.
+22 nov 2026, 1:03:51 a.m.	Información	[Reenumeración]   JSON Drive: en esta tanda: 27 carpetas.
+22 nov 2026, 1:03:52 a.m.	Información	[REENUM] Paso 25/35: incompleto tras 204 s en su última llamada; la tanda lleva 300 s de 240 s.
+22 nov 2026, 1:03:52 a.m.	Información	[REENUM] Paso 25/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 1:03:52 a.m.	Información	[REENUM]   Avance del paso 25/35 (tanda 1 de este paso): al cierre: JSON Drive: 27 de 342 carpetas. (Sin tanda anterior comparable de este paso.)
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 12:52:52 a.m.	306.514 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:52:56 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 24/35
+22 nov 2026, 12:52:56 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 23/35; paso 24/35 EN CURSO: Informes CSV de CSV/Informes, CSV/Tampermonkey y CSV/Informes/Cruce_Meta: suma el delta a la columna Temporada y recalcula ID → todos los informes con columna Temporada actualizados (la tanda anterior lo dejó incompleto; esta es la tanda 2 de este paso). Progreso guardado al cierre de la tanda anterior: Informes: 113 de 280 archivos.
+22 nov 2026, 12:52:56 a.m.	Información	[REENUM] Ejecutando paso 24/35: Informes CSV de CSV/Informes, CSV/Tampermonkey y CSV/Informes/Cruce_Meta: suma el delta a la columna Temporada y recalcula ID → todos los informes con columna Temporada actualizados
+22 nov 2026, 12:53:06 a.m.	Información	[Archivo] Backup_Guerra ANTES de completar Clan_Tag 2026-11-07 07.28.41.csv: 39953 fila(s) → 39953 fila(s)
+22 nov 2026, 12:53:12 a.m.	Información	[Archivo] Backup_Guerra ANTES de completar Clan_Tag 2026-11-07 07.30.21.csv: 39953 fila(s) → 39953 fila(s)
+22 nov 2026, 12:53:18 a.m.	Información	[Archivo] Backup_Guerra ANTES de completar Clan_Tag 2026-11-07 08.25.45.csv: 39954 fila(s) → 39954 fila(s)
+22 nov 2026, 12:53:24 a.m.	Información	[Archivo] Backup_Guerra ANTES de completar Clan_Tag 2026-11-07 09.07.10.csv: 39954 fila(s) → 39954 fila(s)
+22 nov 2026, 12:53:28 a.m.	Información	[Archivo] Backup_Guerra ANTES de completar DomingoDesdeJsonRoyaleApi 2026-10-18 22.37.29.csv: 16146 fila(s) → 16146 fila(s)
+22 nov 2026, 12:53:34 a.m.	Información	[Archivo] Backup_Guerra ANTES de corregir DiaGuerra T22 2026-11-14 11.23.10.csv: 40700 fila(s) → 40700 fila(s)
+22 nov 2026, 12:53:38 a.m.	Información	[Archivo] Backup_Guerra ANTES de corregir filas de series CRR 2026-11-03 16.46.11.csv: 20191 fila(s) → 20191 fila(s)
+22 nov 2026, 12:53:44 a.m.	Información	[Archivo] Backup_Guerra ANTES de corregir por lista 2026-11-14 01.17.02.csv: 40614 fila(s) → 40614 fila(s)
+22 nov 2026, 12:53:47 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 12:57:57 a.m.	Información	[Reenumeración] Informes: presupuesto agotado. Se reintenta en la próxima continuación.
+22 nov 2026, 12:57:57 a.m.	Información	[Reenumeración]   Informes: acumulado 213 de 280 archivos (76 %); en tandas anteriores: 113; faltan 67.
+22 nov 2026, 12:57:57 a.m.	Información	[Reenumeración]   Informes: en esta tanda: 100 archivos.
+22 nov 2026, 12:57:57 a.m.	Información	[REENUM] Paso 24/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 12:57:57 a.m.	Información	[REENUM] Paso 24/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 12:57:57 a.m.	Información	[REENUM]   Avance del paso 24/35 (tanda 2 de este paso): AVANZÓ. Tanda anterior: Informes: 113 de 280 archivos. Ahora: Informes: 213 de 280 archivos.
+Encabezado	runSincronizarContactos	Editor	22 nov 2026, 12:50:10 a.m.	3.619 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:50:13 a.m.	Información	[Reenumeración] runSincronizarContactos(): NO se ejecuta, hay una reenumeración de temporadas en curso (REENUM_PASO = 23, REENUM_BLOQUEO = 1). Se retoma sola cuando termine.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 12:46:26 a.m.	308.725 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:46:31 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+22 nov 2026, 12:46:31 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 13 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1854 de 1867 archivos.
+22 nov 2026, 12:46:31 a.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+22 nov 2026, 12:46:53 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #CJQPYGCY9.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:46:55 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #JC0GCV0RG.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:46:56 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #JRYC2PCQY.json: 6 clave(s) [registros:91] → 7 clave(s) [registros:91]
+22 nov 2026, 12:46:58 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #U9P0PYQQ2.json: 7 clave(s) [registros:132] → 7 clave(s) [registros:132]
+22 nov 2026, 12:47:00 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #UJLLUP0UR.json: 6 clave(s) [registros:63] → 7 clave(s) [registros:63]
+22 nov 2026, 12:47:02 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #UJYVYP2G2.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:47:04 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #UUVLYGQ8J.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:47:06 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #VGJ0PPVRU.json: 6 clave(s) [registros:56] → 7 clave(s) [registros:56]
+22 nov 2026, 12:47:07 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #VY82CGURL.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:47:09 a.m.	Información	[Archivo] 21-11-2026 19.39 - GrupoXTerna™2 - #VYYU0QGUC.json: 7 clave(s) [registros:83] → 7 clave(s) [registros:83]
+22 nov 2026, 12:47:11 a.m.	Información	[Archivo] 21-11-2026 19.40 - GrupoXTerna™2 - #UUVLYGQ8J.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:47:12 a.m.	Información	[Archivo] 21-11-2026 20.15 - Grupo乂Terna™ - #YLU0JYUL.json: 7 clave(s) [registros:146] → 7 clave(s) [registros:146]
+22 nov 2026, 12:47:14 a.m.	Información	[Archivo] 22-10-2026 20.10 - Mini乂Ternas™ - #20VU2RVR0J.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+22 nov 2026, 12:47:14 a.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 1867 de 1867 archivos (100 %); en tandas anteriores: 1854; faltan 0.
+22 nov 2026, 12:47:14 a.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 13 archivos.
+22 nov 2026, 12:47:14 a.m.	Información	[Reenumeración] HistorialGuerra individual: 1867 archivo(s) revisados en esta corrida de la carpeta (cambiados en esta pasada: 13, ya hechos: 0, omitidos: 0) (temporadaInterna += 12).
+22 nov 2026, 12:47:14 a.m.	Información	[REENUM] Paso 20/35: terminado tras 44 s en su última llamada; la tanda lleva 44 s de 240 s.
+22 nov 2026, 12:47:14 a.m.	Información	[REENUM] Paso 20/35 COMPLETO tras 13 tandas.
+22 nov 2026, 12:47:15 a.m.	Información	[REENUM] Ejecutando paso 21/35: HistorialGuerra_Grupal.csv: suma el delta a TemporadaInterna → todas las filas con la numeración nueva
+22 nov 2026, 12:47:18 a.m.	Información	[Archivo] HistorialGuerra_Grupal.csv: 7362 fila(s) → 7362 fila(s)
+22 nov 2026, 12:47:19 a.m.	Información	[Reenumeración] HistorialGuerra_Grupal.csv: terminado (TemporadaInterna += 12).
+22 nov 2026, 12:47:19 a.m.	Información	[Reenumeración]   HistorialGuerra_Grupal.csv: acumulado 7362 de 7362 filas (100 %); en tandas anteriores: 0; faltan 0.
+22 nov 2026, 12:47:19 a.m.	Información	[Reenumeración]   HistorialGuerra_Grupal.csv: en esta tanda: 7362 filas.
+22 nov 2026, 12:47:19 a.m.	Información	[REENUM] Paso 21/35: terminado tras 4 s en su última llamada; la tanda lleva 48 s de 240 s.
+22 nov 2026, 12:47:19 a.m.	Información	[REENUM] Ejecutando paso 22/35: Hoja Alertas_HistorialGuerra: suma el delta a Temporada interna → alertas con la numeración nueva
+22 nov 2026, 12:47:20 a.m.	Información	[Reenumeración] Hoja Alertas_HistorialGuerra sin filas de datos, se omite.
+22 nov 2026, 12:47:20 a.m.	Información	[REENUM] Paso 22/35: terminado tras 1 s en su última llamada; la tanda lleva 49 s de 240 s.
+22 nov 2026, 12:47:21 a.m.	Información	[REENUM] Ejecutando paso 23/35: Alertas_HistorialGuerra.csv: suma el delta a Temporada interna → copia igual a la hoja
+22 nov 2026, 12:47:23 a.m.	Información	[Reenumeración] Alertas_HistorialGuerra.csv: no existe todavía, se omite.
+22 nov 2026, 12:47:23 a.m.	Información	[REENUM] Paso 23/35: terminado tras 2 s en su última llamada; la tanda lleva 52 s de 240 s.
+22 nov 2026, 12:47:23 a.m.	Información	[REENUM] Ejecutando paso 24/35: Informes CSV de CSV/Informes, CSV/Tampermonkey y CSV/Informes/Cruce_Meta: suma el delta a la columna Temporada y recalcula ID → todos los informes con columna Temporada actualizados
+22 nov 2026, 12:47:27 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 12:51:32 a.m.	Información	[Reenumeración] Informes: presupuesto agotado. Se reintenta en la próxima continuación.
+22 nov 2026, 12:51:32 a.m.	Información	[Reenumeración]   Informes: acumulado 113 de 280 archivos (40 %); en tandas anteriores: 0; faltan 167.
+22 nov 2026, 12:51:32 a.m.	Información	[Reenumeración]   Informes: en esta tanda: 113 archivos.
+22 nov 2026, 12:51:32 a.m.	Información	[REENUM] Paso 24/35: incompleto tras 249 s en su última llamada; la tanda lleva 302 s de 240 s.
+22 nov 2026, 12:51:32 a.m.	Información	[REENUM] Paso 24/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 12:51:32 a.m.	Información	[REENUM]   Avance del paso 24/35 (tanda 1 de este paso): al cierre: Informes: 113 de 280 archivos. (Sin tanda anterior comparable de este paso.)
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 12:39:32 a.m.	305.902 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:39:35 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+22 nov 2026, 12:39:36 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 12 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1701 de 1867 archivos.
+22 nov 2026, 12:39:36 a.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+22 nov 2026, 12:39:55 a.m.	Información	[Archivo] 19-11-2026 23.31 - GrupoXTerna™2 - #JLYQQYL09.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:39:57 a.m.	Información	[Archivo] 19-11-2026 23.31 - GrupoXTerna™2 - #P8YJ92VL.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:39:59 a.m.	Información	[Archivo] 19-11-2026 23.31 - GrupoXTerna™2 - #ULPVGJV2G.json: 6 clave(s) [registros:57] → 7 clave(s) [registros:57]
+22 nov 2026, 12:40:01 a.m.	Información	[Archivo] 19-11-2026 23.31 - GrupoXTerna™2 - #UVJCV88UR.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+22 nov 2026, 12:40:03 a.m.	Información	[Archivo] 19-11-2026 23.31 - GrupoXTerna™2 - #VP0R2VUC2.json: 6 clave(s) [registros:16] → 7 clave(s) [registros:16]
+22 nov 2026, 12:40:05 a.m.	Información	[Archivo] 19-11-2026 23.31 - GrupoXTerna™2 - #VQQRRCPQC.json: 6 clave(s) [registros:42] → 7 clave(s) [registros:42]
+22 nov 2026, 12:40:07 a.m.	Información	[Archivo] 19-11-2026 23.31 - GrupoXTerna™2 - #VVV0088GC.json: 6 clave(s) [registros:52] → 7 clave(s) [registros:52]
+22 nov 2026, 12:40:09 a.m.	Información	[Archivo] 19-11-2026 23.31 - Grupo乂Terna™ - #RRVJ809Y0.json: 7 clave(s) [registros:80] → 7 clave(s) [registros:80]
+22 nov 2026, 12:40:11 a.m.	Información	[Archivo] 19-11-2026 23.43 - Grupo乂Terna™ - #UC2RJULCV.json: 6 clave(s) [registros:68] → 7 clave(s) [registros:68]
+22 nov 2026, 12:40:13 a.m.	Información	[Archivo] 20-11-2026 22.25 - GrupoXTerna™2 - #P8Y0CQ9VR.json: 7 clave(s) [registros:141] → 7 clave(s) [registros:141]
+22 nov 2026, 12:40:15 a.m.	Información	[Archivo] 20-11-2026 22.25 - GrupoXTerna™2 - #RR8CRJPUV.json: 7 clave(s) [registros:135] → 7 clave(s) [registros:135]
+22 nov 2026, 12:40:17 a.m.	Información	[Archivo] 20-11-2026 22.25 - GrupoXTerna™2 - #V9L9V9YV0.json: 7 clave(s) [registros:105] → 7 clave(s) [registros:105]
+22 nov 2026, 12:40:19 a.m.	Información	[Archivo] 20-11-2026 22.36 - Grupo乂Terna™ - #UV08GGVJ8.json: 6 clave(s) [registros:72] → 7 clave(s) [registros:72]
+22 nov 2026, 12:40:20 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 12:44:36 a.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+22 nov 2026, 12:44:36 a.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 1854 de 1867 archivos (99 %); en tandas anteriores: 1701; faltan 13.
+22 nov 2026, 12:44:36 a.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 153 archivos.
+22 nov 2026, 12:44:36 a.m.	Información	[REENUM] Paso 20/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 12:44:36 a.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 12:44:36 a.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 12 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 1701 de 1867 archivos. Ahora: HistorialGuerra individual: 1854 de 1867 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 12:32:27 a.m.	305.737 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:32:31 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+22 nov 2026, 12:32:31 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 11 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1549 de 1867 archivos.
+22 nov 2026, 12:32:31 a.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+22 nov 2026, 12:32:52 a.m.	Información	[Archivo] 17-11-2026 12.57 - JPS PACIFICO - #UY8U0JPYQ.json: 6 clave(s) [registros:12] → 7 clave(s) [registros:12]
+22 nov 2026, 12:32:54 a.m.	Información	[Archivo] 17-11-2026 12.57 - ×͜×The_Flash×͜× - #UVVYLUQCJ.json: 6 clave(s) [registros:113] → 7 clave(s) [registros:113]
+22 nov 2026, 12:32:57 a.m.	Información	[Archivo] 17-11-2026 13.00 - GrupoXTerna™2 - #UY9Q2QC9P.json: 7 clave(s) [registros:87] → 7 clave(s) [registros:87]
+22 nov 2026, 12:32:59 a.m.	Información	[Archivo] 17-11-2026 13.00 - ＧＯＡＴ - #UYJ9JL2V2.json: 6 clave(s) [registros:82] → 7 clave(s) [registros:82]
+22 nov 2026, 12:33:01 a.m.	Información	[Archivo] 17-11-2026 13.06 - GrupoXTerna™3 - #V09PQYJ89.json: 7 clave(s) [registros:41] → 7 clave(s) [registros:41]
+22 nov 2026, 12:33:03 a.m.	Información	[Archivo] 17-11-2026 13.06 - GrupoXTerna™3 - #V0G8YG2GV.json: 6 clave(s) [registros:19] → 7 clave(s) [registros:19]
+22 nov 2026, 12:33:05 a.m.	Información	[Archivo] 17-11-2026 13.06 - Mini乂Ternas™ - #V08RQP2JL.json: 7 clave(s) [registros:40] → 7 clave(s) [registros:40]
+22 nov 2026, 12:33:07 a.m.	Información	[Archivo] 17-11-2026 13.07 - Mini乂Ternas™ - #V0JPP0UJR.json: 7 clave(s) [registros:52] → 7 clave(s) [registros:52]
+22 nov 2026, 12:33:09 a.m.	Información	[Archivo] 17-11-2026 13.07 - Mini乂Ternas™ - #V0JYGV2CL.json: 7 clave(s) [registros:75] → 7 clave(s) [registros:75]
+22 nov 2026, 12:33:12 a.m.	Información	[Archivo] 17-11-2026 13.07 - X FORCE - #V0PGYG2PY.json: 6 clave(s) [registros:43] → 7 clave(s) [registros:43]
+22 nov 2026, 12:33:14 a.m.	Información	[Archivo] 17-11-2026 13.07 - XLEGENSX - #V0QG8Q2LG.json: 6 clave(s) [registros:55] → 7 clave(s) [registros:55]
+22 nov 2026, 12:33:16 a.m.	Información	[Archivo] 17-11-2026 13.10 - GrupoXTerna™2 - #V2LVVQQJG.json: 7 clave(s) [registros:122] → 7 clave(s) [registros:122]
+22 nov 2026, 12:33:16 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 12:37:31 a.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+22 nov 2026, 12:37:31 a.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 1701 de 1867 archivos (91 %); en tandas anteriores: 1549; faltan 166.
+22 nov 2026, 12:37:31 a.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 152 archivos.
+22 nov 2026, 12:37:31 a.m.	Información	[REENUM] Paso 20/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+22 nov 2026, 12:37:31 a.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 12:37:31 a.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 11 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 1549 de 1867 archivos. Ahora: HistorialGuerra individual: 1701 de 1867 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	22 nov 2026, 12:25:36 a.m.	307.155 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:25:40 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+22 nov 2026, 12:25:40 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 10 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1397 de 1867 archivos.
+22 nov 2026, 12:25:40 a.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+22 nov 2026, 12:26:07 a.m.	Información	[Archivo] 17-11-2026 10.48 - Grupo乂Terna™ - #LPLC990RJ.json: 7 clave(s) [registros:65] → 7 clave(s) [registros:65]
+22 nov 2026, 12:26:09 a.m.	Información	[Archivo] 17-11-2026 10.51 - ARENA CON CLASE - #LQPQ2GCV.json: 6 clave(s) [registros:180] → 7 clave(s) [registros:180]
+22 nov 2026, 12:26:11 a.m.	Información	[Archivo] 17-11-2026 10.51 - ESAJ - #LR8CQJCG8.json: 6 clave(s) [registros:89] → 7 clave(s) [registros:89]
+22 nov 2026, 12:26:13 a.m.	Información	[Archivo] 17-11-2026 10.51 - GrupoXTerna™2 - #LRGCJL2PP.json: 7 clave(s) [registros:178] → 7 clave(s) [registros:178]
+22 nov 2026, 12:26:15 a.m.	Información	[Archivo] 17-11-2026 10.53 - Grupo乂Terna™ - #LUCQUJJUJ.json: 7 clave(s) [registros:184] → 7 clave(s) [registros:184]
+22 nov 2026, 12:26:17 a.m.	Información	[Archivo] 17-11-2026 10.53 - Grupo乂Terna™ - #LV90QCYJV.json: 7 clave(s) [registros:187] → 7 clave(s) [registros:187]
+22 nov 2026, 12:26:19 a.m.	Información	[Archivo] 17-11-2026 10.53 - Los Pibes - #LV8JYU2U0.json: 6 clave(s) [registros:71] → 7 clave(s) [registros:71]
+22 nov 2026, 12:26:21 a.m.	Información	[Archivo] 17-11-2026 10.56 - GrupoXTerna™2 - #LVV2JRRQU.json: 6 clave(s) [registros:95] → 7 clave(s) [registros:95]
+22 nov 2026, 12:26:23 a.m.	Información	[Archivo] 17-11-2026 10.56 - GrupoXTerna™2 - #P09CPYUU8.json: 6 clave(s) [registros:213] → 7 clave(s) [registros:213]
+22 nov 2026, 12:26:25 a.m.	Información	[Archivo] 17-11-2026 10.56 - Grupo乂Terna™ - #P00CPGPQR.json: 7 clave(s) [registros:177] → 7 clave(s) [registros:177]
+22 nov 2026, 12:26:27 a.m.	Información	[Archivo] 17-11-2026 10.56 - Los Noobs - #LVCPUPCLQ.json: 6 clave(s) [registros:106] → 7 clave(s) [registros:106]
+22 nov 2026, 12:26:29 a.m.	Información	[Archivo] 17-11-2026 10.59 - Grupo乂Terna™ - #P0LQJL82P.json: 7 clave(s) [registros:135] → 7 clave(s) [registros:135]
+22 nov 2026, 12:26:31 a.m.	Información	[Archivo] 17-11-2026 11.01 - GrupoXTerna™2 - #P9RLYPQCG.json: 6 clave(s) [registros:115] → 7 clave(s) [registros:115]
+22 nov 2026, 12:26:31 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 12:30:42 a.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+22 nov 2026, 12:30:42 a.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 1549 de 1867 archivos (83 %); en tandas anteriores: 1397; faltan 318.
+22 nov 2026, 12:30:42 a.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 152 archivos.
+22 nov 2026, 12:30:42 a.m.	Información	[REENUM] Paso 20/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+22 nov 2026, 12:30:42 a.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 12:30:42 a.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 10 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 1397 de 1867 archivos. Ahora: HistorialGuerra individual: 1549 de 1867 archivos.
+Encabezado	reanudarReenumerarTemporadas	Editor	22 nov 2026, 12:19:58 a.m.	303.764 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:20:01 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+22 nov 2026, 12:20:01 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 9 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1203 de 1867 archivos.
+22 nov 2026, 12:20:01 a.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+22 nov 2026, 12:20:21 a.m.	Información	[Archivo] 17-11-2026 08.29 - GrupoXTerna™2 - #99RLYULJG.json: 6 clave(s) [registros:128] → 7 clave(s) [registros:128]
+22 nov 2026, 12:20:23 a.m.	Información	[Archivo] 17-11-2026 08.29 - GrupoXTerna™3 - #98YCLV0RV.json: 6 clave(s) [registros:131] → 7 clave(s) [registros:131]
+22 nov 2026, 12:20:25 a.m.	Información	[Archivo] 17-11-2026 08.29 - ROYAL PERU NORT - #98PJJQPJV.json: 6 clave(s) [registros:124] → 7 clave(s) [registros:124]
+22 nov 2026, 12:20:27 a.m.	Información	[Archivo] 17-11-2026 08.31 - Dark Army - #9CRGPU0LU.json: 6 clave(s) [registros:226] → 7 clave(s) [registros:226]
+22 nov 2026, 12:20:29 a.m.	Información	[Archivo] 17-11-2026 08.31 - Grupo乂Terna™ - #9CUY2U2UG.json: 6 clave(s) [registros:147] → 7 clave(s) [registros:147]
+22 nov 2026, 12:20:31 a.m.	Información	[Archivo] 17-11-2026 08.34 - GrupoXTerna™2 - #9CY0U0L0L.json: 6 clave(s) [registros:119] → 7 clave(s) [registros:119]
+22 nov 2026, 12:20:32 a.m.	Información	[Archivo] 17-11-2026 08.34 - GrupoXTerna™2 - #9G2CYPY8R.json: 6 clave(s) [registros:82] → 7 clave(s) [registros:82]
+22 nov 2026, 12:20:34 a.m.	Información	[Archivo] 17-11-2026 08.34 - GrupoXTerna™2 - #9G2YJRUYP.json: 7 clave(s) [registros:161] → 7 clave(s) [registros:161]
+22 nov 2026, 12:20:36 a.m.	Información	[Archivo] 17-11-2026 08.34 - GrupoXTerna™3 - #9CV0P9UV9.json: 6 clave(s) [registros:88] → 7 clave(s) [registros:88]
+22 nov 2026, 12:20:39 a.m.	Información	[Archivo] 17-11-2026 08.36 - GrupoXTerna™2 - #9GUUJ2YG2.json: 7 clave(s) [registros:250] → 7 clave(s) [registros:250]
+22 nov 2026, 12:20:41 a.m.	Información	[Archivo] 17-11-2026 08.36 - Grupo乂Terna™ - #9GJ8UVJ2J.json: 6 clave(s) [registros:244] → 7 clave(s) [registros:244]
+22 nov 2026, 12:20:43 a.m.	Información	[Archivo] 17-11-2026 08.39 - Grupo乂Terna™ - #9JPL89GQP.json: 7 clave(s) [registros:182] → 7 clave(s) [registros:182]
+22 nov 2026, 12:20:45 a.m.	Información	[Archivo] 17-11-2026 08.39 - IMPERYROYAL - #9JCG0ULPL.json: 6 clave(s) [registros:174] → 7 clave(s) [registros:174]
+22 nov 2026, 12:20:45 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 12:25:01 a.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+22 nov 2026, 12:25:01 a.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 1397 de 1867 archivos (75 %); en tandas anteriores: 1233; faltan 470.
+22 nov 2026, 12:25:01 a.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 164 archivos.
+22 nov 2026, 12:25:01 a.m.	Información	[REENUM] Paso 20/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+22 nov 2026, 12:25:01 a.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+22 nov 2026, 12:25:01 a.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 9 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 1203 de 1867 archivos. Ahora: HistorialGuerra individual: 1397 de 1867 archivos.
+Encabezado	cancelarEjecucion	Editor	22 nov 2026, 12:19:31 a.m.	22.338 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:19:52 a.m.	Información	[Cancelar] Ejecución cancelada manualmente. Triggers de continuación borrados. Progreso de /players, de clanes y de battlelog/upcomingchests borrado. Lock liberado. Ya puedes ejecutar runAll()/runUpdate()/runGuerraRapido()/runSorteos()/runSyncCSV() desde cero.
+Encabezado	reanudarReenumerarTemporadas	Editor	22 nov 2026, 12:19:15 a.m.	3.806 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:19:19 a.m.	Información	[Lock] reanudarReenumerarTemporadas(): ya hay otra ejecución en curso (reanudarReenumerarTemporadas, iniciada hace 123s). Se cancela esta ejecución para evitar duplicados.
+Encabezado	reanudarReenumerarTemporadas	Editor	22 nov 2026, 12:18:49 a.m.	4.143 s	
+Completada
+Registros de Cloud
+22 nov 2026, 12:18:53 a.m.	Información	[Lock] reanudarReenumerarTemporadas(): ya hay otra ejecución en curso (reanudarReenumerarTemporadas, iniciada hace 97s). Se cancela esta ejecución para evitar duplicados.
+Encabezado	reanudarReenumerarTemporadas	Editor	22 nov 2026, 12:17:12 a.m.	79.462 s	
+Cancelada
+Registros de Cloud
+22 nov 2026, 12:17:16 a.m.	Información	[Lock] reanudarReenumerarTemporadas(): se encontró un lock vencido de REENUM (iniciado hace 1174s, > 390s). Se asume una ejecución colgada/cortada por timeout y se libera automáticamente.
+22 nov 2026, 12:17:16 a.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+22 nov 2026, 12:17:17 a.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 9 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1203 de 1867 archivos.
+22 nov 2026, 12:17:17 a.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+22 nov 2026, 12:17:36 a.m.	Información	[Archivo] 17-11-2026 08.03 - Los bananas - #8GPU08LGG.json: 6 clave(s) [registros:91] → 7 clave(s) [registros:91]
+22 nov 2026, 12:17:39 a.m.	Información	[Archivo] 17-11-2026 08.05 - Grupo乂Terna™ - #8J9PL92GU.json: 7 clave(s) [registros:173] → 7 clave(s) [registros:173]
+22 nov 2026, 12:17:41 a.m.	Información	[Archivo] 17-11-2026 08.05 - Los michipapus - #8GYVU28G9.json: 6 clave(s) [registros:159] → 7 clave(s) [registros:159]
+22 nov 2026, 12:17:43 a.m.	Información	[Archivo] 17-11-2026 08.07 - Fairy Tail - #8JJYY898U.json: 6 clave(s) [registros:176] → 7 clave(s) [registros:176]
+22 nov 2026, 12:17:45 a.m.	Información	[Archivo] 17-11-2026 08.07 - GrupoXTerna™2 - #8LPPYC98V.json: 7 clave(s) [registros:152] → 7 clave(s) [registros:152]
+22 nov 2026, 12:17:47 a.m.	Información	[Archivo] 17-11-2026 08.07 - Mini乂Ternas™ - #8L0UUCLPU.json: 7 clave(s) [registros:95] → 7 clave(s) [registros:95]
+22 nov 2026, 12:17:49 a.m.	Información	[Archivo] 17-11-2026 08.07 - Peru Royale - #8LGPLR9RV.json: 6 clave(s) [registros:88] → 7 clave(s) [registros:88]
+22 nov 2026, 12:17:51 a.m.	Información	[Archivo] 17-11-2026 08.10 - - PERU INKAS - - #8PGULCPYP.json: 6 clave(s) [registros:73] → 7 clave(s) [registros:73]
+22 nov 2026, 12:17:54 a.m.	Información	[Archivo] 17-11-2026 08.10 - GUERREROS PERU - #8P0Y9V8VJ.json: 6 clave(s) [registros:206] → 7 clave(s) [registros:206]
+22 nov 2026, 12:17:56 a.m.	Información	[Archivo] 17-11-2026 08.13 - GrupoXTerna™2 - #8UG89UQ2R.json: 7 clave(s) [registros:77] → 7 clave(s) [registros:77]
+22 nov 2026, 12:17:58 a.m.	Información	[Archivo] 17-11-2026 08.13 - Grupo乂Terna™ - #8QYPGRJYC.json: 7 clave(s) [registros:46] → 7 clave(s) [registros:46]
+22 nov 2026, 12:18:00 a.m.	Información	[Archivo] 17-11-2026 08.13 - Los Calero - #8UG2GRYGG.json: 6 clave(s) [registros:69] → 7 clave(s) [registros:69]
+22 nov 2026, 12:18:00 a.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+22 nov 2026, 12:18:32 a.m.	Información	Ejecución cancelada
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	21 nov 2026, 11:58:54 p.m.	361.462 s	
+En tiempo de espera
+Registros de Cloud
+21 nov 2026, 11:59:09 p.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+21 nov 2026, 11:59:10 p.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 9 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1203 de 1867 archivos.
+21 nov 2026, 11:59:10 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+22 nov 2026, 12:04:55 a.m.	Error	Excedió el tiempo máximo de ejecución.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	21 nov 2026, 11:52:35 p.m.	307.872 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:52:40 p.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+21 nov 2026, 11:52:41 p.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 8 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1068 de 1867 archivos.
+21 nov 2026, 11:52:41 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+21 nov 2026, 11:53:26 p.m.	Información	[Archivo] 17-11-2026 06.12 - Mini乂Ternas™ - #VVQLLUC9P.json: 7 clave(s) [registros:6] → 7 clave(s) [registros:6]
+21 nov 2026, 11:53:28 p.m.	Información	[Archivo] 17-11-2026 06.12 - Obsidian Dragon - #VY2JU08Y8.json: 6 clave(s) [registros:38] → 7 clave(s) [registros:38]
+21 nov 2026, 11:53:30 p.m.	Información	[Archivo] 17-11-2026 06.14 - GrupoXTerna™2 - #VYV8U9CL2.json: 6 clave(s) [registros:91] → 7 clave(s) [registros:91]
+21 nov 2026, 11:53:32 p.m.	Información	[Archivo] 17-11-2026 06.15 - Brave souls - #Y09V99L8J.json: 6 clave(s) [registros:102] → 7 clave(s) [registros:102]
+21 nov 2026, 11:53:35 p.m.	Información	[Archivo] 17-11-2026 06.16 - GrupoXTerna™2 - #Y80RLJ0C9.json: 7 clave(s) [registros:126] → 7 clave(s) [registros:126]
+21 nov 2026, 11:53:36 p.m.	Información	[Archivo] 17-11-2026 06.16 - GrupoXTerna™2 - #YCQ8YRG8Y.json: 6 clave(s) [registros:78] → 7 clave(s) [registros:78]
+21 nov 2026, 11:53:38 p.m.	Información	[Archivo] 17-11-2026 06.16 - GrupoXTerna™2 - #YGPVUR9PV.json: 7 clave(s) [registros:59] → 7 clave(s) [registros:59]
+21 nov 2026, 11:53:40 p.m.	Información	[Archivo] 17-11-2026 06.16 - Grupo乂Terna™ - #Y2RLL228R.json: 7 clave(s) [registros:163] → 7 clave(s) [registros:163]
+21 nov 2026, 11:53:43 p.m.	Información	[Archivo] 17-11-2026 06.19 - GrupoXTerna™2 - #YLVC8C08G.json: 7 clave(s) [registros:55] → 7 clave(s) [registros:55]
+21 nov 2026, 11:53:45 p.m.	Información	[Archivo] 17-11-2026 06.19 - GrupoXTerna™2 - #YLVLU28JJ.json: 6 clave(s) [registros:127] → 7 clave(s) [registros:127]
+21 nov 2026, 11:53:47 p.m.	Información	[Archivo] 17-11-2026 06.19 - GrupoXTerna™3 - #YLYGC9Y9C.json: 7 clave(s) [registros:60] → 7 clave(s) [registros:60]
+21 nov 2026, 11:53:49 p.m.	Información	[Archivo] 17-11-2026 06.19 - The Warrions™ - #YPGQL2L9U.json: 6 clave(s) [registros:156] → 7 clave(s) [registros:156]
+21 nov 2026, 11:53:51 p.m.	Información	[Archivo] 17-11-2026 06.19 - los ya tu sabes - #YJ2LCLVCQ.json: 6 clave(s) [registros:106] → 7 clave(s) [registros:106]
+21 nov 2026, 11:53:53 p.m.	Información	[Archivo] 17-11-2026 06.55 - GrupoXTerna™2 - #200U29J9C9.json: 6 clave(s) [registros:92] → 7 clave(s) [registros:92]
+21 nov 2026, 11:53:53 p.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+21 nov 2026, 11:57:41 p.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+21 nov 2026, 11:57:41 p.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 1203 de 1867 archivos (64 %); en tandas anteriores: 1068; faltan 664.
+21 nov 2026, 11:57:41 p.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 135 archivos.
+21 nov 2026, 11:57:41 p.m.	Información	[REENUM] Paso 20/35: incompleto tras 301 s en su última llamada; la tanda lleva 301 s de 240 s.
+21 nov 2026, 11:57:41 p.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+21 nov 2026, 11:57:41 p.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 8 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 1068 de 1867 archivos. Ahora: HistorialGuerra individual: 1203 de 1867 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	21 nov 2026, 11:45:48 p.m.	316.367 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:46:02 p.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+21 nov 2026, 11:46:03 p.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 7 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 1007 de 1867 archivos.
+21 nov 2026, 11:46:03 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+21 nov 2026, 11:49:40 p.m.	Información	[Archivo] 16-11-2026 09.45 - GrupoXTerna™2 - #JYCC0RUCY.json: 6 clave(s) [registros:46] → 7 clave(s) [registros:46]
+21 nov 2026, 11:49:42 p.m.	Información	[Archivo] 16-11-2026 09.45 - GrupoXTerna™2 - #LPPUY8UVG.json: 6 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:49:43 p.m.	Información	[Archivo] 16-11-2026 09.45 - GrupoXTerna™2 - #PGJ2UP8C0.json: 6 clave(s) [registros:101] → 7 clave(s) [registros:101]
+21 nov 2026, 11:49:45 p.m.	Información	[Archivo] 16-11-2026 09.45 - GrupoXTerna™2 - #PJVLCQCR2.json: 6 clave(s) [registros:139] → 7 clave(s) [registros:139]
+21 nov 2026, 11:49:46 p.m.	Información	[Archivo] 16-11-2026 09.45 - GrupoXTerna™2 - #R8JRQ0PY8.json: 6 clave(s) [registros:103] → 7 clave(s) [registros:103]
+21 nov 2026, 11:49:48 p.m.	Información	[Archivo] 16-11-2026 09.45 - GrupoXTerna™2 - #RRYY9LUYC.json: 6 clave(s) [registros:41] → 7 clave(s) [registros:41]
+21 nov 2026, 11:49:49 p.m.	Información	[Archivo] 16-11-2026 09.45 - GrupoXTerna™2 - #VQUGYLLG0.json: 6 clave(s) [registros:63] → 7 clave(s) [registros:63]
+21 nov 2026, 11:49:51 p.m.	Información	[Archivo] 16-11-2026 09.45 - GrupoXTerna™2 - #YCLVVPLR8.json: 6 clave(s) [registros:32] → 7 clave(s) [registros:32]
+21 nov 2026, 11:49:52 p.m.	Información	[Archivo] 16-11-2026 09.48 - GrupoXTerna™2 - #202QYG22JC.json: 6 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:49:54 p.m.	Información	[Archivo] 16-11-2026 09.48 - GrupoXTerna™2 - #J8UG98VC2.json: 6 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:49:55 p.m.	Información	[Archivo] 16-11-2026 09.48 - GrupoXTerna™2 - #RCYYQQ82L.json: 6 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:49:57 p.m.	Información	[Archivo] 16-11-2026 09.50 - GrupoXTerna™2 - #20VL9RJ20C.json: 6 clave(s) [registros:20] → 7 clave(s) [registros:20]
+21 nov 2026, 11:49:58 p.m.	Información	[Archivo] 16-11-2026 09.50 - GrupoXTerna™2 - #8RUU9JUCL.json: 6 clave(s) [registros:95] → 7 clave(s) [registros:95]
+21 nov 2026, 11:50:00 p.m.	Información	[Archivo] 16-11-2026 09.50 - GrupoXTerna™2 - #CY0L2LVU.json: 6 clave(s) [registros:140] → 7 clave(s) [registros:140]
+21 nov 2026, 11:50:01 p.m.	Información	[Archivo] 16-11-2026 09.50 - GrupoXTerna™2 - #JJCLV0GPR.json: 6 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:50:02 p.m.	Información	[Archivo] 16-11-2026 09.51 - GrupoXTerna™2 - #202QYG22JC.json: 6 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:50:04 p.m.	Información	[Archivo] 16-11-2026 09.51 - GrupoXTerna™2 - #20PV2YGV20.json: 6 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:50:05 p.m.	Información	[Archivo] 16-11-2026 09.51 - GrupoXTerna™2 - #22YVRLU09.json: 6 clave(s) [registros:79] → 7 clave(s) [registros:79]
+21 nov 2026, 11:50:07 p.m.	Información	[Archivo] 16-11-2026 09.51 - GrupoXTerna™2 - #2CLL99RV8.json: 6 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:50:07 p.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+21 nov 2026, 11:51:02 p.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+21 nov 2026, 11:51:02 p.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 1068 de 1867 archivos (57 %); en tandas anteriores: 1007; faltan 799.
+21 nov 2026, 11:51:02 p.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 61 archivos.
+21 nov 2026, 11:51:02 p.m.	Información	[REENUM] Paso 20/35: incompleto tras 300 s en su última llamada; la tanda lleva 301 s de 240 s.
+21 nov 2026, 11:51:02 p.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+21 nov 2026, 11:51:02 p.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 7 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 1007 de 1867 archivos. Ahora: HistorialGuerra individual: 1068 de 1867 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	21 nov 2026, 11:39:31 p.m.	305.779 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:39:35 p.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+21 nov 2026, 11:39:35 p.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 6 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 790 de 1867 archivos.
+21 nov 2026, 11:39:35 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+21 nov 2026, 11:40:06 p.m.	Información	[Archivo] 04-11-2026 12.52 - Mini乂Ternas™ - #V0J90R2V2.json: 7 clave(s) [registros:48] → 7 clave(s) [registros:48]
+21 nov 2026, 11:40:08 p.m.	Información	[Archivo] 04-11-2026 12.52 - Mini乂Ternas™ - #VRVCV0QR8.json: 7 clave(s) [registros:14] → 7 clave(s) [registros:14]
+21 nov 2026, 11:40:09 p.m.	Información	[Archivo] 04-11-2026 12.54 - Mini乂Ternas™ - #V8LPC909C.json: 7 clave(s) [registros:37] → 7 clave(s) [registros:37]
+21 nov 2026, 11:40:11 p.m.	Información	[Archivo] 09-11-2026 05.55 - GrupoXTerna™3 - #LRQ8YJRCU.json: 7 clave(s) [registros:56] → 7 clave(s) [registros:56]
+21 nov 2026, 11:40:12 p.m.	Información	[Archivo] 09-11-2026 05.57 - Mini乂Ternas™ - #Q09UJ2UP2.json: 6 clave(s) [registros:144] → 7 clave(s) [registros:144]
+21 nov 2026, 11:40:14 p.m.	Información	[Archivo] 09-11-2026 05.59 - Grupo乂Terna™ - #JVVG9YUG0.json: 7 clave(s) [registros:65] → 7 clave(s) [registros:65]
+21 nov 2026, 11:40:15 p.m.	Información	[Archivo] 09-11-2026 06.00 - Grupo乂Terna™ - #2C982888C.json: 7 clave(s) [registros:65] → 7 clave(s) [registros:65]
+21 nov 2026, 11:40:16 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #22CU8P2J0.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:18 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #800GG0RCJ.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:19 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #8PYCJ8LGG.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:21 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #8UQ929C82.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:22 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #8VL9JJJ0R.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:23 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #CC8JVULYL.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:25 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #GJJC2Q8Q8.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:26 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #JU8GGJQR9.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:27 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #PGC8L80UG.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:29 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #RPP0822G0.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:30 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #RQ8QCY9QV.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:31 p.m.	Información	[Archivo] 13-11-2026 15.13 - Grupo乂Terna™ - #UQJLQQ0L0.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:40:32 p.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+21 nov 2026, 11:44:35 p.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+21 nov 2026, 11:44:35 p.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 1007 de 1867 archivos (54 %); en tandas anteriores: 790; faltan 860.
+21 nov 2026, 11:44:35 p.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 217 archivos.
+21 nov 2026, 11:44:35 p.m.	Información	[REENUM] Paso 20/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+21 nov 2026, 11:44:35 p.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+21 nov 2026, 11:44:35 p.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 6 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 790 de 1867 archivos. Ahora: HistorialGuerra individual: 1007 de 1867 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	21 nov 2026, 11:34:08 p.m.	312.873 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:34:19 p.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+21 nov 2026, 11:34:19 p.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 5 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 678 de 1867 archivos.
+21 nov 2026, 11:34:19 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+21 nov 2026, 11:35:52 p.m.	Información	[Archivo] 04-11-2026 11.10 - GrupoXTerna™2 - #UYQPRGQUL.json: 7 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:35:55 p.m.	Información	[Archivo] 04-11-2026 11.10 - GrupoXTerna™2 - #VPQUJ0VL0.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:35:57 p.m.	Información	[Archivo] 04-11-2026 11.10 - GrupoXTerna™2 - #VV0VGJ9YP.json: 7 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:35:59 p.m.	Información	[Archivo] 04-11-2026 11.15 - GrupoXTerna™2 - #JCQL2092.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:36:02 p.m.	Información	[Archivo] 04-11-2026 11.15 - GrupoXTerna™2 - #L0Q98CCYQ.json: 7 clave(s) [registros:248] → 7 clave(s) [registros:248]
+21 nov 2026, 11:36:04 p.m.	Información	[Archivo] 04-11-2026 11.15 - GrupoXTerna™2 - #L8Q9RV228.json: 7 clave(s) [registros:171] → 7 clave(s) [registros:171]
+21 nov 2026, 11:36:06 p.m.	Información	[Archivo] 04-11-2026 11.15 - GrupoXTerna™2 - #LLUURU990.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:36:08 p.m.	Información	[Archivo] 04-11-2026 11.15 - GrupoXTerna™2 - #R8YJ8Q9CV.json: 7 clave(s) [registros:185] → 7 clave(s) [registros:185]
+21 nov 2026, 11:36:10 p.m.	Información	[Archivo] 04-11-2026 11.15 - GrupoXTerna™2 - #UYRGVR9.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:36:12 p.m.	Información	[Archivo] 04-11-2026 11.15 - Mini乂Ternas™ - #20JPVQYL8Q.json: 7 clave(s) [registros:8] → 7 clave(s) [registros:8]
+21 nov 2026, 11:36:15 p.m.	Información	[Archivo] 04-11-2026 11.18 - GrupoXTerna™2 - #8PYVP9YPY.json: 7 clave(s) [registros:130] → 7 clave(s) [registros:130]
+21 nov 2026, 11:36:17 p.m.	Información	[Archivo] 04-11-2026 11.18 - GrupoXTerna™2 - #9RGG8RQCU.json: 7 clave(s) [registros:182] → 7 clave(s) [registros:182]
+21 nov 2026, 11:36:17 p.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+21 nov 2026, 11:39:19 p.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+21 nov 2026, 11:39:19 p.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 790 de 1867 archivos (42 %); en tandas anteriores: 678; faltan 1077.
+21 nov 2026, 11:39:19 p.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 112 archivos.
+21 nov 2026, 11:39:19 p.m.	Información	[REENUM] Paso 20/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+21 nov 2026, 11:39:19 p.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+21 nov 2026, 11:39:19 p.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 5 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 678 de 1867 archivos. Ahora: HistorialGuerra individual: 790 de 1867 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	21 nov 2026, 11:27:25 p.m.	305.638 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:27:29 p.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+21 nov 2026, 11:27:29 p.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 4 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 523 de 1867 archivos.
+21 nov 2026, 11:27:29 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+21 nov 2026, 11:27:55 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #2UV0YRQV9.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:27:57 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #2VYY2Y0L8.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:27:59 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #8CVC9L8V8.json: 7 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:28:01 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #9CPGQ8J0V.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:28:03 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #9GUUJ2YG2.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:28:05 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #9L8JGCGLY.json: 7 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:28:07 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #CRVQPVQYL.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:28:09 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #GC2GRLRJL.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:28:11 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #PLYRPPQGV.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:28:13 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #U28V8GGVQ.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:28:15 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #U9RPRG0RG.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:28:18 p.m.	Información	[Archivo] 04-11-2026 10.41 - GrupoXTerna™2 - #UYJCRLRUV.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:28:19 p.m.	Información	[Archivo] 04-11-2026 10.45 - GrupoXTerna™2 - #22VY2LUGQ.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:28:20 p.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+21 nov 2026, 11:32:29 p.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+21 nov 2026, 11:32:29 p.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 678 de 1867 archivos (36 %); en tandas anteriores: 523; faltan 1189.
+21 nov 2026, 11:32:29 p.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 155 archivos.
+21 nov 2026, 11:32:29 p.m.	Información	[REENUM] Paso 20/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+21 nov 2026, 11:32:29 p.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+21 nov 2026, 11:32:29 p.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 4 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 523 de 1867 archivos. Ahora: HistorialGuerra individual: 678 de 1867 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	21 nov 2026, 11:20:32 p.m.	305.13 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:20:35 p.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+21 nov 2026, 11:20:35 p.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 3 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 352 de 1867 archivos.
+21 nov 2026, 11:20:35 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+21 nov 2026, 11:20:58 p.m.	Información	[Archivo] 04-11-2026 10.24 - GrupoXTerna™2 - #GULU22GPL.json: 6 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:21:00 p.m.	Información	[Archivo] 04-11-2026 10.24 - GrupoXTerna™2 - #PQ9YQVUJY.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:02 p.m.	Información	[Archivo] 04-11-2026 10.24 - GrupoXTerna™2 - #YY8R9P8UJ.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:21:04 p.m.	Información	[Archivo] 04-11-2026 10.27 - GrupoXTerna™2 - #229L8LYPR.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:21:06 p.m.	Información	[Archivo] 04-11-2026 10.27 - GrupoXTerna™2 - #82GYVVLQR.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:08 p.m.	Información	[Archivo] 04-11-2026 10.27 - GrupoXTerna™2 - #JJ222RYRG.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:10 p.m.	Información	[Archivo] 04-11-2026 10.27 - GrupoXTerna™2 - #JP8RPVYPY.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:11 p.m.	Información	[Archivo] 04-11-2026 10.27 - GrupoXTerna™2 - #R908PUCGC.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:21:13 p.m.	Información	[Archivo] 04-11-2026 10.27 - GrupoXTerna™2 - #UPRPRVYRU.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:15 p.m.	Información	[Archivo] 04-11-2026 10.27 - GrupoXTerna™2 - #YQ89CGR2R.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:21:17 p.m.	Información	[Archivo] 04-11-2026 10.28 - GrupoXTerna™2 - #2000QGQQ.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:21:19 p.m.	Información	[Archivo] 04-11-2026 10.28 - GrupoXTerna™2 - #2UUY2YQUY.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:21 p.m.	Información	[Archivo] 04-11-2026 10.28 - GrupoXTerna™2 - #8CLP8R8G2.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:22 p.m.	Información	[Archivo] 04-11-2026 10.28 - GrupoXTerna™2 - #8QGUVJ08G.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:24 p.m.	Información	[Archivo] 04-11-2026 10.28 - GrupoXTerna™2 - #8ULVVPQ8L.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:21:25 p.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+21 nov 2026, 11:25:36 p.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+21 nov 2026, 11:25:36 p.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 523 de 1867 archivos (28 %); en tandas anteriores: 352; faltan 1344.
+21 nov 2026, 11:25:36 p.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 171 archivos.
+21 nov 2026, 11:25:36 p.m.	Información	[REENUM] Paso 20/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+21 nov 2026, 11:25:36 p.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+21 nov 2026, 11:25:36 p.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 3 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 352 de 1867 archivos. Ahora: HistorialGuerra individual: 523 de 1867 archivos.
+Encabezado	_continuarRunReenumerarTemporadas	Basada en el tiempo	21 nov 2026, 11:15:09 p.m.	305.24 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:15:12 p.m.	Información	[Reenumeración] CONTINÚA desde el paso 20/35
+21 nov 2026, 11:15:12 p.m.	Información	[REENUM] ESTADO al empezar: pasos cerrados 19/35; paso 20/35 EN CURSO: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida (la tanda anterior lo dejó incompleto; esta es la tanda 2 de este paso). Progreso guardado al cierre de la tanda anterior: HistorialGuerra individual: 126 de 1867 archivos.
+21 nov 2026, 11:15:12 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+21 nov 2026, 11:15:35 p.m.	Información	[Archivo] 04-11-2026 10.04 - Grupo乂Terna™ - #LV90QCYJV.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:15:37 p.m.	Información	[Archivo] 04-11-2026 10.04 - Grupo乂Terna™ - #QCLCL2C08.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:15:38 p.m.	Información	[Archivo] 04-11-2026 10.04 - Grupo乂Terna™ - #U92JQGCL.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:15:40 p.m.	Información	[Archivo] 04-11-2026 10.04 - Grupo乂Terna™ - #ULVJU8229.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:15:41 p.m.	Información	[Archivo] 04-11-2026 10.04 - Grupo乂Terna™ - #V8020QG8U.json: 7 clave(s) [registros:1] → 7 clave(s) [registros:1]
+21 nov 2026, 11:15:42 p.m.	Información	[Archivo] 04-11-2026 10.05 - Grupo乂Terna™ - #82CCYGYYJ.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:15:44 p.m.	Información	[Archivo] 04-11-2026 10.05 - Grupo乂Terna™ - #8CY9GVLPJ.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:15:45 p.m.	Información	[Archivo] 04-11-2026 10.05 - Grupo乂Terna™ - #8UPP92L2L.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:15:46 p.m.	Información	[Archivo] 04-11-2026 10.05 - Grupo乂Terna™ - #9CVLPP28G.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:15:48 p.m.	Información	[Archivo] 04-11-2026 10.05 - Grupo乂Terna™ - #CUL98Y8UY.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:15:49 p.m.	Información	[Archivo] 04-11-2026 10.05 - Grupo乂Terna™ - #JV2QVGPJJ.json: 7 clave(s) [registros:107] → 7 clave(s) [registros:107]
+21 nov 2026, 11:15:50 p.m.	Información	[Archivo] 04-11-2026 10.05 - Grupo乂Terna™ - #PLPU92QJ.json: 7 clave(s) [registros:2] → 7 clave(s) [registros:2]
+21 nov 2026, 11:15:52 p.m.	Información	[Archivo] 04-11-2026 10.05 - Grupo乂Terna™ - #RJRCYPY9L.json: 7 clave(s) [registros:137] → 7 clave(s) [registros:137]
+21 nov 2026, 11:15:54 p.m.	Información	[Archivo] 04-11-2026 10.07 - GrupoXTerna™2 - #2Q8GJVR8V.json: 7 clave(s) [registros:11] → 7 clave(s) [registros:11]
+21 nov 2026, 11:15:55 p.m.	Información	[Archivo] 04-11-2026 10.07 - GrupoXTerna™2 - #92QVLUGL2.json: 7 clave(s) [registros:59] → 7 clave(s) [registros:59]
+21 nov 2026, 11:15:56 p.m.	Información	[Archivo] 04-11-2026 10.07 - GrupoXTerna™2 - #JU00QL908.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:15:58 p.m.	Información	[Archivo] 04-11-2026 10.07 - Grupo乂Terna™ - #29JP8YCQ.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:15:59 p.m.	Información	[Archivo] 04-11-2026 10.07 - Grupo乂Terna™ - #82L8L2RL9.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:16:00 p.m.	Información	[Archivo] 04-11-2026 10.07 - Grupo乂Terna™ - #8CQLU9QLJ.json: 7 clave(s) [registros:4] → 7 clave(s) [registros:4]
+21 nov 2026, 11:16:02 p.m.	Información	[Archivo] 04-11-2026 10.07 - Grupo乂Terna™ - #92G8CUYVL.json: 7 clave(s) [registros:3] → 7 clave(s) [registros:3]
+21 nov 2026, 11:16:02 p.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+21 nov 2026, 11:20:12 p.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+21 nov 2026, 11:20:12 p.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 352 de 1867 archivos (19 %); en tandas anteriores: 126; faltan 1515.
+21 nov 2026, 11:20:12 p.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 226 archivos.
+21 nov 2026, 11:20:12 p.m.	Información	[REENUM] Paso 20/35: incompleto tras 300 s en su última llamada; la tanda lleva 300 s de 240 s.
+21 nov 2026, 11:20:12 p.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+21 nov 2026, 11:20:12 p.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 2 de este paso): AVANZÓ. Tanda anterior: HistorialGuerra individual: 126 de 1867 archivos. Ahora: HistorialGuerra individual: 352 de 1867 archivos.
+Encabezado	ejecutarReenumeracionSugerida	Editor	21 nov 2026, 11:08:33 p.m.	309.875 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:08:37 p.m.	Información	[Reenumeración] ejecutarReenumeracionSugerida(): aplicando fecha Ref 2023-09-04 (última sugerencia guardada (Correcciones_Guerra.csv (por tag de clan))).
+21 nov 2026, 11:08:40 p.m.	Información	[Reenumeración] Ref vieja: Mon Sep 02 2024 | Ref nueva: Mon Sep 04 2023 | deltaMeses: 12 (se sumará a toda Temporada guardada; offset RoyaleAPI se ajustará en -12).
+21 nov 2026, 11:08:40 p.m.	Información	[Reenumeración] INICIO
+21 nov 2026, 11:08:40 p.m.	Información	[REENUM] ESTADO al empezar: cadena nueva. Ningún paso cerrado; paso 1/35 POR EMPEZAR: Backup_Guerra.csv: suma el delta a la columna Temporada de cada fila → todas las filas con la numeración nueva.
+21 nov 2026, 11:08:40 p.m.	Información	[REENUM] Ejecutando paso 1/35: Backup_Guerra.csv: suma el delta a la columna Temporada de cada fila → todas las filas con la numeración nueva
+21 nov 2026, 11:08:46 p.m.	Información	[Archivo] Backup_Guerra.csv: 41403 fila(s) → 41403 fila(s)
+21 nov 2026, 11:08:46 p.m.	Información	[Reenumeración] Backup_Guerra.csv: terminado (Temporada += 12).
+21 nov 2026, 11:08:46 p.m.	Información	[Reenumeración]   Backup_Guerra.csv: acumulado 41403 de 41403 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:08:46 p.m.	Información	[Reenumeración]   Backup_Guerra.csv: en esta tanda: 41403 filas.
+21 nov 2026, 11:08:46 p.m.	Información	[REENUM] Paso 1/35: terminado tras 6 s en su última llamada; la tanda lleva 7 s de 240 s.
+21 nov 2026, 11:08:47 p.m.	Información	[REENUM] Ejecutando paso 2/35: Backup_Guerra_Logs.csv: suma el delta a Temporada → todas las filas con la numeración nueva
+21 nov 2026, 11:08:50 p.m.	Información	[Archivo] Backup_Guerra_Logs.csv: 990 fila(s) → 990 fila(s)
+21 nov 2026, 11:08:50 p.m.	Información	[Reenumeración] Backup_Guerra_Logs.csv: terminado (Temporada += 12).
+21 nov 2026, 11:08:50 p.m.	Información	[Reenumeración]   Backup_Guerra_Logs.csv: acumulado 990 de 990 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:08:50 p.m.	Información	[Reenumeración]   Backup_Guerra_Logs.csv: en esta tanda: 990 filas.
+21 nov 2026, 11:08:50 p.m.	Información	[REENUM] Paso 2/35: terminado tras 3 s en su última llamada; la tanda lleva 10 s de 240 s.
+21 nov 2026, 11:08:51 p.m.	Información	[REENUM] Ejecutando paso 3/35: Hoja Guerra: suma el delta a Temporada (solo esa columna) → todas las filas con la numeración nueva
+21 nov 2026, 11:08:52 p.m.	Información	[Reenumeración] Hoja Guerra: terminado (Temporada += 12).
+21 nov 2026, 11:08:52 p.m.	Información	[Reenumeración]   Hoja Guerra: acumulado 2040 de 2040 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:08:52 p.m.	Información	[Reenumeración]   Hoja Guerra: en esta tanda: 2040 filas.
+21 nov 2026, 11:08:52 p.m.	Información	[REENUM] Paso 3/35: terminado tras 1 s en su última llamada; la tanda lleva 12 s de 240 s.
+21 nov 2026, 11:08:52 p.m.	Información	[REENUM] Ejecutando paso 4/35: Hoja Guerra_Logs: suma el delta a Temporada → todas las filas con la numeración nueva
+21 nov 2026, 11:08:53 p.m.	Información	[Reenumeración] Hoja Guerra_Logs: terminado (Temporada += 12).
+21 nov 2026, 11:08:53 p.m.	Información	[Reenumeración]   Hoja Guerra_Logs: acumulado 990 de 990 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:08:53 p.m.	Información	[Reenumeración]   Hoja Guerra_Logs: en esta tanda: 990 filas.
+21 nov 2026, 11:08:53 p.m.	Información	[REENUM] Paso 4/35: terminado tras 1 s en su última llamada; la tanda lleva 13 s de 240 s.
+21 nov 2026, 11:08:54 p.m.	Información	[REENUM] Ejecutando paso 5/35: Hoja T_Lista (datos desde la fila 3): suma el delta a Temporada → torneos con la numeración nueva
+21 nov 2026, 11:08:54 p.m.	Información	[Reenumeración] Hoja T_Lista: terminado (Temporada += 12).
+21 nov 2026, 11:08:54 p.m.	Información	[Reenumeración]   Hoja T_Lista: acumulado 7 de 7 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:08:54 p.m.	Información	[Reenumeración]   Hoja T_Lista: en esta tanda: 7 filas.
+21 nov 2026, 11:08:54 p.m.	Información	[REENUM] Paso 5/35: terminado tras 1 s en su última llamada; la tanda lleva 15 s de 240 s.
+21 nov 2026, 11:08:55 p.m.	Información	[REENUM] Ejecutando paso 6/35: Backup_T_Lista.csv: suma el delta a Temporada → copia igual a la hoja
+21 nov 2026, 11:08:57 p.m.	Información	[Archivo] Backup_T_Lista.csv: 7 fila(s) → 7 fila(s)
+21 nov 2026, 11:08:58 p.m.	Información	[Reenumeración] Backup_T_Lista.csv: terminado (Temporada += 12).
+21 nov 2026, 11:08:58 p.m.	Información	[Reenumeración]   Backup_T_Lista.csv: acumulado 7 de 7 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:08:58 p.m.	Información	[Reenumeración]   Backup_T_Lista.csv: en esta tanda: 7 filas.
+21 nov 2026, 11:08:58 p.m.	Información	[REENUM] Paso 6/35: terminado tras 3 s en su última llamada; la tanda lleva 18 s de 240 s.
+21 nov 2026, 11:08:58 p.m.	Información	[REENUM] Ejecutando paso 7/35: Hoja T_Asistencia: suma el delta a Temporada → asistencia con la numeración nueva
+21 nov 2026, 11:08:59 p.m.	Información	[Reenumeración] Hoja T_Asistencia: terminado (Temporada += 12).
+21 nov 2026, 11:08:59 p.m.	Información	[Reenumeración]   Hoja T_Asistencia: acumulado 111 de 111 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:08:59 p.m.	Información	[Reenumeración]   Hoja T_Asistencia: en esta tanda: 111 filas.
+21 nov 2026, 11:08:59 p.m.	Información	[REENUM] Paso 7/35: terminado tras 1 s en su última llamada; la tanda lleva 19 s de 240 s.
+21 nov 2026, 11:08:59 p.m.	Información	[REENUM] Ejecutando paso 8/35: Backup_T_Asistencia.csv: suma el delta a Temporada → copia igual a la hoja
+21 nov 2026, 11:09:02 p.m.	Información	[Archivo] Backup_T_Asistencia.csv: 111 fila(s) → 111 fila(s)
+21 nov 2026, 11:09:02 p.m.	Información	[Reenumeración] Backup_T_Asistencia.csv: terminado (Temporada += 12).
+21 nov 2026, 11:09:02 p.m.	Información	[Reenumeración]   Backup_T_Asistencia.csv: acumulado 111 de 111 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:02 p.m.	Información	[Reenumeración]   Backup_T_Asistencia.csv: en esta tanda: 111 filas.
+21 nov 2026, 11:09:02 p.m.	Información	[REENUM] Paso 8/35: terminado tras 3 s en su última llamada; la tanda lleva 23 s de 240 s.
+21 nov 2026, 11:09:03 p.m.	Información	[REENUM] Ejecutando paso 9/35: Hoja Calendario_2: suma el delta a Temporada (columna 3) → calendario con la numeración nueva
+21 nov 2026, 11:09:03 p.m.	Información	[Reenumeración] Hoja Calendario_2: terminado (Temporada += 12).
+21 nov 2026, 11:09:03 p.m.	Información	[Reenumeración]   Hoja Calendario_2: acumulado 6 de 6 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:03 p.m.	Información	[Reenumeración]   Hoja Calendario_2: en esta tanda: 6 filas.
+21 nov 2026, 11:09:03 p.m.	Información	[REENUM] Paso 9/35: terminado tras 1 s en su última llamada; la tanda lleva 24 s de 240 s.
+21 nov 2026, 11:09:04 p.m.	Información	[REENUM] Ejecutando paso 10/35: Backup_Calendario_2.csv: suma el delta a Temporada → copia igual a la hoja
+21 nov 2026, 11:09:07 p.m.	Información	[Archivo] Backup_Calendario_2.csv: 6 fila(s) → 6 fila(s)
+21 nov 2026, 11:09:07 p.m.	Información	[Reenumeración] Backup_Calendario_2.csv: terminado (Temporada += 12).
+21 nov 2026, 11:09:07 p.m.	Información	[Reenumeración]   Backup_Calendario_2.csv: acumulado 6 de 6 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:07 p.m.	Información	[Reenumeración]   Backup_Calendario_2.csv: en esta tanda: 6 filas.
+21 nov 2026, 11:09:07 p.m.	Información	[REENUM] Paso 10/35: terminado tras 3 s en su última llamada; la tanda lleva 27 s de 240 s.
+21 nov 2026, 11:09:07 p.m.	Información	[REENUM] Ejecutando paso 11/35: Correcciones_Guerra.csv: suma el delta a Temporada y reconstruye la clave, el ID y las columnas de RoyaleAPI y Supercell → overlay coherente con la hoja Guerra
+21 nov 2026, 11:09:21 p.m.	Información	[Archivo] Correcciones_Guerra.csv: demasiado grande para contar → demasiado grande para contar
+21 nov 2026, 11:09:21 p.m.	Información	[Reenumeración] Correcciones_Guerra.csv: terminado (Temporada += 12).
+21 nov 2026, 11:09:21 p.m.	Información	[Reenumeración]   Correcciones_Guerra.csv (claves): acumulado 124442 de 124442 claves (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:21 p.m.	Información	[Reenumeración]   Correcciones_Guerra.csv (claves): en esta tanda: 124442 claves.
+21 nov 2026, 11:09:21 p.m.	Información	[REENUM] Paso 11/35: terminado tras 14 s en su última llamada; la tanda lleva 41 s de 240 s.
+21 nov 2026, 11:09:22 p.m.	Información	[REENUM] Ejecutando paso 12/35: Hoja S_Lista (datos desde la fila 3): suma el delta a Temporada → sorteos con la numeración nueva
+21 nov 2026, 11:09:22 p.m.	Información	[Reenumeración] Hoja S_Lista: terminado (Temporada += 12).
+21 nov 2026, 11:09:22 p.m.	Información	[Reenumeración]   Hoja S_Lista: acumulado 2 de 2 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:22 p.m.	Información	[Reenumeración]   Hoja S_Lista: en esta tanda: 2 filas.
+21 nov 2026, 11:09:22 p.m.	Información	[REENUM] Paso 12/35: terminado tras 1 s en su última llamada; la tanda lleva 43 s de 240 s.
+21 nov 2026, 11:09:23 p.m.	Información	[REENUM] Ejecutando paso 13/35: Backup_S_Lista.csv: suma el delta a Temporada → copia igual a la hoja
+21 nov 2026, 11:09:25 p.m.	Información	[Archivo] Backup_S_Lista.csv: 2 fila(s) → 2 fila(s)
+21 nov 2026, 11:09:26 p.m.	Información	[Reenumeración] Backup_S_Lista.csv: terminado (Temporada += 12).
+21 nov 2026, 11:09:26 p.m.	Información	[Reenumeración]   Backup_S_Lista.csv: acumulado 2 de 2 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:26 p.m.	Información	[Reenumeración]   Backup_S_Lista.csv: en esta tanda: 2 filas.
+21 nov 2026, 11:09:26 p.m.	Información	[REENUM] Paso 13/35: terminado tras 3 s en su última llamada; la tanda lleva 46 s de 240 s.
+21 nov 2026, 11:09:26 p.m.	Información	[REENUM] Ejecutando paso 14/35: Hoja S_Asistencia: suma el delta a Temporada → asistencia de sorteos con la numeración nueva
+21 nov 2026, 11:09:27 p.m.	Información	[Reenumeración] Hoja S_Asistencia: terminado (Temporada += 12).
+21 nov 2026, 11:09:27 p.m.	Información	[Reenumeración]   Hoja S_Asistencia: acumulado 1 de 1 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:27 p.m.	Información	[Reenumeración]   Hoja S_Asistencia: en esta tanda: 1 filas.
+21 nov 2026, 11:09:27 p.m.	Información	[REENUM] Paso 14/35: terminado tras 0 s en su última llamada; la tanda lleva 47 s de 240 s.
+21 nov 2026, 11:09:27 p.m.	Información	[REENUM] Ejecutando paso 15/35: Backup_S_Asistencia.csv: suma el delta a Temporada → copia igual a la hoja
+21 nov 2026, 11:09:30 p.m.	Información	[Archivo] Backup_S_Asistencia.csv: 1 fila(s) → 1 fila(s)
+21 nov 2026, 11:09:30 p.m.	Información	[Reenumeración] Backup_S_Asistencia.csv: terminado (Temporada += 12).
+21 nov 2026, 11:09:30 p.m.	Información	[Reenumeración]   Backup_S_Asistencia.csv: acumulado 1 de 1 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:30 p.m.	Información	[Reenumeración]   Backup_S_Asistencia.csv: en esta tanda: 1 filas.
+21 nov 2026, 11:09:30 p.m.	Información	[REENUM] Paso 15/35: terminado tras 3 s en su última llamada; la tanda lleva 50 s de 240 s.
+21 nov 2026, 11:09:30 p.m.	Información	[REENUM] Ejecutando paso 16/35: Hoja CR_Lista (datos desde la fila 4): suma el delta a Temporada → registros de cambio de rango con la numeración nueva
+21 nov 2026, 11:09:31 p.m.	Información	[Reenumeración] Hoja CR_Lista: terminado (Temporada += 12).
+21 nov 2026, 11:09:31 p.m.	Información	[Reenumeración]   Hoja CR_Lista: acumulado 8 de 8 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:31 p.m.	Información	[Reenumeración]   Hoja CR_Lista: en esta tanda: 8 filas.
+21 nov 2026, 11:09:31 p.m.	Información	[REENUM] Paso 16/35: terminado tras 1 s en su última llamada; la tanda lleva 51 s de 240 s.
+21 nov 2026, 11:09:32 p.m.	Información	[REENUM] Ejecutando paso 17/35: Backup_CR_Lista.csv: suma el delta a Temporada → copia igual a la hoja
+21 nov 2026, 11:09:34 p.m.	Información	[Archivo] Backup_CR_Lista.csv: 8 fila(s) → 8 fila(s)
+21 nov 2026, 11:09:35 p.m.	Información	[Reenumeración] Backup_CR_Lista.csv: terminado (Temporada += 12).
+21 nov 2026, 11:09:35 p.m.	Información	[Reenumeración]   Backup_CR_Lista.csv: acumulado 8 de 8 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:35 p.m.	Información	[Reenumeración]   Backup_CR_Lista.csv: en esta tanda: 8 filas.
+21 nov 2026, 11:09:35 p.m.	Información	[REENUM] Paso 17/35: terminado tras 3 s en su última llamada; la tanda lleva 55 s de 240 s.
+21 nov 2026, 11:09:35 p.m.	Información	[REENUM] Ejecutando paso 18/35: Revision_Guerra.csv: suma el delta a Temporada (columna 3) → revisiones sin duplicarse
+21 nov 2026, 11:09:38 p.m.	Información	[Archivo] Revision_Guerra.csv: 1297 fila(s) → 1297 fila(s)
+21 nov 2026, 11:09:39 p.m.	Información	[Reenumeración] Revision_Guerra.csv: terminado (Temporada += 12).
+21 nov 2026, 11:09:39 p.m.	Información	[Reenumeración]   Revision_Guerra.csv: acumulado 1297 de 1297 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:39 p.m.	Información	[Reenumeración]   Revision_Guerra.csv: en esta tanda: 1297 filas.
+21 nov 2026, 11:09:39 p.m.	Información	[REENUM] Paso 18/35: terminado tras 4 s en su última llamada; la tanda lleva 59 s de 240 s.
+21 nov 2026, 11:09:39 p.m.	Información	[REENUM] Ejecutando paso 19/35: Correcciones_RiverRace_Pendientes.csv: suma el delta a Temporada → cola alineada con la hoja Guerra
+21 nov 2026, 11:09:40 p.m.	Información	[Archivo] Se agotó el tiempo de conteo de esta ejecución (20 s): los archivos que se escriban después no registran filas antes y después.
+21 nov 2026, 11:09:42 p.m.	Información	[Reenumeración] Correcciones_RiverRace_Pendientes.csv: terminado (Temporada += 12).
+21 nov 2026, 11:09:42 p.m.	Información	[Reenumeración]   Correcciones_RiverRace_Pendientes.csv: acumulado 86 de 86 filas (100 %); en tandas anteriores: 0; faltan 0.
+21 nov 2026, 11:09:42 p.m.	Información	[Reenumeración]   Correcciones_RiverRace_Pendientes.csv: en esta tanda: 86 filas.
+21 nov 2026, 11:09:42 p.m.	Información	[REENUM] Paso 19/35: terminado tras 2 s en su última llamada; la tanda lleva 62 s de 240 s.
+21 nov 2026, 11:09:42 p.m.	Información	[REENUM] Ejecutando paso 20/35: HistorialGuerra, JSON individuales (Drive): suma el delta a temporadaInterna de cada registro → todos los JSON marcados con esta corrida
+21 nov 2026, 11:13:40 p.m.	Información	[Reenumeración] HistorialGuerra individual: presupuesto agotado. Se reintenta en la próxima continuación.
+21 nov 2026, 11:13:40 p.m.	Información	[Reenumeración]   HistorialGuerra individual: acumulado 126 de 1867 archivos (7 %); en tandas anteriores: 0; faltan 1741.
+21 nov 2026, 11:13:40 p.m.	Información	[Reenumeración]   HistorialGuerra individual: en esta tanda: 126 archivos.
+21 nov 2026, 11:13:40 p.m.	Información	[REENUM] Paso 20/35: incompleto tras 238 s en su última llamada; la tanda lleva 301 s de 240 s.
+21 nov 2026, 11:13:40 p.m.	Información	[REENUM] Paso 20/35 quedó incompleto (presupuesto interno agotado). Se reintenta el MISMO paso en la próxima continuación, retomando el progreso ya guardado.
+21 nov 2026, 11:13:40 p.m.	Información	[REENUM]   Avance del paso 20/35 (tanda 1 de este paso): al cierre: HistorialGuerra individual: 126 de 1867 archivos. (Sin tanda anterior comparable de este paso.)
+21 nov 2026, 11:13:41 p.m.	Información	[CSV] Revisión posterior de los CSV escritos SALTADA: quedan menos de 60 s de presupuesto.
+Encabezado	_continuarRunGuerraCadena	Basada en el tiempo	21 nov 2026, 11:06:55 p.m.	65.811 s	
+Desconocida
+Registros de Cloud
+21 nov 2026, 11:07:02 p.m.	Información	=== runGuerra (horaria) CONTINÚA desde el paso 9/11 ===
+21 nov 2026, 11:07:04 p.m.	Información	[RUNGUERRA] ESTADO al empezar: pasos cerrados 8/11; paso 9/11 POR EMPEZAR: roster.json: publicar el roster → roster.json publicado (la tanda anterior cerró el paso 8 y se quedó sin tiempo).
+21 nov 2026, 11:07:04 p.m.	Información	[RUNGUERRA] Reanudando en el paso 9: cache de clanes vacío (ejecución nueva), se reconstruye la parte básica antes de continuar.
+21 nov 2026, 11:07:04 p.m.	Información	[Captura] INICIO (tandas, edad maxima del checkpoint 2700 s)
+21 nov 2026, 11:07:05 p.m.	Información	[API] Progreso anterior de clanes recuperado de Drive (4 clan(es)), no se vuelven a pedir a la API.
+21 nov 2026, 11:07:06 p.m.	Información	[Captura] FIN (tandas, 2 s)
+21 nov 2026, 11:07:06 p.m.	Información	[RUNGUERRA] Ejecutando paso 9/11: roster.json: publicar el roster → roster.json publicado
+21 nov 2026, 11:07:21 p.m.	Información	21/11 23:07:21 [RosterEstatico] sin cambios desde la última publicación; se omite
+21 nov 2026, 11:07:21 p.m.	Depurar	21/11 23:07:21 [RosterEstatico] sin cambios desde la última publicación; se omite
+21 nov 2026, 11:07:21 p.m.	Información	[runGuerra] roster.json terminado en 15 s.
+21 nov 2026, 11:07:21 p.m.	Información	[RUNGUERRA] Paso 9/11: terminado tras 15 s en su última llamada; la tanda lleva 19 s de 150 s.
+21 nov 2026, 11:07:22 p.m.	Información	[RUNGUERRA] Ejecutando paso 10/11: home.json: publicar la portada → home.json publicado
+21 nov 2026, 11:07:55 p.m.	Información	21/11 23:07:55 [HomeEstatico] sin cambios desde la última publicación; se omite
+21 nov 2026, 11:07:55 p.m.	Depurar	21/11 23:07:55 [HomeEstatico] sin cambios desde la última publicación; se omite
+21 nov 2026, 11:07:55 p.m.	Información	[runGuerra] home.json terminado en 33 s.
+21 nov 2026, 11:07:55 p.m.	Información	[RUNGUERRA] Paso 10/11: terminado tras 33 s en su última llamada; la tanda lleva 53 s de 150 s.
+21 nov 2026, 11:07:56 p.m.	Información	[RUNGUERRA] Ejecutando paso 11/11: torneos.json: publicar los torneos → torneos.json publicado
+21 nov 2026, 11:07:56 p.m.	Información	21/11 23:07:56 [TorneosEstatico] se calculó hace menos de 90 min; se omite en este ciclo
+21 nov 2026, 11:07:56 p.m.	Depurar	21/11 23:07:56 [TorneosEstatico] se calculó hace menos de 90 min; se omite en este ciclo
+21 nov 2026, 11:07:57 p.m.	Información	[runGuerra] torneos.json terminado en 0 s.
+21 nov 2026, 11:07:57 p.m.	Información	[RUNGUERRA] Paso 11/11: terminado tras 1 s en su última llamada; la tanda lleva 54 s de 150 s.
+21 nov 2026, 11:08:01 p.m.	Información	=== runGuerra (horaria) FIN ===
+Encabezado	desactivarTodosLosActivadores	Editor	21 nov 2026, 11:04:36 p.m.	5.604 s	
+Completada
+Registros de Cloud
+21 nov 2026, 11:04:41 p.m.	Información	[Activadores] Retirados: 14. Siguen instalados (no administrados aqui): ninguno.
