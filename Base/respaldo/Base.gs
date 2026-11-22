@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 17:31:41 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 17:56:49 */
 
 
 
@@ -56371,8 +56371,7 @@ function generarTodosMensajes() {
       if (cnCruzoMeta) {
         // §PF558: clan que ya cruzó: sin cantidad de pendientes, sin puesto en medallas y sin línea de reemplazables o reservadas; solo el aviso de cruce y la invitación a apoyar a los otros clanes Terna.
         msjGral += _negritaWsp_('🔥 ' + cn) + '\n';
-        msjGral += '==============================\n';
-        msjGral += _textoClanCruzoMeta_();
+        msjGral += _textoClanCruzoMeta_(); // 22-nov-2026: sin línea «====» entre el nombre y el aviso; la separadora ya la puso el clan anterior o el inicio
         continue;
       }
       msjGral += _negritaWsp_('🔥 ' + cn + ' (' + ml.length + ' pendientes)') + '\n';
@@ -57003,18 +57002,24 @@ function _textoClanCruzoMeta_() {
 /**
  * _textoListaAtaquesDisponiblesClanCruzo_(miembros, celularPorTag, prestamoPorTag) [→ Contexto_Base_Web.md §PF558]
  * 22-nov-2026 (pedido de la usuaria): en el mensaje Particular de un clan que ya cruzó la meta, la lista informativa de quiénes aún tienen ataques disponibles, SIN urgencia y sin pedir que los hagan (en este clan ya no suman medallas).
- * El orden es el de `miembros` (Faltantes desc. -> Rango -> Nombre); cada línea lleva los ataques disponibles entre paréntesis y los sufijos (ω) y de préstamo, y después va la leyenda de esas marcas. Lista vacía devuelve ''.
+ * Quienes tienen los 4 ataques disponibles van en una sola línea con su cantidad; los que ya empezaron (1 a 3) van por nombre, en el orden de `miembros` (Faltantes desc. -> Rango -> Nombre), con los ataques entre paréntesis y los sufijos (ω) y de préstamo, y después la leyenda de esas marcas (solo de los nombrados). Lista vacía devuelve ''.
  */
 function _textoListaAtaquesDisponiblesClanCruzo_(miembros, celularPorTag, prestamoPorTag) {
   if (!miembros || !miembros.length) return '';
+  // 22-nov-2026 (pedido de la usuaria): quienes aún no atacaron hoy (4 disponibles) van resumidos en una línea con su cantidad; solo se nombran los que ya empezaron (1 a 3 disponibles).
+  var sinAtacar = miembros.filter(function(p) { return Number(p.faltantes) === 4; });
+  var empezaron = miembros.filter(function(p) { return Number(p.faltantes) !== 4; });
   var t = _negritaWsp_('📋 Con ataques disponibles (' + miembros.length + ')') + '\n';
   t += '↳ Solo como referencia: en este clan ya no suman medallas.\n';
-  miembros.forEach(function(p) {
+  if (sinAtacar.length > 0) {
+    t += '▫ ' + sinAtacar.length + ' ' + (sinAtacar.length === 1 ? 'cuenta con' : 'cuentas con') + ' los 4 ataques disponibles.\n';
+  }
+  empezaron.forEach(function(p) {
     var wsp = celularPorTag && celularPorTag[p.tag] ? ' (ω)' : '';
     var prest = _sufijoPrestamo(prestamoPorTag && prestamoPorTag[p.tag]);
     t += '▫ ' + p.nombre + ' (' + p.faltantes + ')' + wsp + prest + '\n';
   });
-  t += _textoLeyendaMarcasGuerra_(miembros, celularPorTag, prestamoPorTag);
+  t += _textoLeyendaMarcasGuerra_(empezaron, celularPorTag, prestamoPorTag);
   t += '\n';
   return t;
 }
