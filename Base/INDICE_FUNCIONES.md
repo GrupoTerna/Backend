@@ -442,7 +442,7 @@ Ninguno.
 | `_cgwAsignarOrigenMigracion_` | función | 18_CorreccionGuerra.gs | 2209 | Contexto_Base_Web.md §PF164 |
 | `_cgwClanTerminadoVerificado_` | función | 18_CorreccionGuerra.gs | 2000 | Contexto_Base_Web.md §PF357 |
 | `_cgwCombinacionesPorPuntuacion_` | función | 18_CorreccionGuerra.gs | 1922 | Contexto_Base_Web.md §PF438 |
-| `_cgwDescripcionDia_` | función | 18_CorreccionGuerra.gs | 1782 | Contexto_Base_Web.md §PF357 |
+| `_cgwDescripcionDia_` | función | 18_CorreccionGuerra.gs | 1780 | Contexto_Base_Web.md §PF357 |
 | `_cgwEncabezadoAncho_` | función | 18_CorreccionGuerra.gs | 2384 |  |
 | `_cgwEscribirRepartoClanTerminado_` | función | 18_CorreccionGuerra.gs | 4534 | Contexto_Base_Web.md §PF358 |
 | `_cgwEsFormatoAncho_` | función | 18_CorreccionGuerra.gs | 2087 |  |
@@ -617,7 +617,7 @@ Ninguno.
 | `_continuarRunSorteos` | función | 00_Main.gs | 1114 | Contexto_Base_Web.md §B106 |
 | `_continuarRunSyncCSV` | función | 00_Main.gs | 1161 | Contexto_Base_Web.md §B109 |
 | `_continuarRunUpdate` | función | 00_Main.gs | 1048 |  |
-| `_continuarTotalesSemanaInforme` | función | 57_ReconstruirSemanaPorDias.gs | 792 |  |
+| `_continuarTotalesSemanaInforme` | función | 57_ReconstruirSemanaPorDias.gs | 794 |  |
 | `_continuarVerificarCrrVsBackupAplicar` | función | 59_Verificar_CRR_vs_Backup.gs | 319 |  |
 | `_continuarVerificarCrrVsBackupInforme` | función | 59_Verificar_CRR_vs_Backup.gs | 310 |  |
 | `_control2ColTotales` | función | 23_Control2_GuerraSemanal.gs | 726 | Contexto_Base_Web.md §23B022 |
@@ -1698,17 +1698,17 @@ Ninguno.
 | `_rsCatalogo` | función | 57_ReconstruirSemanaPorDias.gs | 696 |  |
 | `_rsCatalogo_` | global | 57_ReconstruirSemanaPorDias.gs | 111 |  |
 | `_rsCatalogoSinFame_` | global | 57_ReconstruirSemanaPorDias.gs | 112 |  |
-| `_rsCatalogoSinFameDomingo` | función | 57_ReconstruirSemanaPorDias.gs | 719 |  |
+| `_rsCatalogoSinFameDomingo` | función | 57_ReconstruirSemanaPorDias.gs | 720 |  |
 | `_rsClaveSem_` | función | 57_ReconstruirSemanaPorDias.gs | 388 |  |
 | `_rsClaveSerie_` | función | 57_ReconstruirSemanaPorDias.gs | 368 |  |
 | `_rsClavesHoja` | función | 57_ReconstruirSemanaPorDias.gs | 373 |  |
-| `_rsContinuacionInforme_` | función | 57_ReconstruirSemanaPorDias.gs | 773 |  |
+| `_rsContinuacionInforme_` | función | 57_ReconstruirSemanaPorDias.gs | 775 |  |
 | `_rsCrrRestricciones` | función | 57_ReconstruirSemanaPorDias.gs | 546 |  |
-| `_rsCursorGuardar_` | función | 57_ReconstruirSemanaPorDias.gs | 825 |  |
-| `_rsCursorLeer_` | función | 57_ReconstruirSemanaPorDias.gs | 819 |  |
+| `_rsCursorGuardar_` | función | 57_ReconstruirSemanaPorDias.gs | 827 |  |
+| `_rsCursorLeer_` | función | 57_ReconstruirSemanaPorDias.gs | 821 |  |
 | `_rsFilasPlan_` | función | 57_ReconstruirSemanaPorDias.gs | 539 |  |
 | `_rsMapeos` | función | 57_ReconstruirSemanaPorDias.gs | 604 |  |
-| `_rsMenor` | función | 57_ReconstruirSemanaPorDias.gs | 756 |  |
+| `_rsMenor` | función | 57_ReconstruirSemanaPorDias.gs | 758 |  |
 | `_rsMismoReparto_` | función | 57_ReconstruirSemanaPorDias.gs | 708 |  |
 | `_rsNombreSinTag_` | global | 57_ReconstruirSemanaPorDias.gs | 114 |  |
 | `_rsObjetivos` | función | 57_ReconstruirSemanaPorDias.gs | 263 |  |
@@ -1719,12 +1719,12 @@ Ninguno.
 | `_rsRegistros` | función | 57_ReconstruirSemanaPorDias.gs | 591 |  |
 | `_rsResolver` | función | 57_ReconstruirSemanaPorDias.gs | 570 |  |
 | `_rsResolverNivel` | función | 57_ReconstruirSemanaPorDias.gs | 625 |  |
-| `_rsSinFameDeSerie` | función | 57_ReconstruirSemanaPorDias.gs | 745 |  |
+| `_rsSinFameDeSerie` | función | 57_ReconstruirSemanaPorDias.gs | 747 |  |
 | `_rsTagClanSerieCache_` | global | 57_ReconstruirSemanaPorDias.gs | 350 |  |
-| `_rsTagDeClanNombre_` | función | 57_ReconstruirSemanaPorDias.gs | 731 |  |
+| `_rsTagDeClanNombre_` | función | 57_ReconstruirSemanaPorDias.gs | 733 |  |
 | `_rsTagDeClanSerie_` | función | 57_ReconstruirSemanaPorDias.gs | 356 |  |
 | `_rsTagPorNombre_` | global | 57_ReconstruirSemanaPorDias.gs | 113 |  |
-| `_rsVigilanteInforme_` | función | 57_ReconstruirSemanaPorDias.gs | 811 |  |
+| `_rsVigilanteInforme_` | función | 57_ReconstruirSemanaPorDias.gs | 813 |  |
 | `_runGuerraColaHoraria_` | función | 00_Main.gs | 1322 | Contexto_Base_Web.md §PF143 |
 | `_runGuerraPasoCalentarGuerra_` | función | 00_Main.gs | 1561 |  |
 | `_runGuerraPasoPublicar_` | función | 00_Main.gs | 1575 | Contexto_Base_Web.md §PF537 |
