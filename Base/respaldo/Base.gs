@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 21:31:58 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 21/11/2026 22:21:20 */
 
 
 
@@ -4179,7 +4179,7 @@ function repararBordesSAsistencia() {
 
 /**
  * aplicarNotasColumnas() — proyecto Base, archivo 02_Setup_Hojas.gs. [→ Contexto_Base_Web.md §PF286]
- * Escribe, en el encabezado de cada columna de las hojas que figuran en _definicionNotasColumnas_(), una nota que dice qué es la columna, quién la escribe y si se puede editar. Hoy cubre Historial_A/D, Pendientes, Mensajes, Nuevos y Control (estas dos últimas con los encabezados en la fila 3; una hoja ya existente recibe sus notas al correr esta función). Calendario no tiene notas porque es una cuadrícula sin encabezados por columna.
+ * Escribe, en el encabezado de cada columna de las hojas que figuran en _definicionNotasColumnas_(), una nota que dice qué es la columna, quién la escribe y si se puede editar. Hoy cubre Directorio (29 columnas), Historial_A/D, Pendientes, Mensajes, Nuevos y Control (estas dos últimas con los encabezados en la fila 3; una hoja ya existente recibe sus notas al correr esta función). Calendario no tiene notas porque es una cuadrícula sin encabezados por columna.
  * Es idempotente y no toca datos. Una nota que ya tenga el encabezado y NO empiece con «[Sistema] » se considera puesta a mano y se conserva; las del sistema se actualizan si cambió el texto. Si el encabezado de una columna no es el esperado, esa columna se omite y queda en el registro.
  * También la llama setupAllSheets() (por _setupAscensosSheet), así que las notas vuelven solas si se recrea la hoja. Se puede correr aparte, sin ejecutar todo el setup.
  */
@@ -4325,6 +4325,7 @@ function _setupDirectorio(ss) {
   // Siempre actualizar fila 1 para reflejar columnas nuevas
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   applyHeaderStyle(sh, headers.length);
+  _aplicarNotasColumnasHoja_(sh, _definicionNotasColumnas_()[CFG.SHEETS.DIRECTORIO]); // 21-nov-2026 (PF286 punto 17 b)
   Logger.log('[Setup] Directorio OK (29 cols, mismo layout que Inactivos)');
 }
 
@@ -5378,6 +5379,42 @@ function _definicionNotasColumnas_() {
       texto: 'Tag del clan de esa fila. El clan se identifica por este Tag, no por el nombre.' },
     { col: CONTROL_COL_ESTADO, enc: 'Estado',
       texto: '«Activo» si el clan de la fila es el clan actual del jugador en el Directorio; «Inactivo» en las demás filas del jugador (clanes donde tuvo registros y ya no está).' }
+  ];
+
+  // Directorio (21-nov-2026, PF286 punto 17 b): encabezados en la fila 1. Contrastado con updateDirectorioSheet(), _construirFila(), _construirFilasDirectorio(), _calcJugador(), _calcAlerta(), moverComentarioFila() (11_DirectorioSheet.gs), _construirFilaInactiva() (13_Inactivos_Vetados.gs), _obtenerDatosSinEtiqueta() (30_Mensajes.gs) y onEditTrigger() (00_Main.gs).
+  var dirBorra = ' La hoja se borra y se reescribe entera en cada actualización: un cambio a mano en esta columna se pierde.';
+  var dirManual = ' Se escribe a mano y el sistema la conserva en cada actualización.';
+  var dirCsv = ' Si la dejas vacía y Backup_Directorio.csv todavía tiene el dato, el sistema lo restaura.';
+  defs[CFG.SHEETS.DIRECTORIO] = [
+    { col: IC.NUM, enc: 'N°', texto: 'Número de fila. Se reasigna en cada actualización según el orden de la hoja: primero las cuentas activas (por clan, rango y copas) y después los administradores que ya no están en ningún clan.' + dirBorra },
+    { col: IC.TAG, enc: 'Tag', texto: 'Tag de la cuenta en Clash Royale. Viene de la lista de miembros de la API; con él el sistema reconoce a la cuenta en todas las hojas, así que no lo edites.' },
+    { col: IC.NOMBRE, enc: 'Nombre', texto: 'Nombre de la cuenta. Se toma de la API en cada actualización; en un administrador que ya no está en un clan queda el último que se guardó.' + dirBorra },
+    { col: IC.JUGADOR, enc: 'Jugador', texto: 'Lo calcula el sistema: el Nom_Multi con el nombre de la cuenta entre paréntesis, o solo el nombre si no hay Nom_Multi. Si varias cuentas comparten celular, junta los nombres del grupo.' + dirBorra },
+    { col: IC.NOM_MULTI, enc: 'Nom_Multi', texto: 'Nombre de la persona dueña de varias cuentas.' + dirManual + dirCsv },
+    { col: IC.PRESTAMO, enc: 'Préstamo', texto: 'A quién se prestó la cuenta.' + dirManual + ' Si borras el dato a propósito, se respeta (solo se restaura desde el CSV cuando la cuenta no tiene fila en la hoja).' },
+    { col: IC.MULTICUENTA, enc: 'Multicuenta', texto: 'Sí si otra cuenta comparte el mismo celular; No en los demás casos. La calcula el sistema aunque la celda tenga lista Sí/No: no sirve cambiarla a mano.' },
+    { col: IC.CLAN, enc: 'Clan', texto: 'Nombre del clan donde está la cuenta hoy (API). En un administrador que ya no está en un clan del sistema queda vacío.' + dirBorra },
+    { col: IC.CLAN_TAG, enc: 'ClanTag', texto: 'Tag del clan donde está la cuenta hoy (API). Con este Tag, y no con el nombre, se identifica al clan. En un administrador que ya no está en un clan del sistema queda vacío.' + dirBorra },
+    { col: IC.RANGO, enc: 'Rango', texto: 'Rango en el clan según la API: Líder, Colíder, Veterano o Miembro. Para cambiarlo hay que hacerlo en el juego; aquí se refleja en la siguiente actualización.' + dirBorra },
+    { col: IC.LIDER, enc: 'Líder', texto: 'Líder del clan de la cuenta, tomado de la lista de miembros del clan en la API.' + dirBorra },
+    { col: IC.PREFIJO, enc: 'Prefijo', texto: 'Prefijo telefónico del país del celular, solo dígitos.' + dirManual + ' Si queda vacío se usa el prefijo por defecto de la configuración (CFG.PREFIJO_DEFAULT).' },
+    { col: IC.CELULAR, enc: 'Celular', texto: 'Celular de la cuenta, solo dígitos (mínimo 7; si tiene menos, se descarta). Se escribe a mano. Si queda vacío se intenta restaurar desde Backup_Directorio.csv y, si tampoco está allí, desde la propiedad de respaldo CELULARES_RESPALDO_MANUAL_JSON. Con él se detectan las multicuentas y se arma el enlace de WhatsApp.' },
+    { col: IC.WSP_G, enc: 'WSP(G)', texto: 'Sí si el jugador está en el grupo de WhatsApp de su clan; No si no está. Se escribe a mano (lista Sí/No); el sistema solo acepta Sí o No y la conserva.' + dirCsv },
+    { col: IC.ETIQUETA, enc: 'Etiqueta', texto: 'Sí si la cuenta ya puso su nombre de Clash Royale como etiqueta de miembro en el grupo de WhatsApp. Se escribe a mano (lista Sí/No). Los mensajes piden la etiqueta a las cuentas activas de los clanes Terna que no tienen Sí.' + dirCsv },
+    { col: IC.PERMISO, enc: 'Permiso', texto: 'Sí o No, a mano (lista desplegable). El sistema la conserva y otras hojas (Control e Historial_A/D) la copian de aquí.' + dirCsv },
+    { col: IC.INICIALES, enc: 'Iniciales', texto: 'Sí si el nombre de la cuenta empieza con el prefijo de los clanes Terna; No en los demás casos. La calcula el sistema aunque la celda tenga lista Sí/No: no sirve cambiarla a mano.' },
+    { col: IC.ESTADO, enc: 'Estado', texto: 'Activo si la cuenta está hoy en la lista de miembros de un clan que el sistema sigue; Inactivo si es un administrador que ya no está. Las cuentas inactivas que no son administradoras no se muestran aquí: quedan en la hoja Inactivos.' },
+    { col: IC.ADMIN, enc: 'Admin', texto: 'Sí si la cuenta es de un administrador. Se escribe a mano (lista Sí/No) y el sistema la conserva. Un administrador que sale del clan sigue apareciendo en esta hoja; al cambiarla, la hoja Administradores se sincroniza.' },
+    { col: IC.VETADO, enc: 'Vetado', texto: 'Sí si la cuenta está vetada. Se escribe a mano (lista Sí/No). El sistema la fuerza a Sí si la cuenta está en el clan de vetados o en el registro de vetados confirmados, aunque la celda llegue vacía o con No.' },
+    { col: IC.RAZON, enc: 'Razón', texto: 'Razón del veto o de la salida; solo acepta las de la lista desplegable (cualquier otro valor se borra). Al editarla, el cambio se copia a la hoja Vetados. Si la cuenta está en el clan de vetados y la dejas vacía, el sistema pone el nombre de ese clan.' },
+    { col: IC.FECHA_ING, enc: 'Fecha_ing', texto: 'Fecha de ingreso de la cuenta. Se conserva lo que haya, y una cuenta nueva sin historial recibe la fecha de la actualización. Aun así el sistema la puede corregir con la primera fila real de la hoja Guerra: hacia atrás siempre, y hacia adelante solo si detecta que la cuenta salió y reingresó.' },
+    { col: IC.FECHA_LIM, enc: 'Fecha_lim', texto: 'Plazo para ponerse las iniciales del clan: 7 días después de la Fecha_ing. Queda vacía si la cuenta ya tiene las iniciales o no tiene Fecha_ing.' + dirBorra },
+    { col: IC.VIGENCIA, enc: 'Vigencia', texto: 'Fecha y hora de la última conexión de la cuenta según la API.' + dirBorra },
+    { col: IC.INACTIVIDAD, enc: 'Inactividad(d)', texto: 'Días desde la última conexión, contados con la Vigencia. Vale 999 si la API no entrega esa fecha.' + dirBorra },
+    { col: IC.ALERTA, enc: 'Alerta', texto: 'Lo calcula el sistema y puede juntar varias separadas por coma: «Candidato a expulsión» (cuenta activa con 3 o más días de inactividad), «Reactivado» (estaba Inactivo y ahora está Activo) y «Pendiente» (sin celular o sin iniciales).' + dirBorra },
+    { col: IC.RANKING, enc: 'Ranking', texto: 'Puesto de la cuenta dentro de su clan según la API.' + dirBorra },
+    { col: IC.RANKING_P, enc: 'Ranking_p', texto: 'Puesto anterior de la cuenta dentro de su clan (campo previousClanRank de la API).' + dirBorra },
+    { col: IC.COMENTARIO, enc: 'Comentario', texto: 'Escribe aquí un comentario sobre la cuenta. Al guardar la celda, el sistema lo copia a la hoja Comentarios (con fecha, Tag, nombre, clan, rango y líder) y deja esta celda vacía.' }
   ];
   return defs;
 }
@@ -75344,8 +75381,39 @@ function _finalizarReenumeracion() {
     // con la numeración vieja. Normalmente no queda nada (la cadena tiene el candado y se limpia al terminar, al fallar o al cancelar), pero una cadena cortada por la plataforma puede dejarlo.
     // Se descarta: sin estado, la cadena vuelve a empezar desde la primera temporada y es segura (lo ya aplicado no cambia). Las filas «Reconstruido» y Revision_Guerra.csv ya los cubren sus pasos.
     props.deleteProperty('CORRGUERRA_ESTADO');
+    // (e) 21-nov-2026 (PF286 punto 48): propiedades de clave literal que guardan una temporada o una clave temporada*1000+semana en la numeración vieja.
+    // RS_CURSOR_INFORME y RS_CURSOR_APLICAR (57_ReconstruirSemanaPorDias.gs): última semana ya recorrida como temporada*1000+semana; con la numeración nueva el corte `ks <= desde` saltaría semanas sin recorrer. Se descartan (es lo que hace totalesSemanaPorDiasReiniciar() con ellas): la próxima corrida empieza de nuevo.
+    props.deleteProperty('RS_CURSOR_INFORME');
+    props.deleteProperty('RS_CURSOR_APLICAR');
+    props.deleteProperty('RS_AUTO_TANDAS');
+    props.deleteProperty('RS_AUTO_SIN_AVANCE');
+    // WEB_ULTIMA_GUERRA_PREVIA_V1 (37_Web_API.gs): instantánea con `paraTemporada` y la temporada de la última guerra; vale 10 minutos y se recalcula desde Backup_Guerra.csv, pero se borra para que no coincida por casualidad con un número nuevo.
+    _webUltimaGuerraPreviaInvalidar_();
+    // PRIMERA_CONSULTA_RR (09_API_ClashRoyale.gs): mapa 'temporada|periodIndex|clanTag' → hora de la primera consulta. Se pasa a la numeración nueva (T += deltaMeses) para conservar las horas; sin esto una clave vieja coincidiría con una semana nueva y _registrarPrimeraConsultaRR_() (que nunca reemplaza) dejaría una hora ajena.
+    // Marca propia (REENUM_PRIMERA_CONSULTA_HECHO) para no sumar el delta dos veces si el paso se reintenta.
+    var movidasRR = 0;
+    if (props.getProperty('REENUM_PRIMERA_CONSULTA_HECHO') !== runIdFin) {
+      try {
+        var txtRR = props.getProperty('PRIMERA_CONSULTA_RR');
+        if (txtRR) {
+          var mapaRR = JSON.parse(txtRR) || {}, mapaRRNuevo = {};
+          Object.keys(mapaRR).forEach(function (kRR) {
+            var pRR = kRR.split('|');
+            if (pRR.length === 3 && isFinite(Number(pRR[0]))) { pRR[0] = String(Number(pRR[0]) + deltaMeses); movidasRR++; }
+            mapaRRNuevo[pRR.join('|')] = mapaRR[kRR];
+          });
+          props.setProperty('PRIMERA_CONSULTA_RR', JSON.stringify(mapaRRNuevo));
+        }
+      } catch (eRR) {
+        Logger.log('[Reenumeración] PRIMERA_CONSULTA_RR ilegible, se descarta: ' + eRR.message);
+        props.deleteProperty('PRIMERA_CONSULTA_RR');
+      }
+      props.setProperty('REENUM_PRIMERA_CONSULTA_HECHO', runIdFin);
+    }
+    _PRIMERA_CONSULTA_RR_MEM = null; // la copia en memoria de 09_API_ClashRoyale.gs ya no vale
     props.setProperty('REENUM_PROPS_NUMERACION_HECHO', runIdFin);
     Logger.log('[Reenumeración] Avance de verificarCrrVsBackup* (VCRR_ESTADO) y de la corrección de Guerra (CORRGUERRA_ESTADO) descartados.');
+    Logger.log('[Reenumeración] Cursores de Semana por días (RS_CURSOR_*), instantánea de la última guerra previa descartados y ' + movidasRR + ' clave(s) de PRIMERA_CONSULTA_RR pasadas a la numeración nueva (T += ' + deltaMeses + ').');
     Logger.log('[Reenumeración] Índice de cruce de meta descartado y ' + movidas.length + ' marca(s) NUEVOS_CIERRE_SEMANA_T<n> pasadas a la numeración nueva (T += ' + deltaMeses + ').');
   }
 
