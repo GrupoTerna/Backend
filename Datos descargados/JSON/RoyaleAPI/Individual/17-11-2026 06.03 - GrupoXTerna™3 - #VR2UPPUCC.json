@@ -6,7 +6,7 @@
   "fechaUltimaConsulta": "17/11/2026",
   "registros": [
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 2,
       "clan": "GrupoXTerna™3",
@@ -19,7 +19,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 3,
       "clan": "GrupoXTerna™3",
@@ -32,7 +32,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 4,
       "clan": "GrupoXTerna™3",
@@ -45,7 +45,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 25,
+      "temporadaInterna": 37,
       "temporadaRoyaleAPI": 136,
       "semana": 1,
       "clan": "GrupoXTerna™3",
@@ -58,7 +58,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 5,
       "clan": "GrupoXTerna™3",
@@ -71,7 +71,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 4,
       "clan": "GrupoXTerna™3",
@@ -84,7 +84,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": 24,
+      "temporadaInterna": 36,
       "temporadaRoyaleAPI": 135,
       "semana": 3,
       "clan": "GrupoXTerna™3",
@@ -96,7 +96,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -1,
+      "temporadaInterna": 11,
       "temporadaRoyaleAPI": 110,
       "semana": 5,
       "clan": "Perú dragons",
@@ -110,7 +110,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -1,
+      "temporadaInterna": 11,
       "temporadaRoyaleAPI": 110,
       "semana": 4,
       "clan": "Perú dragons",
@@ -124,7 +124,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -1,
+      "temporadaInterna": 11,
       "temporadaRoyaleAPI": 110,
       "semana": 3,
       "clan": "Perú dragons",
@@ -138,7 +138,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -1,
+      "temporadaInterna": 11,
       "temporadaRoyaleAPI": 110,
       "semana": 2,
       "clan": "Perú dragons",
@@ -152,7 +152,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -1,
+      "temporadaInterna": 11,
       "temporadaRoyaleAPI": 110,
       "semana": 1,
       "clan": "Perú dragons",
@@ -166,7 +166,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -2,
+      "temporadaInterna": 10,
       "temporadaRoyaleAPI": 109,
       "semana": 4,
       "clan": "los mejor messi",
@@ -180,7 +180,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -2,
+      "temporadaInterna": 10,
       "temporadaRoyaleAPI": 109,
       "semana": 3,
       "clan": "los mejor messi",
@@ -194,7 +194,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -2,
+      "temporadaInterna": 10,
       "temporadaRoyaleAPI": 109,
       "semana": 2,
       "clan": "los mejor messi",
@@ -208,7 +208,7 @@
       "comentario": ""
     },
     {
-      "temporadaInterna": -2,
+      "temporadaInterna": 10,
       "temporadaRoyaleAPI": 109,
       "semana": 1,
       "clan": "los mejor messi",
@@ -222,5 +222,5 @@
       "comentario": ""
     }
   ],
-  "reenumeracionId": "1793146932920"
+  "reenumeracionId": "1795320518442"
 }
