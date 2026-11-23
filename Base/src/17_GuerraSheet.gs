@@ -4430,7 +4430,7 @@ function completarClanTagGuerraAplicar() { _completarClanTagGuerra_(true); }
 function completarClanTagInactivosInforme() { _completarClanTagInactivos_(); }
 
 /**
- * _clanTagPerfilPorSemana_(mapaOverlay) [→ Contexto_Base_Web.md §PF558]
+ * _clanTagPerfilPorSemana_(mapaOverlay) [→ Contexto_Base_Web.md §PF559]
  * Función pura. mapaOverlay: el de _cargarOverlayCorreccionesGuerraPorClan() (clave «temporada|semana|clanTag|tag»; la fila del perfil tiene clanTag vacío).
  * Devuelve { 'TAGJUGADOR|temporada|semana': '#TAGCLAN' } solo con filas de perfil de origen «perfil» cuyo «Clan RoyaleAPI» es un tag (empieza con #).
  * La temporada es la interna, la misma que la columna Temporada de Backup_Guerra.csv.
@@ -4454,7 +4454,7 @@ function _clanTagPerfilPorSemana_(mapaOverlay) {
  * Función pura (no toca Drive ni hojas). filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado.
  * tagsPorNombre: { 'Nombre del clan': ['#TAG', ...] } (más de un Tag = ambiguo).
  * historial (opcional, 7-nov-2026): resultado de _clanTagMovimientosHistorial_() (ingresos, reingresos y salidas con fecha). Confirma una fila con Clan vacío solo si el Historial la cubre sin dudas (ver _clanTagPorHistorial_()).
- * perfilSemana (opcional, 22-nov-2026, §PF558): { 'TAGJUGADOR|temporada|semana': '#TAGCLAN' } del «Clan RoyaleAPI» de las filas de perfil de Correcciones_Guerra.csv (ver _clanTagPerfilPorSemana_()). Confirma una fila con Clan vacío que ni el día ni el Historial resuelven.
+ * perfilSemana (opcional, 22-nov-2026, §PF559): { 'TAGJUGADOR|temporada|semana': '#TAGCLAN' } del «Clan RoyaleAPI» de las filas de perfil de Correcciones_Guerra.csv (ver _clanTagPerfilPorSemana_()). Confirma una fila con Clan vacío que ni el día ni el Historial resuelven.
  * Devuelve { cambios: [{ idx, tag, motivo }], detalle: [[tipo, idx, motivo]], resumen: {...} }. Reglas (criterio 10 del consolidado):
  *  - Fila con Clan_Tag: no se toca.
  *  - Fila con nombre de clan que resuelve a UN Tag: «Completar».
@@ -4511,7 +4511,7 @@ function _clanTagPlanGuerra_(filas, tagsPorNombre, historial, perfilSemana) {
       if (tagsSem.length && !(tagsSem.length === 1 && tagsSem[0] === tagHist)) { resumen.conflictoHistorial++; detalle.push([(conDatos ? '0 ' : '1 ') + 'CONFLICTO (el Historial dice ' + tagHist + ', otras filas de la semana dicen ' + tagsSem.join(' / ') + '; no se aplica)', j, tagHist]); continue; }
       resumen.confirmadaHistorial++; cambios.push({ idx: j, tag: tagHist, motivo: 'Confirmada por Historial (ingreso o salida con fecha)' }); continue;
     }
-    // 22-nov-2026 (§PF558): el perfil de RoyaleAPI (Tampermonkey) dice en que clan estuvo el jugador esa temporada y semana.
+    // 22-nov-2026 (§PF559): el perfil de RoyaleAPI (Tampermonkey) dice en que clan estuvo el jugador esa temporada y semana.
     var tagPerfil = perfilSemana ? (perfilSemana[[jg, celda(g, GC.TEMPORADA), celda(g, GC.SEMANA)].join('|')] || '') : '';
     if (tagPerfil) {
       if (tagsSem.length && !(tagsSem.length === 1 && tagsSem[0] === tagPerfil)) { resumen.conflictoPerfil++; detalle.push([(conDatos ? '0 ' : '1 ') + 'CONFLICTO (el perfil de RoyaleAPI dice ' + tagPerfil + ', otras filas de la semana dicen ' + tagsSem.join(' / ') + '; no se aplica)', j, tagPerfil]); continue; }
@@ -4658,7 +4658,7 @@ function _completarClanTagGuerra_(aplicar) {
       } else { historialNota = 'Backup_Historial_I-S.csv no existe o esta vacio; no se usa.'; }
     } catch (eH) { historialNota = 'No se pudo leer el Historial: ' + eH.message; historial = null; }
     var perfilSemana = null, perfilNota = '';
-    try { // 22-nov-2026 (§PF558): «Clan RoyaleAPI» de las filas de perfil de Correcciones_Guerra.csv
+    try { // 22-nov-2026 (§PF559): «Clan RoyaleAPI» de las filas de perfil de Correcciones_Guerra.csv
       perfilSemana = _clanTagPerfilPorSemana_(_cargarOverlayCorreccionesGuerraPorClan());
       perfilNota = 'Perfil de RoyaleAPI: ' + Object.keys(perfilSemana).length + ' jugador(es)-semana con clan.';
     } catch (eP) { perfilNota = 'No se pudo leer Correcciones_Guerra.csv: ' + eP.message; perfilSemana = null; }
