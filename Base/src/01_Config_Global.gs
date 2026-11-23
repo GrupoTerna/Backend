@@ -328,7 +328,7 @@ var CFG = {
   // §PF426 (8-nov-2026): capturas continuas de currentriverrace para medir el criterio 13 de §PF160. Cada captura es un archivo NUEVO (con hora y segundos en el nombre) en la subcarpeta CARPETA de CurrentRiverRace; no pisa nada.
   CAPTURA_CONTINUA_ACTIVA: true,
   CAPTURA_CONTINUA_TAGS: ['#GCRG8L00', '#GYCU9YRG'],          // Grupo乂Terna™ y GrupoXTerna™2 (los dos con guerra abierta; Principal y Clan 2)
-  CAPTURA_CONTINUA_INI_UTC_MIN: 9 * 60 + 45,                    // 04:45 Lima
+  CAPTURA_CONTINUA_INI_UTC_MIN: 9 * 60,                         // 04:00 Lima (antes 04:45; §PF557 punto 26: a las 04:48 GrupoXTerna™2 ya había cambiado de periodIndex y su hora no se veía)
   CAPTURA_CONTINUA_FIN_UTC_MIN: 12 * 60,                        // 07:00 Lima (no incluida)
   CAPTURA_CONTINUA_MIN_ENTRE_MS: 4 * 60 * 1000,                 // runGuerra corre cada 5 min; con 4 min no se capturan dos disparos pegados
   CAPTURA_CONTINUA_DIAS_MAX: 7,                                 // se detiene sola tras 7 días distintos con captura; reiniciarCapturaContinuaCRR() la vuelve a abrir

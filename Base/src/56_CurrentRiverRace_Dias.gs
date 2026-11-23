@@ -73,7 +73,7 @@ function estadoCapturaContinuaCRR() {
   } catch (e) { Logger.log('[CapturaContinua] No se pudo contar los archivos: ' + e.message); }
   Logger.log('[CapturaContinua] Activa: ' + !!CFG.CAPTURA_CONTINUA_ACTIVA + '. Días con captura: ' + dias.length + ' de ' + CFG.CAPTURA_CONTINUA_DIAS_MAX +
     (dias.length ? ' (' + dias.join(', ') + ')' : '') + '. Última captura: ' + (ult ? Utilities.formatDate(new Date(ult), 'America/Lima', 'yyyy-MM-dd HH:mm:ss') + ' (Lima)' : 'ninguna') +
-    '. Archivos en ' + CFG.CAPTURA_CONTINUA_CARPETA + ': ' + nArchivos + '. Horario: 04:45 a 07:00 Lima, clanes ' + CFG.CAPTURA_CONTINUA_TAGS.join(', ') + '.');
+    '. Archivos en ' + CFG.CAPTURA_CONTINUA_CARPETA + ': ' + nArchivos + '. Horario: 04:00 a 07:00 Lima, clanes ' + CFG.CAPTURA_CONTINUA_TAGS.join(', ') + '.');
 }
 
 /**
@@ -84,7 +84,7 @@ function reiniciarCapturaContinuaCRR() {
   var props = PropertiesService.getScriptProperties();
   props.deleteProperty('CAPTURA_CONTINUA_DIAS');
   props.deleteProperty('CAPTURA_CONTINUA_ULTIMA_MS');
-  Logger.log('[CapturaContinua] Conteo reiniciado: vuelve a capturar desde la próxima ventana (04:45 a 07:00 Lima). Los archivos ya guardados no se tocaron.');
+  Logger.log('[CapturaContinua] Conteo reiniciado: vuelve a capturar desde la próxima ventana (04:00 a 07:00 Lima). Los archivos ya guardados no se tocaron.');
 }
 
 // =============================================================================
@@ -487,7 +487,7 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
 
 /**
  * _capturaContinuaCRR_() [→ Contexto_Base_Web.md §PF426]
- * La llama runGuerra() al empezar (cada 5 min). Entre las 04:45 y las 07:00 (Lima), una vez cada ~5 min, pide /currentriverrace de los clanes de
+ * La llama runGuerra() al empezar (cada 5 min). Entre las 04:00 y las 07:00 (Lima; desde el 22-nov-2026, antes 04:45), una vez cada ~5 min, pide /currentriverrace de los clanes de
  * CFG.CAPTURA_CONTINUA_TAGS y guarda la respuesta tal cual en un archivo NUEVO de la subcarpeta Capturas_Continuas (nunca actualiza uno existente), con la
  * hora y los segundos en el nombre, para medir qué trae la API justo después del cambio de periodIndex (criterio 13 de §PF160). Se detiene sola tras
  * CFG.CAPTURA_CONTINUA_DIAS_MAX días distintos. No toca hojas ni el caché normal. Devuelve cuántos archivos escribió.
