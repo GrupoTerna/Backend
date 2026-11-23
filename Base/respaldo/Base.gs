@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 19:18:05 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 20:30:44 */
 
 
 
@@ -28201,10 +28201,31 @@ function completarClanTagGuerraAplicar() { _completarClanTagGuerra_(true); }
 function completarClanTagInactivosInforme() { _completarClanTagInactivos_(); }
 
 /**
+ * _clanTagPerfilPorSemana_(mapaOverlay) [→ Contexto_Base_Web.md §PF559]
+ * Función pura. mapaOverlay: el de _cargarOverlayCorreccionesGuerraPorClan() (clave «temporada|semana|clanTag|tag»; la fila del perfil tiene clanTag vacío).
+ * Devuelve { 'TAGJUGADOR|temporada|semana': '#TAGCLAN' } solo con filas de perfil de origen «perfil» cuyo «Clan RoyaleAPI» es un tag (empieza con #).
+ * La temporada es la interna, la misma que la columna Temporada de Backup_Guerra.csv.
+ */
+function _clanTagPerfilPorSemana_(mapaOverlay) {
+  var salida = {};
+  Object.keys(mapaOverlay || {}).forEach(function (k) {
+    var p = k.split('|'); // temporada | semana | clantag | tag
+    if (p[2] !== '') return;
+    var e = mapaOverlay[k];
+    if (!e || e.origenPerfil !== CGW_ORIGEN_PERFIL) return;
+    var clan = String(e.clanPerfil || '').trim().toUpperCase();
+    if (clan.charAt(0) !== '#') return; // clan-por-nombre-ok: se mira el primer carácter del Tag (#), no un nombre de clan
+    salida[[String(p[3] || '').trim().toUpperCase(), String(p[0]).trim(), String(p[1]).trim()].join('|')] = clan;
+  });
+  return salida;
+}
+
+/**
  * _clanTagPlanGuerra_(filas, tagsPorNombre) [→ Contexto_Base_Web.md §PF423]
  * Función pura (no toca Drive ni hojas). filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado.
  * tagsPorNombre: { 'Nombre del clan': ['#TAG', ...] } (más de un Tag = ambiguo).
  * historial (opcional, 7-nov-2026): resultado de _clanTagMovimientosHistorial_() (ingresos, reingresos y salidas con fecha). Confirma una fila con Clan vacío solo si el Historial la cubre sin dudas (ver _clanTagPorHistorial_()).
+ * perfilSemana (opcional, 22-nov-2026, §PF559): { 'TAGJUGADOR|temporada|semana': '#TAGCLAN' } del «Clan RoyaleAPI» de las filas de perfil de Correcciones_Guerra.csv (ver _clanTagPerfilPorSemana_()). Confirma una fila con Clan vacío que ni el día ni el Historial resuelven.
  * Devuelve { cambios: [{ idx, tag, motivo }], detalle: [[tipo, idx, motivo]], resumen: {...} }. Reglas (criterio 10 del consolidado):
  *  - Fila con Clan_Tag: no se toca.
  *  - Fila con nombre de clan que resuelve a UN Tag: «Completar».
@@ -28212,7 +28233,7 @@ function completarClanTagInactivosInforme() { _completarClanTagInactivos_(); }
  *    «Probable» (no se aplica) si en la misma temporada y semana el jugador tiene otras filas con un único Tag; el resto, «Sin clan».
  *  - Con historial: «Confirmada por Historial» si los movimientos con fecha del jugador cubren ese día sin dudas y no contradicen a las otras filas de su semana; si las contradicen, «Conflicto» (no se aplica).
  */
-function _clanTagPlanGuerra_(filas, tagsPorNombre, historial) {
+function _clanTagPlanGuerra_(filas, tagsPorNombre, historial, perfilSemana) {
   var celda = function (f, col) { return String(f[col - 1] === undefined || f[col - 1] === null ? '' : f[col - 1]).trim(); };
   var tagDeNombre = function (n) {
     var l = tagsPorNombre[n];
@@ -28233,7 +28254,7 @@ function _clanTagPlanGuerra_(filas, tagsPorNombre, historial) {
     (porSemana[ks] || (porSemana[ks] = {}))[tg] = true;
   }
   var cambios = [], detalle = [];
-  var resumen = { yaTrae: 0, completar: 0, sinTag: 0, ambiguo: 0, confirmada: 0, confirmadaHistorial: 0, conflictoHistorial: 0, ambiguaDia: 0, probable: 0, sinClan: 0, conTagEnClan: 0, vaciasConDatos: 0 };
+  var resumen = { yaTrae: 0, completar: 0, sinTag: 0, ambiguo: 0, confirmada: 0, confirmadaHistorial: 0, conflictoHistorial: 0, confirmadaPerfil: 0, conflictoPerfil: 0, ambiguaDia: 0, probable: 0, sinClan: 0, conTagEnClan: 0, vaciasConDatos: 0 };
   for (var j = 0; j < filas.length; j++) {
     var g = filas[j];
     if (celda(g, GC.CLAN_TAG)) { resumen.yaTrae++; continue; }
@@ -28260,6 +28281,12 @@ function _clanTagPlanGuerra_(filas, tagsPorNombre, historial) {
     if (tagHist) {
       if (tagsSem.length && !(tagsSem.length === 1 && tagsSem[0] === tagHist)) { resumen.conflictoHistorial++; detalle.push([(conDatos ? '0 ' : '1 ') + 'CONFLICTO (el Historial dice ' + tagHist + ', otras filas de la semana dicen ' + tagsSem.join(' / ') + '; no se aplica)', j, tagHist]); continue; }
       resumen.confirmadaHistorial++; cambios.push({ idx: j, tag: tagHist, motivo: 'Confirmada por Historial (ingreso o salida con fecha)' }); continue;
+    }
+    // 22-nov-2026 (§PF559): el perfil de RoyaleAPI (Tampermonkey) dice en que clan estuvo el jugador esa temporada y semana.
+    var tagPerfil = perfilSemana ? (perfilSemana[[jg, celda(g, GC.TEMPORADA), celda(g, GC.SEMANA)].join('|')] || '') : '';
+    if (tagPerfil) {
+      if (tagsSem.length && !(tagsSem.length === 1 && tagsSem[0] === tagPerfil)) { resumen.conflictoPerfil++; detalle.push([(conDatos ? '0 ' : '1 ') + 'CONFLICTO (el perfil de RoyaleAPI dice ' + tagPerfil + ', otras filas de la semana dicen ' + tagsSem.join(' / ') + '; no se aplica)', j, tagPerfil]); continue; }
+      resumen.confirmadaPerfil++; cambios.push({ idx: j, tag: tagPerfil, motivo: 'Confirmada por el perfil de RoyaleAPI (Clan RoyaleAPI de esa temporada y semana)' }); continue;
     }
     if (tagsSem.length === 1) { resumen.probable++; detalle.push([(conDatos ? '0 ' : '1 ') + 'PROBABLE (no se aplica)', j, tagsSem[0]]); continue; }
     resumen.sinClan++;
@@ -28401,7 +28428,12 @@ function _completarClanTagGuerra_(aplicar) {
         if (!historial.ok) historial = null;
       } else { historialNota = 'Backup_Historial_I-S.csv no existe o esta vacio; no se usa.'; }
     } catch (eH) { historialNota = 'No se pudo leer el Historial: ' + eH.message; historial = null; }
-    var plan = _clanTagPlanGuerra_(filas, tagsPorNombre, historial);
+    var perfilSemana = null, perfilNota = '';
+    try { // 22-nov-2026 (§PF559): «Clan RoyaleAPI» de las filas de perfil de Correcciones_Guerra.csv
+      perfilSemana = _clanTagPerfilPorSemana_(_cargarOverlayCorreccionesGuerraPorClan());
+      perfilNota = 'Perfil de RoyaleAPI: ' + Object.keys(perfilSemana).length + ' jugador(es)-semana con clan.';
+    } catch (eP) { perfilNota = 'No se pudo leer Correcciones_Guerra.csv: ' + eP.message; perfilSemana = null; }
+    var plan = _clanTagPlanGuerra_(filas, tagsPorNombre, historial, perfilSemana);
     var rs = plan.resumen;
     // 7-nov-2026: diagnostico del mapa (el primer informe real dejo 4 filas de PERUVIANOS SJL sin Tag aunque el Directorio y Inactivos se leen).
     var nombresSinTag = {};
@@ -28409,7 +28441,7 @@ function _completarClanTagGuerra_(aplicar) {
     Logger.log('[ClanTagHistorico] Mapa nombre -> Tag: ' + Object.keys(tagsPorNombre).length + ' nombre(s) (' + Object.keys(tagsPorNombre).map(function (n) { return n + ' = ' + tagsPorNombre[n].join('/'); }).join('; ') + '). Filas leidas: Directorio ' + leidasDir + ', Inactivos ' + leidasInact + '. Nombres sin Tag: ' + (Object.keys(nombresSinTag).join('; ') || 'ninguno') + '.');
     var cab = ['Tipo', 'N°', 'Temporada', 'Semana', 'Tag', 'Nombre', 'PeriodIndex', 'Clan actual', 'AtaquesHoy', 'Fame', 'Detalle'];
     var informe = [cab];
-    [['Resumen: ya traen Clan_Tag', rs.yaTrae], ['Resumen: a completar por nombre', rs.completar], ['Resumen: confirmadas por otra fila del mismo dia', rs.confirmada], ['Resumen: confirmadas por el Historial (fecha)', rs.confirmadaHistorial], ['Resumen: conflicto Historial contra la semana (no se aplican)', rs.conflictoHistorial],
+    [['Resumen: ya traen Clan_Tag', rs.yaTrae], ['Resumen: a completar por nombre', rs.completar], ['Resumen: confirmadas por otra fila del mismo dia', rs.confirmada], ['Resumen: confirmadas por el Historial (fecha)', rs.confirmadaHistorial], ['Resumen: conflicto Historial contra la semana (no se aplican)', rs.conflictoHistorial], ['Resumen: confirmadas por el perfil de RoyaleAPI (clan de la semana)', rs.confirmadaPerfil], ['Resumen: conflicto perfil contra la semana (no se aplican)', rs.conflictoPerfil],
       ['Resumen: probables (no se aplican)', rs.probable], ['Resumen: ambiguas el mismo dia', rs.ambiguaDia], ['Resumen: sin clan', rs.sinClan],
       ['Resumen: nombre sin Tag en el mapa', rs.sinTag], ['Resumen: nombre con mas de un Tag', rs.ambiguo], ['Resumen: filas con Clan vacio y con ataques o fame', rs.vaciasConDatos]].forEach(function (x) {
       informe.push([x[0], '', '', '', '', '', '', '', '', '', String(x[1])]);
@@ -28433,7 +28465,7 @@ function _completarClanTagGuerra_(aplicar) {
       _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
     }
     Logger.log('[ClanTagHistorico] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Filas: ' + filas.length + '. Ya traen Clan_Tag: ' + rs.yaTrae +
-      '. A completar por nombre: ' + rs.completar + '. Confirmadas por otra fila del mismo dia: ' + rs.confirmada + '. Confirmadas por el Historial: ' + rs.confirmadaHistorial + '. Conflictos Historial/semana (no se aplican): ' + rs.conflictoHistorial + '. Jugadores por confirmar con RoyaleAPI: ' + tagsRoyale.length + ' (lista en el informe). ' + historialNota + (aplicar ? ' (escritas en esta corrida: ' + aEscribir.length + ', tope ' + APLICAR_TOPE + ')' : '') +
+      '. A completar por nombre: ' + rs.completar + '. Confirmadas por otra fila del mismo dia: ' + rs.confirmada + '. Confirmadas por el Historial: ' + rs.confirmadaHistorial + '. Conflictos Historial/semana (no se aplican): ' + rs.conflictoHistorial + '. Confirmadas por el perfil de RoyaleAPI: ' + rs.confirmadaPerfil + '. Conflictos perfil/semana (no se aplican): ' + rs.conflictoPerfil + '. ' + perfilNota + ' Jugadores por confirmar con RoyaleAPI: ' + tagsRoyale.length + ' (lista en el informe). ' + historialNota + (aplicar ? ' (escritas en esta corrida: ' + aEscribir.length + ', tope ' + APLICAR_TOPE + ')' : '') +
       '. Probables (no se aplican): ' + rs.probable + '. Sin clan: ' + rs.sinClan + '. Ambiguas: ' + (rs.ambiguaDia + rs.ambiguo) + '. Nombre sin Tag: ' + rs.sinTag + '. Detalle en Drive: ' + nombreInforme + '.' +
       (aplicar ? (plan.cambios.length > APLICAR_TOPE ? ' Quedaron ' + (plan.cambios.length - APLICAR_TOPE) + ' por completar: correr completarClanTagGuerraAplicar() otra vez.' : '') : ' (No se escribio nada; correr completarClanTagGuerraAplicar() para aplicar.)'));
   } finally {
