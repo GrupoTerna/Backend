@@ -3,7 +3,7 @@
   "backfillPerfilHecho": false,
   "ultimaTemporadaCubierta": null,
   "ultimaSemanaCubierta": null,
-  "fechaUltimaConsulta": "17/11/2026",
+  "fechaUltimaConsulta": "22/11/2026",
   "registros": [
     {
       "temporadaInterna": 39,
@@ -3811,6 +3811,20 @@
       "cerrada": true,
       "externa": true,
       "clanTag": "#P9JVVYU8",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 2,
+      "clan": "Al Sancak",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#RGGQLLYV",
       "comentario": ""
     }
   ],
