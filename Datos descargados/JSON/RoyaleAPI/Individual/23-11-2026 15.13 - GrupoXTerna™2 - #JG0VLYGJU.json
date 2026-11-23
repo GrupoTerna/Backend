@@ -1,0 +1,64 @@
+{
+  "tag": "#JG0VLYGJU",
+  "backfillPerfilHecho": false,
+  "ultimaTemporadaCubierta": null,
+  "ultimaSemanaCubierta": null,
+  "fechaUltimaConsulta": "23/11/2026",
+  "registros": [
+    {
+      "temporadaInterna": -5,
+      "temporadaRoyaleAPI": 94,
+      "semana": 4,
+      "clan": "matapollos",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#L9C0LQ0Q",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": -5,
+      "temporadaRoyaleAPI": 94,
+      "semana": 3,
+      "clan": "matapollos",
+      "ataques": 7,
+      "fame": 275,
+      "barcos": 3,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#L9C0LQ0Q",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 3,
+      "clan": "GrupoXTerna™2",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "log",
+      "cerrada": true,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 4,
+      "clan": "GrupoXTerna™2",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "riverrace",
+      "cerrada": false,
+      "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    }
+  ],
+  "reenumeracionId": "1795320518442"
+}
