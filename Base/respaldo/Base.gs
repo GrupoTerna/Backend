@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 17:56:49 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 22/11/2026 19:18:05 */
 
 
 
@@ -1273,7 +1273,7 @@ function runGuerra() {
   // NUEVO (05-oct-2026, pedido del usuario): vigilante de UptimeRobot (45_Vigilante_UptimeRobot.gs). Si UptimeRobot… [→ Contexto_Base_Web.md §B113]
   _vigilarUptimeRobotSeguro_();
 
-  // §PF426 (8-nov-2026): captura continua de currentriverrace (04:45 a 07:00 Lima, archivos nuevos en Capturas_Continuas) para medir el criterio 13 de §PF160. Antes del candado y dentro de un try: nunca frena ni cambia lo demás de runGuerra.
+  // §PF426 (8-nov-2026): captura continua de currentriverrace (04:00 a 07:00 Lima desde el 22-nov-2026, antes 04:45; archivos nuevos en Capturas_Continuas) para medir el criterio 13 de §PF160. Antes del candado y dentro de un try: nunca frena ni cambia lo demás de runGuerra.
   try { _capturaContinuaCRR_(); } catch (eCapCont) { Logger.log('[CapturaContinua] ' + eCapCont.message); }
 
   // Fuera de la ventana: trabajo completo 1 vez por hora UTC. Se compara con la última hora hecha en vez de
@@ -2830,7 +2830,7 @@ var CFG = {
   // §PF426 (8-nov-2026): capturas continuas de currentriverrace para medir el criterio 13 de §PF160. Cada captura es un archivo NUEVO (con hora y segundos en el nombre) en la subcarpeta CARPETA de CurrentRiverRace; no pisa nada.
   CAPTURA_CONTINUA_ACTIVA: true,
   CAPTURA_CONTINUA_TAGS: ['#GCRG8L00', '#GYCU9YRG'],          // Grupo乂Terna™ y GrupoXTerna™2 (los dos con guerra abierta; Principal y Clan 2)
-  CAPTURA_CONTINUA_INI_UTC_MIN: 9 * 60 + 45,                    // 04:45 Lima
+  CAPTURA_CONTINUA_INI_UTC_MIN: 9 * 60,                         // 04:00 Lima (antes 04:45; §PF557 punto 26: a las 04:48 GrupoXTerna™2 ya había cambiado de periodIndex y su hora no se veía)
   CAPTURA_CONTINUA_FIN_UTC_MIN: 12 * 60,                        // 07:00 Lima (no incluida)
   CAPTURA_CONTINUA_MIN_ENTRE_MS: 4 * 60 * 1000,                 // runGuerra corre cada 5 min; con 4 min no se capturan dos disparos pegados
   CAPTURA_CONTINUA_DIAS_MAX: 7,                                 // se detiene sola tras 7 días distintos con captura; reiniciarCapturaContinuaCRR() la vuelve a abrir
@@ -80262,7 +80262,7 @@ function estadoCapturaContinuaCRR() {
   } catch (e) { Logger.log('[CapturaContinua] No se pudo contar los archivos: ' + e.message); }
   Logger.log('[CapturaContinua] Activa: ' + !!CFG.CAPTURA_CONTINUA_ACTIVA + '. Días con captura: ' + dias.length + ' de ' + CFG.CAPTURA_CONTINUA_DIAS_MAX +
     (dias.length ? ' (' + dias.join(', ') + ')' : '') + '. Última captura: ' + (ult ? Utilities.formatDate(new Date(ult), 'America/Lima', 'yyyy-MM-dd HH:mm:ss') + ' (Lima)' : 'ninguna') +
-    '. Archivos en ' + CFG.CAPTURA_CONTINUA_CARPETA + ': ' + nArchivos + '. Horario: 04:45 a 07:00 Lima, clanes ' + CFG.CAPTURA_CONTINUA_TAGS.join(', ') + '.');
+    '. Archivos en ' + CFG.CAPTURA_CONTINUA_CARPETA + ': ' + nArchivos + '. Horario: 04:00 a 07:00 Lima, clanes ' + CFG.CAPTURA_CONTINUA_TAGS.join(', ') + '.');
 }
 
 /**
@@ -80273,7 +80273,7 @@ function reiniciarCapturaContinuaCRR() {
   var props = PropertiesService.getScriptProperties();
   props.deleteProperty('CAPTURA_CONTINUA_DIAS');
   props.deleteProperty('CAPTURA_CONTINUA_ULTIMA_MS');
-  Logger.log('[CapturaContinua] Conteo reiniciado: vuelve a capturar desde la próxima ventana (04:45 a 07:00 Lima). Los archivos ya guardados no se tocaron.');
+  Logger.log('[CapturaContinua] Conteo reiniciado: vuelve a capturar desde la próxima ventana (04:00 a 07:00 Lima). Los archivos ya guardados no se tocaron.');
 }
 
 // =============================================================================
@@ -80676,7 +80676,7 @@ function _crrDomingoParaTotales_(temporada, semana, tag, totA, totF) {
 
 /**
  * _capturaContinuaCRR_() [→ Contexto_Base_Web.md §PF426]
- * La llama runGuerra() al empezar (cada 5 min). Entre las 04:45 y las 07:00 (Lima), una vez cada ~5 min, pide /currentriverrace de los clanes de
+ * La llama runGuerra() al empezar (cada 5 min). Entre las 04:00 y las 07:00 (Lima; desde el 22-nov-2026, antes 04:45), una vez cada ~5 min, pide /currentriverrace de los clanes de
  * CFG.CAPTURA_CONTINUA_TAGS y guarda la respuesta tal cual en un archivo NUEVO de la subcarpeta Capturas_Continuas (nunca actualiza uno existente), con la
  * hora y los segundos en el nombre, para medir qué trae la API justo después del cambio de periodIndex (criterio 13 de §PF160). Se detiene sola tras
  * CFG.CAPTURA_CONTINUA_DIAS_MAX días distintos. No toca hojas ni el caché normal. Devuelve cuántos archivos escribió.
