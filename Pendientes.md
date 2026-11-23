@@ -85,7 +85,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 
 ### B5. Guerra, corrección y Tampermonkey (la vigente es la v3.38; las versiones que nombran las filas viejas ya quedaron superadas)
 
-- [ ] `PF183` — Barcos tras el cruce: subir una copia nueva de `Revision_Guerra.csv` y comprobar que no tenga filas nuevas por barcos en el domingo (`§PF183` actualización 54).
 - [ ] `PF554 / PF555` — Correr los cuatro botones al menos una vez y comprobar en cada uno: (1) que al terminar sale «✔ [Registro] Guardado en Log_Tampermonkey_Resumen…csv»; (2) que cada archivo aparece en Drive (`CSV/Tampermonkey`) y en `Datos descargados/` de GitHub, sin pisar al de otro botón; (3) que una segunda corrida del mismo botón deja las dos, la nueva primero. En «Corrección de jugadores elegidos» (3 o más tags), además que el panel muestra el bloque «Resumen de jugadores elegidos» con la cabecera de todos. Ya probado el 21-nov-2026 (`§PF555` punto 8): el punto (1) en Buscar miembros nuevos, Corrección de Guerra y Verificar Semana en Curso. Falta Corrección de jugadores elegidos, la segunda corrida de cada botón (debe decir «conserva 2 corrida(s)») y mirar Drive y `Datos descargados/`.
 - [ ] `PF441` — (4) Confirmar en la hoja `Guerra` real que lo guardado por Tampermonkey sobrevive a `runGuerra`.
 - [ ] `PF159` — (1) Perfil de Chistris: ningún día pasa de 4 ataques. (2) Revisar los 91 días (75 jugadores) que siguen con más de 4 ataques con la resta sola.
