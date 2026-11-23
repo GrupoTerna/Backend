@@ -32,6 +32,7 @@ Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el códig
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
 
+- [ ] `PF559` — Decidir qué hacer con las 229 filas de `Backup_Guerra.csv` que siguen sin `Clan_Tag` tras la aplicación del 22-nov-2026: 189 en conflicto (el perfil dice un clan y otras filas de la semana dicen otro; solo 4 con ataques o fame) y 40 sin clan (sin ataques ni fame). Detalle y lista en `Completar_ClanTag_Guerra 2026-11-22 20.35.24 (aplicado).csv` (`§PF559` punto 7).
 
 ### A3. Nuevos, reenumeración y migraciones
 
@@ -102,8 +103,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
-
-- [ ] `PF559` — Filas de `Backup_Guerra.csv` sin clan: probar en Apps Script real (proyecto **Base**, archivo `17_GuerraSheet.gs`) `completarClanTagGuerraInforme()`: debe salir unas 3 629 «confirmadas por el perfil de RoyaleAPI», 189 en conflicto y 40 sin clan (prueba en Node del 22-nov-2026, `§PF559` punto 4); si coincide, `completarClanTagGuerraAplicar()`. Después visitar con Tampermonkey los tags de la lista que aún no tienen visita (unos 80 al 22-nov) y repetir el informe.
 
 ### B6. Clanes externos, infiltrados e índices
 
@@ -242,6 +241,7 @@ Cada fila termina con su **Revisión**. Solo tres tienen fecha (`PF441` y `PF439
 ## E. Acciones de la usuaria
 
 - [ ] `PF377`: revisar el panel de `admin.html` en tres tarjetas (partes 1 y 2 hechas, `Web` `ff25e46` y `cdbabf1`): cintas, rótulos y pastillas.
+- [ ] `PF559`: visitar con Tampermonkey los tags de la lista «Tags sin clan» que aún no tienen visita (unos 80 al 22-nov-2026; la lista se cruza con `Visitas_Perfil.csv`) y repetir `completarClanTagGuerraInforme()` (proyecto **Base**, `17_GuerraSheet.gs`).
 - [ ] **Revocar el token fine-grained de GitHub y borrar `Claude.txt`** al terminar la tanda (el token quedó escrito en esta conversación; no se copia aquí).
 - [ ] **Purga en Soporte de GitHub** de los commits viejos con celulares: tras la reescritura del historial (28-oct) siguen accesibles por su hash y por `refs/pull/*/head` (`§PF288` punto 3). Tratar esos números como expuestos.
 - [ ] **Confirmar o revertir las decisiones de Claude** del 17-nov (`§PF499` puntos 2, 3, 4, 5 y 8) y del 20-nov (`§PF542`, `§PF543`, `§PF544`, `§PF545`); no se ejecutó nada con ellas que no se pueda deshacer.
