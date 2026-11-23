@@ -1,5 +1,4 @@
 Fecha,Estado,Resultado,Error
-2026-10-25 14:20:18,OK,"{""ok"":true,""aplicadas"":216,""omitidas"":0,""sinCambios"":17,""total"":233,""anterioresT1"":216}",
 2026-10-25 14:21:03,OK,"{""ok"":true,""aplicadas"":136,""omitidas"":0,""sinCambios"":24,""total"":160,""anterioresT1"":136}",
 2026-10-25 14:21:56,OK,"{""ok"":true,""aplicadas"":103,""omitidas"":0,""sinCambios"":22,""total"":125,""anterioresT1"":103}",
 2026-10-25 14:22:46,OK,"{""ok"":true,""aplicadas"":236,""omitidas"":0,""sinCambios"":24,""total"":260,""anterioresT1"":236}",
@@ -499,3 +498,4 @@ Fecha,Estado,Resultado,Error
 2026-11-22 20:27:19,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":335,""total"":335,""visitasPerfil"":8,""anterioresT1"":23,""nuevosDetectados"":[""#V8R28J89Q"",""#VJC9GU9LU"",""#VLJQUQL2P""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":3,""sinFecha"":0,""sinRegistros"":0}}",
 2026-11-22 20:29:14,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":488,""total"":488,""visitasPerfil"":6,""anterioresT1"":70,""nuevosDetectados"":[""#VLQ8JUYJG"",""#VP0GRLRQG"",""#VQR08VQRP"",""#VYCQJG2UP"",""#VYV8U9CL2"",""#YY98VJQUJ""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":6,""sinFecha"":0,""sinRegistros"":0}}",
 2026-11-22 20:44:52,OK,"{""ok"":true,""aplicadas"":0,""omitidas"":0,""sinCambios"":271,""total"":271,""visitasPerfil"":2,""anterioresT1"":101,""nuevosDetectados"":[""#2CJJ9JLLQ"",""#VCJ2QRG9R""],""nuevosEnHoja"":{""candidatos"":0,""procesados"":0,""filasNuevas"":0,""noActivos"":2,""sinFecha"":0,""sinRegistros"":0}}",
+2026-11-23 15:22:51,OK,"{""ok"":false,""error"":""El sistema está ocupado guardando otra corrección. Intenta de nuevo en unos segundos."",""aplicadas"":0}",
