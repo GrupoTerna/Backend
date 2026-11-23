@@ -193,6 +193,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] Probar en el perfil real un jugador con 0/0 donaciones. `PF163`
 - [ ] Abrir en Word real (escritorio) el `.doc` descargado con «Exportar»: comprobar que el fondo negro se vea y se imprima (depende de `<w:DisplayBackgroundShape/>`; las celdas de la tabla llevan su propio fondo por si no se aplica). `PF220`
 - [ ] `PF066` — Gráficas de `perfil.html` (22-nov-2026). Abrir un perfil y pasar el mouse (1) un día sin dato (p. ej. un domingo estimado) no debe llevar punto y la línea debe unir el punto anterior con el siguiente con dato (tramo punteado); (2) por cualquier parte de una línea de unión, morada o verde: debe salir nombre, tag y «Clan actual», y la serie debe seguir resaltándose. Solo se probó con jsdom.
+- [ ] Historial de guerra: filtro «Solo ataques incompletos» (`PF560`) (23-nov-2026). Abrir el 📈 de un jugador real y la tarjeta «Historial de guerra» de `perfil.html`: el botón muestra cuántos días incompletos tiene, al activarlo salen las dos tablas (por día J, V, S, D y barcos en incompletos frente a completos) y solo esos días; abrir otro jugador lo apaga. Confirmar con la usuaria que «incompleto» (día cerrado con menos de 4, sin el día en curso ni opcionales) y la lectura de «Barcos» son lo que quería.
 
 ---
 
