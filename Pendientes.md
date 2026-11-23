@@ -33,6 +33,7 @@ Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el códig
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
 
 - [ ] `PF559` — Decidir qué hacer con las 229 filas de `Backup_Guerra.csv` que siguen sin `Clan_Tag` tras la aplicación del 22-nov-2026: 189 en conflicto (el perfil dice un clan y otras filas de la semana dicen otro; solo 4 con ataques o fame) y 40 sin clan (sin ataques ni fame). Detalle y lista en `Completar_ClanTag_Guerra 2026-11-22 20.35.24 (aplicado).csv` (`§PF559` punto 7).
+- [ ] `PF563` — Decidir qué hacer con las otras series que empiezan con filas reconstruidas en cero antes del primer día real: 1 214 en `Backup_Guerra.csv` (23-nov-2026), 90 con otra serie de otro clan esa semana. No se sabe cuántas son «no estaba en el clan» sin cruzar con los JSON de todos los jugadores; hace falta una función informe (solo lectura) antes de quitar nada.
 
 ### A3. Nuevos, reenumeración y migraciones
 
@@ -249,5 +250,6 @@ Cada fila termina con su **Revisión**. Solo tres tienen fecha (`PF441` y `PF439
 - [ ] **Confirmar o revertir las decisiones de Claude** del 17-nov (`§PF499` puntos 2, 3, 4, 5 y 8) y del 20-nov (`§PF542`, `§PF543`, `§PF544`, `§PF545`); no se ejecutó nada con ellas que no se pueda deshacer.
 - [ ] `PF532`: confirmar la lectura de «con cuántas medallas nos podrían alcanzar» (punto 1 de `§PF532`).
 - [ ] `PF123`: mover a mano a `Informes` el archivo `Completar_DomingoDesdeJsonRoyaleApi` con marca `2026-10-18 22.26.35` (quedó en la raíz de `CSV`).
+- [ ] `PF563`: correr `descartarFilasClanEquivocadoInforme()` y, si el informe muestra solo los N° 18190 a 18192 de `#RRVG2L2YP`, `descartarFilasClanEquivocadoAplicar()` (proyecto **Base**, archivo `59_Verificar_CRR_vs_Backup.gs`); comprobar en el historial del jugador que desaparecen las filas rojas 06, 07 y 08/08.
 - [ ] `PF557`: correr `reiniciarCapturaContinuaCRR()` (proyecto **Base**, archivo `56_CurrentRiverRace_Dias.gs`) para que las `Capturas_Continuas` vuelvan a correr desde las 04:00 Lima (se detuvieron solas tras 7 días; `§PF557` punto 26).
 
