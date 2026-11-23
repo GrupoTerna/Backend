@@ -3,7 +3,7 @@
   "backfillPerfilHecho": false,
   "ultimaTemporadaCubierta": null,
   "ultimaSemanaCubierta": null,
-  "fechaUltimaConsulta": "17/11/2026",
+  "fechaUltimaConsulta": "22/11/2026",
   "registros": [
     {
       "temporadaInterna": 38,
@@ -1599,6 +1599,20 @@
       "cerrada": true,
       "externa": true,
       "clanTag": "#Q8R2JL",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 2,
+      "clan": "@Mambees",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#QVJVLQ0R",
       "comentario": ""
     }
   ],
