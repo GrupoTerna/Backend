@@ -1,0 +1,244 @@
+ID,Tipo,N°,Temporada,Semana,Tag,Nombre,PeriodIndex,Clan actual,AtaquesHoy,Fame,Detalle
+,Resumen: ya traen Clan_Tag,,,,,,,,,,37625
+,Resumen: a completar por nombre,,,,,,,,,,0
+,Resumen: confirmadas por otra fila del mismo dia,,,,,,,,,,14
+,Resumen: confirmadas por el Historial (fecha),,,,,,,,,,0
+,Resumen: conflicto Historial contra la semana (no se aplican),,,,,,,,,,0
+,Resumen: confirmadas por el perfil de RoyaleAPI (clan de la semana),,,,,,,,,,3629
+,Resumen: conflicto perfil contra la semana (no se aplican),,,,,,,,,,189
+,Resumen: probables (no se aplican),,,,,,,,,,0
+,Resumen: ambiguas el mismo dia,,,,,,,,,,0
+,Resumen: sin clan,,,,,,,,,,40
+,Resumen: nombre sin Tag en el mapa,,,,,,,,,,0
+,Resumen: nombre con mas de un Tag,,,,,,,,,,0
+,Resumen: filas con Clan vacio y con ataques o fame,,,,,,,,,,147
+,Tags por confirmar con RoyaleAPI (2 jugadores; pegar en el cuadro del script de Tampermonkey),,,,,,,,,,"#JR0V99Y0U, #UJYULR99J"
+T_34_S_01_#UJYULR99J,"CONFLICTO (el perfil de RoyaleAPI dice #9J0YJGR9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32243,34,1,#UJYULR99J,#UJYULR99J,4,,4,500,#9J0YJGR9
+T_34_S_01_#UJYULR99J,"CONFLICTO (el perfil de RoyaleAPI dice #9J0YJGR9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32244,34,1,#UJYULR99J,#UJYULR99J,5,,0,500,#9J0YJGR9
+T_34_S_01_#JR0V99Y0U,"CONFLICTO (el perfil de RoyaleAPI dice #QC0R9JQ9, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32219,34,1,#JR0V99Y0U,#JR0V99Y0U,4,,2,250,#QC0R9JQ9
+T_34_S_01_#JR0V99Y0U,"CONFLICTO (el perfil de RoyaleAPI dice #QC0R9JQ9, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32220,34,1,#JR0V99Y0U,#JR0V99Y0U,5,,0,250,#QC0R9JQ9
+T_34_S_01_#8YJGLRJUJ,"CONFLICTO (el perfil de RoyaleAPI dice #280QJRRU, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32134,34,1,#8YJGLRJUJ,#8YJGLRJUJ,3,,0,0,#280QJRRU
+T_34_S_01_#8YJGLRJUJ,"CONFLICTO (el perfil de RoyaleAPI dice #280QJRRU, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32135,34,1,#8YJGLRJUJ,#8YJGLRJUJ,4,,0,0,#280QJRRU
+T_34_S_01_#8YJGLRJUJ,"CONFLICTO (el perfil de RoyaleAPI dice #280QJRRU, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32136,34,1,#8YJGLRJUJ,#8YJGLRJUJ,5,,0,0,#280QJRRU
+T_34_S_05_#VLJQUQL2P,"CONFLICTO (el perfil de RoyaleAPI dice #89Q080VY, otras filas de la semana dicen #GYCU9YRG; no se aplica)",35290,34,5,#VLJQUQL2P,#VLJQUQL2P,31,,0,0,#89Q080VY
+T_34_S_05_#VLJQUQL2P,"CONFLICTO (el perfil de RoyaleAPI dice #89Q080VY, otras filas de la semana dicen #GYCU9YRG; no se aplica)",35291,34,5,#VLJQUQL2P,#VLJQUQL2P,32,,0,0,#89Q080VY
+T_34_S_05_#VLJQUQL2P,"CONFLICTO (el perfil de RoyaleAPI dice #89Q080VY, otras filas de la semana dicen #GYCU9YRG; no se aplica)",35292,34,5,#VLJQUQL2P,#VLJQUQL2P,33,,0,0,#89Q080VY
+T_34_S_05_#VLJQUQL2P,"CONFLICTO (el perfil de RoyaleAPI dice #89Q080VY, otras filas de la semana dicen #GYCU9YRG; no se aplica)",35293,34,5,#VLJQUQL2P,#VLJQUQL2P,34,,0,0,#89Q080VY
+T_34_S_01_#UJYULR99J,"CONFLICTO (el perfil de RoyaleAPI dice #9J0YJGR9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32242,34,1,#UJYULR99J,#UJYULR99J,3,,0,0,#9J0YJGR9
+T_34_S_04_#82JVLRL9J,"CONFLICTO (el perfil de RoyaleAPI dice #9RLJ8V2J, otras filas de la semana dicen #GCRG8L00; no se aplica)",33462,34,4,#82JVLRL9J,#82JVLRL9J,24,,0,0,#9RLJ8V2J
+T_34_S_04_#82JVLRL9J,"CONFLICTO (el perfil de RoyaleAPI dice #9RLJ8V2J, otras filas de la semana dicen #GCRG8L00; no se aplica)",33463,34,4,#82JVLRL9J,#82JVLRL9J,25,,0,0,#9RLJ8V2J
+T_34_S_04_#82JVLRL9J,"CONFLICTO (el perfil de RoyaleAPI dice #9RLJ8V2J, otras filas de la semana dicen #GCRG8L00; no se aplica)",33464,34,4,#82JVLRL9J,#82JVLRL9J,26,,0,0,#9RLJ8V2J
+T_34_S_04_#82JVLRL9J,"CONFLICTO (el perfil de RoyaleAPI dice #9RLJ8V2J, otras filas de la semana dicen #GCRG8L00; no se aplica)",33465,34,4,#82JVLRL9J,#82JVLRL9J,27,,0,0,#9RLJ8V2J
+T_34_S_03_#VY2JU08Y8,"CONFLICTO (el perfil de RoyaleAPI dice #9RYCYVVP, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33302,34,3,#VY2JU08Y8,#VY2JU08Y8,17,,0,0,#9RYCYVVP
+T_34_S_03_#VY2JU08Y8,"CONFLICTO (el perfil de RoyaleAPI dice #9RYCYVVP, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33303,34,3,#VY2JU08Y8,#VY2JU08Y8,18,,0,0,#9RYCYVVP
+T_34_S_03_#VY2JU08Y8,"CONFLICTO (el perfil de RoyaleAPI dice #9RYCYVVP, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33304,34,3,#VY2JU08Y8,#VY2JU08Y8,19,,0,0,#9RYCYVVP
+T_34_S_03_#VY2JU08Y8,"CONFLICTO (el perfil de RoyaleAPI dice #9RYCYVVP, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33305,34,3,#VY2JU08Y8,#VY2JU08Y8,20,,0,0,#9RYCYVVP
+T_34_S_03_#92J000G0R,"CONFLICTO (el perfil de RoyaleAPI dice #G00GQ88L, otras filas de la semana dicen #GCRG8L00; no se aplica)",32798,34,3,#92J000G0R,#92J000G0R,17,,0,0,#G00GQ88L
+T_34_S_03_#92J000G0R,"CONFLICTO (el perfil de RoyaleAPI dice #G00GQ88L, otras filas de la semana dicen #GCRG8L00; no se aplica)",32799,34,3,#92J000G0R,#92J000G0R,18,,0,0,#G00GQ88L
+T_34_S_03_#92J000G0R,"CONFLICTO (el perfil de RoyaleAPI dice #G00GQ88L, otras filas de la semana dicen #GCRG8L00; no se aplica)",32800,34,3,#92J000G0R,#92J000G0R,19,,0,0,#G00GQ88L
+T_34_S_03_#92J000G0R,"CONFLICTO (el perfil de RoyaleAPI dice #G00GQ88L, otras filas de la semana dicen #GCRG8L00; no se aplica)",32801,34,3,#92J000G0R,#92J000G0R,20,,0,0,#G00GQ88L
+T_34_S_04_#8GG20UGQC,"CONFLICTO (el perfil de RoyaleAPI dice #G29JQGQ0, otras filas de la semana dicen #GCRG8L00; no se aplica)",33482,34,4,#8GG20UGQC,#8GG20UGQC,24,,0,0,#G29JQGQ0
+T_34_S_04_#8GG20UGQC,"CONFLICTO (el perfil de RoyaleAPI dice #G29JQGQ0, otras filas de la semana dicen #GCRG8L00; no se aplica)",33483,34,4,#8GG20UGQC,#8GG20UGQC,25,,0,0,#G29JQGQ0
+T_34_S_04_#8GG20UGQC,"CONFLICTO (el perfil de RoyaleAPI dice #G29JQGQ0, otras filas de la semana dicen #GCRG8L00; no se aplica)",33484,34,4,#8GG20UGQC,#8GG20UGQC,26,,0,0,#G29JQGQ0
+T_34_S_04_#8GG20UGQC,"CONFLICTO (el perfil de RoyaleAPI dice #G29JQGQ0, otras filas de la semana dicen #GCRG8L00; no se aplica)",33485,34,4,#8GG20UGQC,#8GG20UGQC,27,,0,0,#G29JQGQ0
+T_35_S_01_#U82Y8Y88J,"CONFLICTO (el perfil de RoyaleAPI dice #G88V0LRV, otras filas de la semana dicen #GCRG8L00; no se aplica)",35462,35,1,#U82Y8Y88J,#U82Y8Y88J,3,,0,0,#G88V0LRV
+T_35_S_01_#U82Y8Y88J,"CONFLICTO (el perfil de RoyaleAPI dice #G88V0LRV, otras filas de la semana dicen #GCRG8L00; no se aplica)",35463,35,1,#U82Y8Y88J,#U82Y8Y88J,4,,0,0,#G88V0LRV
+T_35_S_01_#U82Y8Y88J,"CONFLICTO (el perfil de RoyaleAPI dice #G88V0LRV, otras filas de la semana dicen #GCRG8L00; no se aplica)",35464,35,1,#U82Y8Y88J,#U82Y8Y88J,5,,0,0,#G88V0LRV
+T_35_S_01_#U82Y8Y88J,"CONFLICTO (el perfil de RoyaleAPI dice #G88V0LRV, otras filas de la semana dicen #GCRG8L00; no se aplica)",35465,35,1,#U82Y8Y88J,#U82Y8Y88J,6,,0,0,#G88V0LRV
+T_34_S_02_#VQVYL2LL2,"CONFLICTO (el perfil de RoyaleAPI dice #G8CYQRVJ, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32610,34,2,#VQVYL2LL2,#VQVYL2LL2,10,,0,0,#G8CYQRVJ
+T_34_S_02_#VQVYL2LL2,"CONFLICTO (el perfil de RoyaleAPI dice #G8CYQRVJ, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32611,34,2,#VQVYL2LL2,#VQVYL2LL2,11,,0,0,#G8CYQRVJ
+T_34_S_02_#VQVYL2LL2,"CONFLICTO (el perfil de RoyaleAPI dice #G8CYQRVJ, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32612,34,2,#VQVYL2LL2,#VQVYL2LL2,12,,0,0,#G8CYQRVJ
+T_34_S_02_#VQVYL2LL2,"CONFLICTO (el perfil de RoyaleAPI dice #G8CYQRVJ, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32613,34,2,#VQVYL2LL2,#VQVYL2LL2,13,,0,0,#G8CYQRVJ
+T_34_S_02_#VCVUQVJG2,"CONFLICTO (el perfil de RoyaleAPI dice #G8UQYCCP, otras filas de la semana dicen #GCRG8L00; no se aplica)",32594,34,2,#VCVUQVJG2,#VCVUQVJG2,10,,0,0,#G8UQYCCP
+T_34_S_02_#VCVUQVJG2,"CONFLICTO (el perfil de RoyaleAPI dice #G8UQYCCP, otras filas de la semana dicen #GCRG8L00; no se aplica)",32595,34,2,#VCVUQVJG2,#VCVUQVJG2,11,,0,0,#G8UQYCCP
+T_34_S_02_#VCVUQVJG2,"CONFLICTO (el perfil de RoyaleAPI dice #G8UQYCCP, otras filas de la semana dicen #GCRG8L00; no se aplica)",32596,34,2,#VCVUQVJG2,#VCVUQVJG2,12,,0,0,#G8UQYCCP
+T_34_S_02_#VCVUQVJG2,"CONFLICTO (el perfil de RoyaleAPI dice #G8UQYCCP, otras filas de la semana dicen #GCRG8L00; no se aplica)",32597,34,2,#VCVUQVJG2,#VCVUQVJG2,13,,0,0,#G8UQYCCP
+T_34_S_03_#PRGP9PJLG,"CONFLICTO (el perfil de RoyaleAPI dice #G9UR0Q08, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33074,34,3,#PRGP9PJLG,#PRGP9PJLG,17,,0,0,#G9UR0Q08
+T_34_S_03_#PRGP9PJLG,"CONFLICTO (el perfil de RoyaleAPI dice #G9UR0Q08, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33075,34,3,#PRGP9PJLG,#PRGP9PJLG,18,,0,0,#G9UR0Q08
+T_34_S_03_#PRGP9PJLG,"CONFLICTO (el perfil de RoyaleAPI dice #G9UR0Q08, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33076,34,3,#PRGP9PJLG,#PRGP9PJLG,19,,0,0,#G9UR0Q08
+T_34_S_03_#PRGP9PJLG,"CONFLICTO (el perfil de RoyaleAPI dice #G9UR0Q08, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33077,34,3,#PRGP9PJLG,#PRGP9PJLG,20,,0,0,#G9UR0Q08
+T_34_S_05_#CP82G8GCU,"CONFLICTO (el perfil de RoyaleAPI dice #G9YYCUC2, otras filas de la semana dicen #GCRG8L00; no se aplica)",34702,34,5,#CP82G8GCU,#CP82G8GCU,31,,0,0,#G9YYCUC2
+T_34_S_05_#CP82G8GCU,"CONFLICTO (el perfil de RoyaleAPI dice #G9YYCUC2, otras filas de la semana dicen #GCRG8L00; no se aplica)",34703,34,5,#CP82G8GCU,#CP82G8GCU,32,,0,0,#G9YYCUC2
+T_34_S_05_#CP82G8GCU,"CONFLICTO (el perfil de RoyaleAPI dice #G9YYCUC2, otras filas de la semana dicen #GCRG8L00; no se aplica)",34704,34,5,#CP82G8GCU,#CP82G8GCU,33,,0,0,#G9YYCUC2
+T_34_S_05_#CP82G8GCU,"CONFLICTO (el perfil de RoyaleAPI dice #G9YYCUC2, otras filas de la semana dicen #GCRG8L00; no se aplica)",34705,34,5,#CP82G8GCU,#CP82G8GCU,34,,0,0,#G9YYCUC2
+T_34_S_03_#202UGJUVQR,"CONFLICTO (el perfil de RoyaleAPI dice #GGPGQQUP, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32638,34,3,#202UGJUVQR,#202UGJUVQR,17,,0,0,#GGPGQQUP
+T_34_S_03_#202UGJUVQR,"CONFLICTO (el perfil de RoyaleAPI dice #GGPGQQUP, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32639,34,3,#202UGJUVQR,#202UGJUVQR,18,,0,0,#GGPGQQUP
+T_34_S_03_#202UGJUVQR,"CONFLICTO (el perfil de RoyaleAPI dice #GGPGQQUP, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32640,34,3,#202UGJUVQR,#202UGJUVQR,19,,0,0,#GGPGQQUP
+T_34_S_03_#202UGJUVQR,"CONFLICTO (el perfil de RoyaleAPI dice #GGPGQQUP, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32641,34,3,#202UGJUVQR,#202UGJUVQR,20,,0,0,#GGPGQQUP
+T_34_S_03_#C2P0PVY9L,"CONFLICTO (el perfil de RoyaleAPI dice #GPJVQUYV, otras filas de la semana dicen #GCRG8L00; no se aplica)",32886,34,3,#C2P0PVY9L,#C2P0PVY9L,17,,0,0,#GPJVQUYV
+T_34_S_03_#C2P0PVY9L,"CONFLICTO (el perfil de RoyaleAPI dice #GPJVQUYV, otras filas de la semana dicen #GCRG8L00; no se aplica)",32887,34,3,#C2P0PVY9L,#C2P0PVY9L,18,,0,0,#GPJVQUYV
+T_34_S_03_#C2P0PVY9L,"CONFLICTO (el perfil de RoyaleAPI dice #GPJVQUYV, otras filas de la semana dicen #GCRG8L00; no se aplica)",32888,34,3,#C2P0PVY9L,#C2P0PVY9L,19,,0,0,#GPJVQUYV
+T_34_S_03_#C2P0PVY9L,"CONFLICTO (el perfil de RoyaleAPI dice #GPJVQUYV, otras filas de la semana dicen #GCRG8L00; no se aplica)",32889,34,3,#C2P0PVY9L,#C2P0PVY9L,20,,0,0,#GPJVQUYV
+T_34_S_04_#28L02ULQC,"CONFLICTO (el perfil de RoyaleAPI dice #GQV2LL88, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33418,34,4,#28L02ULQC,#28L02ULQC,24,,0,0,#GQV2LL88
+T_34_S_04_#28L02ULQC,"CONFLICTO (el perfil de RoyaleAPI dice #GQV2LL88, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33419,34,4,#28L02ULQC,#28L02ULQC,25,,0,0,#GQV2LL88
+T_34_S_04_#28L02ULQC,"CONFLICTO (el perfil de RoyaleAPI dice #GQV2LL88, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33420,34,4,#28L02ULQC,#28L02ULQC,26,,0,0,#GQV2LL88
+T_34_S_04_#28L02ULQC,"CONFLICTO (el perfil de RoyaleAPI dice #GQV2LL88, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33421,34,4,#28L02ULQC,#28L02ULQC,27,,0,0,#GQV2LL88
+T_35_S_01_#PYVLUCPLR,"CONFLICTO (el perfil de RoyaleAPI dice #L0CL2JUG, otras filas de la semana dicen #GCRG8L00; no se aplica)",35454,35,1,#PYVLUCPLR,#PYVLUCPLR,3,,0,0,#L0CL2JUG
+T_35_S_01_#PYVLUCPLR,"CONFLICTO (el perfil de RoyaleAPI dice #L0CL2JUG, otras filas de la semana dicen #GCRG8L00; no se aplica)",35455,35,1,#PYVLUCPLR,#PYVLUCPLR,4,,0,0,#L0CL2JUG
+T_35_S_01_#PYVLUCPLR,"CONFLICTO (el perfil de RoyaleAPI dice #L0CL2JUG, otras filas de la semana dicen #GCRG8L00; no se aplica)",35456,35,1,#PYVLUCPLR,#PYVLUCPLR,5,,0,0,#L0CL2JUG
+T_35_S_01_#PYVLUCPLR,"CONFLICTO (el perfil de RoyaleAPI dice #L0CL2JUG, otras filas de la semana dicen #GCRG8L00; no se aplica)",35457,35,1,#PYVLUCPLR,#PYVLUCPLR,6,,0,0,#L0CL2JUG
+T_35_S_01_#LQPQ2GCV,"CONFLICTO (el perfil de RoyaleAPI dice #LQ9UPCVG, otras filas de la semana dicen #GCRG8L00; no se aplica)",35442,35,1,#LQPQ2GCV,#LQPQ2GCV,3,,0,0,#LQ9UPCVG
+T_35_S_01_#LQPQ2GCV,"CONFLICTO (el perfil de RoyaleAPI dice #LQ9UPCVG, otras filas de la semana dicen #GCRG8L00; no se aplica)",35443,35,1,#LQPQ2GCV,#LQPQ2GCV,4,,0,0,#LQ9UPCVG
+T_35_S_01_#LQPQ2GCV,"CONFLICTO (el perfil de RoyaleAPI dice #LQ9UPCVG, otras filas de la semana dicen #GCRG8L00; no se aplica)",35444,35,1,#LQPQ2GCV,#LQPQ2GCV,5,,0,0,#LQ9UPCVG
+T_35_S_01_#LQPQ2GCV,"CONFLICTO (el perfil de RoyaleAPI dice #LQ9UPCVG, otras filas de la semana dicen #GCRG8L00; no se aplica)",35445,35,1,#LQPQ2GCV,#LQPQ2GCV,6,,0,0,#LQ9UPCVG
+T_34_S_02_#LV8JYU2U0,"CONFLICTO (el perfil de RoyaleAPI dice #LRRYJVGJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32514,34,2,#LV8JYU2U0,#LV8JYU2U0,10,,0,0,#LRRYJVGJ
+T_34_S_02_#LV8JYU2U0,"CONFLICTO (el perfil de RoyaleAPI dice #LRRYJVGJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32515,34,2,#LV8JYU2U0,#LV8JYU2U0,11,,0,0,#LRRYJVGJ
+T_34_S_02_#LV8JYU2U0,"CONFLICTO (el perfil de RoyaleAPI dice #LRRYJVGJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32516,34,2,#LV8JYU2U0,#LV8JYU2U0,12,,0,0,#LRRYJVGJ
+T_34_S_02_#LV8JYU2U0,"CONFLICTO (el perfil de RoyaleAPI dice #LRRYJVGJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32517,34,2,#LV8JYU2U0,#LV8JYU2U0,13,,0,0,#LRRYJVGJ
+T_34_S_05_#8CRPQ0UL2,"CONFLICTO (el perfil de RoyaleAPI dice #LRYQC2YJ, otras filas de la semana dicen #GYCU9YRG; no se aplica)",34466,34,5,#8CRPQ0UL2,#8CRPQ0UL2,31,,0,0,#LRYQC2YJ
+T_34_S_05_#8CRPQ0UL2,"CONFLICTO (el perfil de RoyaleAPI dice #LRYQC2YJ, otras filas de la semana dicen #GYCU9YRG; no se aplica)",34467,34,5,#8CRPQ0UL2,#8CRPQ0UL2,32,,0,0,#LRYQC2YJ
+T_34_S_05_#8CRPQ0UL2,"CONFLICTO (el perfil de RoyaleAPI dice #LRYQC2YJ, otras filas de la semana dicen #GYCU9YRG; no se aplica)",34468,34,5,#8CRPQ0UL2,#8CRPQ0UL2,33,,0,0,#LRYQC2YJ
+T_34_S_05_#8CRPQ0UL2,"CONFLICTO (el perfil de RoyaleAPI dice #LRYQC2YJ, otras filas de la semana dicen #GYCU9YRG; no se aplica)",34469,34,5,#8CRPQ0UL2,#8CRPQ0UL2,34,,0,0,#LRYQC2YJ
+T_34_S_02_#9R8CQC02U,"CONFLICTO (el perfil de RoyaleAPI dice #LUP028GY, otras filas de la semana dicen #GCRG8L00; no se aplica)",32386,34,2,#9R8CQC02U,#9R8CQC02U,10,,0,0,#LUP028GY
+T_34_S_02_#9R8CQC02U,"CONFLICTO (el perfil de RoyaleAPI dice #LUP028GY, otras filas de la semana dicen #GCRG8L00; no se aplica)",32387,34,2,#9R8CQC02U,#9R8CQC02U,11,,0,0,#LUP028GY
+T_34_S_02_#9R8CQC02U,"CONFLICTO (el perfil de RoyaleAPI dice #LUP028GY, otras filas de la semana dicen #GCRG8L00; no se aplica)",32388,34,2,#9R8CQC02U,#9R8CQC02U,12,,0,0,#LUP028GY
+T_34_S_02_#9R8CQC02U,"CONFLICTO (el perfil de RoyaleAPI dice #LUP028GY, otras filas de la semana dicen #GCRG8L00; no se aplica)",32389,34,2,#9R8CQC02U,#9R8CQC02U,13,,0,0,#LUP028GY
+T_34_S_03_#GC8UC2V9U,"CONFLICTO (el perfil de RoyaleAPI dice #LYRCRCR0, otras filas de la semana dicen #GCRG8L00; no se aplica)",32962,34,3,#GC8UC2V9U,#GC8UC2V9U,17,,0,0,#LYRCRCR0
+T_34_S_03_#GC8UC2V9U,"CONFLICTO (el perfil de RoyaleAPI dice #LYRCRCR0, otras filas de la semana dicen #GCRG8L00; no se aplica)",32963,34,3,#GC8UC2V9U,#GC8UC2V9U,18,,0,0,#LYRCRCR0
+T_34_S_03_#GC8UC2V9U,"CONFLICTO (el perfil de RoyaleAPI dice #LYRCRCR0, otras filas de la semana dicen #GCRG8L00; no se aplica)",32964,34,3,#GC8UC2V9U,#GC8UC2V9U,19,,0,0,#LYRCRCR0
+T_34_S_03_#GC8UC2V9U,"CONFLICTO (el perfil de RoyaleAPI dice #LYRCRCR0, otras filas de la semana dicen #GCRG8L00; no se aplica)",32965,34,3,#GC8UC2V9U,#GC8UC2V9U,20,,0,0,#LYRCRCR0
+T_34_S_03_#GQVC9JPP2,"CONFLICTO (el perfil de RoyaleAPI dice #PGPLVQGJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32978,34,3,#GQVC9JPP2,#GQVC9JPP2,17,,0,0,#PGPLVQGJ
+T_34_S_03_#GQVC9JPP2,"CONFLICTO (el perfil de RoyaleAPI dice #PGPLVQGJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32979,34,3,#GQVC9JPP2,#GQVC9JPP2,18,,0,0,#PGPLVQGJ
+T_34_S_03_#GQVC9JPP2,"CONFLICTO (el perfil de RoyaleAPI dice #PGPLVQGJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32980,34,3,#GQVC9JPP2,#GQVC9JPP2,19,,0,0,#PGPLVQGJ
+T_34_S_03_#GQVC9JPP2,"CONFLICTO (el perfil de RoyaleAPI dice #PGPLVQGJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32981,34,3,#GQVC9JPP2,#GQVC9JPP2,20,,0,0,#PGPLVQGJ
+T_34_S_02_#R2QJVV8QL,"CONFLICTO (el perfil de RoyaleAPI dice #PJYQYG2J, otras filas de la semana dicen #GCRG8L00; no se aplica)",32538,34,2,#R2QJVV8QL,#R2QJVV8QL,10,,0,0,#PJYQYG2J
+T_34_S_02_#R2QJVV8QL,"CONFLICTO (el perfil de RoyaleAPI dice #PJYQYG2J, otras filas de la semana dicen #GCRG8L00; no se aplica)",32539,34,2,#R2QJVV8QL,#R2QJVV8QL,11,,0,0,#PJYQYG2J
+T_34_S_02_#R2QJVV8QL,"CONFLICTO (el perfil de RoyaleAPI dice #PJYQYG2J, otras filas de la semana dicen #GCRG8L00; no se aplica)",32540,34,2,#R2QJVV8QL,#R2QJVV8QL,12,,0,0,#PJYQYG2J
+T_34_S_02_#R2QJVV8QL,"CONFLICTO (el perfil de RoyaleAPI dice #PJYQYG2J, otras filas de la semana dicen #GCRG8L00; no se aplica)",32541,34,2,#R2QJVV8QL,#R2QJVV8QL,13,,0,0,#PJYQYG2J
+T_34_S_02_#UC890V8CR,"CONFLICTO (el perfil de RoyaleAPI dice #PR8PJPJL, otras filas de la semana dicen #GCRG8L00; no se aplica)",32554,34,2,#UC890V8CR,#UC890V8CR,10,,0,0,#PR8PJPJL
+T_34_S_02_#UC890V8CR,"CONFLICTO (el perfil de RoyaleAPI dice #PR8PJPJL, otras filas de la semana dicen #GCRG8L00; no se aplica)",32555,34,2,#UC890V8CR,#UC890V8CR,11,,0,0,#PR8PJPJL
+T_34_S_02_#UC890V8CR,"CONFLICTO (el perfil de RoyaleAPI dice #PR8PJPJL, otras filas de la semana dicen #GCRG8L00; no se aplica)",32556,34,2,#UC890V8CR,#UC890V8CR,12,,0,0,#PR8PJPJL
+T_34_S_02_#UC890V8CR,"CONFLICTO (el perfil de RoyaleAPI dice #PR8PJPJL, otras filas de la semana dicen #GCRG8L00; no se aplica)",32557,34,2,#UC890V8CR,#UC890V8CR,13,,0,0,#PR8PJPJL
+T_34_S_05_#U9Y0JGR2R,"CONFLICTO (el perfil de RoyaleAPI dice #PRLP8R20, otras filas de la semana dicen #GCRG8L00; no se aplica)",35110,34,5,#U9Y0JGR2R,#U9Y0JGR2R,31,,0,0,#PRLP8R20
+T_34_S_05_#U9Y0JGR2R,"CONFLICTO (el perfil de RoyaleAPI dice #PRLP8R20, otras filas de la semana dicen #GCRG8L00; no se aplica)",35111,34,5,#U9Y0JGR2R,#U9Y0JGR2R,32,,0,0,#PRLP8R20
+T_34_S_05_#U9Y0JGR2R,"CONFLICTO (el perfil de RoyaleAPI dice #PRLP8R20, otras filas de la semana dicen #GCRG8L00; no se aplica)",35112,34,5,#U9Y0JGR2R,#U9Y0JGR2R,33,,0,0,#PRLP8R20
+T_34_S_05_#U9Y0JGR2R,"CONFLICTO (el perfil de RoyaleAPI dice #PRLP8R20, otras filas de la semana dicen #GCRG8L00; no se aplica)",35113,34,5,#U9Y0JGR2R,#U9Y0JGR2R,34,,0,0,#PRLP8R20
+T_34_S_03_#8PGULCPYP,"CONFLICTO (el perfil de RoyaleAPI dice #PVQRLY0V, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32750,34,3,#8PGULCPYP,#8PGULCPYP,17,,0,0,#PVQRLY0V
+T_34_S_03_#8PGULCPYP,"CONFLICTO (el perfil de RoyaleAPI dice #PVQRLY0V, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32751,34,3,#8PGULCPYP,#8PGULCPYP,18,,0,0,#PVQRLY0V
+T_34_S_03_#8PGULCPYP,"CONFLICTO (el perfil de RoyaleAPI dice #PVQRLY0V, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32752,34,3,#8PGULCPYP,#8PGULCPYP,19,,0,0,#PVQRLY0V
+T_34_S_03_#8PGULCPYP,"CONFLICTO (el perfil de RoyaleAPI dice #PVQRLY0V, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32753,34,3,#8PGULCPYP,#8PGULCPYP,20,,0,0,#PVQRLY0V
+T_34_S_05_#LQG92URQV,"CONFLICTO (el perfil de RoyaleAPI dice #Q00G08CP, otras filas de la semana dicen #GYCU9YRG; no se aplica)",34938,34,5,#LQG92URQV,#LQG92URQV,31,,0,0,#Q00G08CP
+T_34_S_05_#LQG92URQV,"CONFLICTO (el perfil de RoyaleAPI dice #Q00G08CP, otras filas de la semana dicen #GYCU9YRG; no se aplica)",34939,34,5,#LQG92URQV,#LQG92URQV,32,,0,0,#Q00G08CP
+T_34_S_05_#LQG92URQV,"CONFLICTO (el perfil de RoyaleAPI dice #Q00G08CP, otras filas de la semana dicen #GYCU9YRG; no se aplica)",34940,34,5,#LQG92URQV,#LQG92URQV,33,,0,0,#Q00G08CP
+T_34_S_05_#LQG92URQV,"CONFLICTO (el perfil de RoyaleAPI dice #Q00G08CP, otras filas de la semana dicen #GYCU9YRG; no se aplica)",34941,34,5,#LQG92URQV,#LQG92URQV,34,,0,0,#Q00G08CP
+T_34_S_02_#G9JRJQ9YP,"CONFLICTO (el perfil de RoyaleAPI dice #Q802YYJ0, otras filas de la semana dicen #GCRG8L00; no se aplica)",32446,34,2,#G9JRJQ9YP,#G9JRJQ9YP,10,,0,0,#Q802YYJ0
+T_34_S_02_#G9JRJQ9YP,"CONFLICTO (el perfil de RoyaleAPI dice #Q802YYJ0, otras filas de la semana dicen #GCRG8L00; no se aplica)",32447,34,2,#G9JRJQ9YP,#G9JRJQ9YP,11,,0,0,#Q802YYJ0
+T_34_S_02_#G9JRJQ9YP,"CONFLICTO (el perfil de RoyaleAPI dice #Q802YYJ0, otras filas de la semana dicen #GCRG8L00; no se aplica)",32448,34,2,#G9JRJQ9YP,#G9JRJQ9YP,12,,0,0,#Q802YYJ0
+T_34_S_02_#G9JRJQ9YP,"CONFLICTO (el perfil de RoyaleAPI dice #Q802YYJ0, otras filas de la semana dicen #GCRG8L00; no se aplica)",32449,34,2,#G9JRJQ9YP,#G9JRJQ9YP,13,,0,0,#Q802YYJ0
+T_34_S_01_#JR0V99Y0U,"CONFLICTO (el perfil de RoyaleAPI dice #QC0R9JQ9, otras filas de la semana dicen #GYCU9YRG; no se aplica)",32218,34,1,#JR0V99Y0U,#JR0V99Y0U,3,,0,0,#QC0R9JQ9
+T_34_S_02_#U9JVQCQ2C,"CONFLICTO (el perfil de RoyaleAPI dice #QGJU2YJC, otras filas de la semana dicen #GCRG8L00; no se aplica)",32550,34,2,#U9JVQCQ2C,#U9JVQCQ2C,10,,0,0,#QGJU2YJC
+T_34_S_02_#U9JVQCQ2C,"CONFLICTO (el perfil de RoyaleAPI dice #QGJU2YJC, otras filas de la semana dicen #GCRG8L00; no se aplica)",32551,34,2,#U9JVQCQ2C,#U9JVQCQ2C,11,,0,0,#QGJU2YJC
+T_34_S_02_#U9JVQCQ2C,"CONFLICTO (el perfil de RoyaleAPI dice #QGJU2YJC, otras filas de la semana dicen #GCRG8L00; no se aplica)",32552,34,2,#U9JVQCQ2C,#U9JVQCQ2C,12,,0,0,#QGJU2YJC
+T_34_S_02_#U9JVQCQ2C,"CONFLICTO (el perfil de RoyaleAPI dice #QGJU2YJC, otras filas de la semana dicen #GCRG8L00; no se aplica)",32553,34,2,#U9JVQCQ2C,#U9JVQCQ2C,13,,0,0,#QGJU2YJC
+T_34_S_03_#2JU9YCRG8,"CONFLICTO (el perfil de RoyaleAPI dice #QGL802QQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32710,34,3,#2JU9YCRG8,#2JU9YCRG8,17,,0,0,#QGL802QQ
+T_34_S_03_#2JU9YCRG8,"CONFLICTO (el perfil de RoyaleAPI dice #QGL802QQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32711,34,3,#2JU9YCRG8,#2JU9YCRG8,18,,0,0,#QGL802QQ
+T_34_S_03_#2JU9YCRG8,"CONFLICTO (el perfil de RoyaleAPI dice #QGL802QQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32712,34,3,#2JU9YCRG8,#2JU9YCRG8,19,,0,0,#QGL802QQ
+T_34_S_03_#2JU9YCRG8,"CONFLICTO (el perfil de RoyaleAPI dice #QGL802QQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32713,34,3,#2JU9YCRG8,#2JU9YCRG8,20,,0,0,#QGL802QQ
+T_35_S_01_#PYR2YVQU,"CONFLICTO (el perfil de RoyaleAPI dice #QGL802QQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",35450,35,1,#PYR2YVQU,#PYR2YVQU,3,,0,0,#QGL802QQ
+T_35_S_01_#PYR2YVQU,"CONFLICTO (el perfil de RoyaleAPI dice #QGL802QQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",35451,35,1,#PYR2YVQU,#PYR2YVQU,4,,0,0,#QGL802QQ
+T_35_S_01_#PYR2YVQU,"CONFLICTO (el perfil de RoyaleAPI dice #QGL802QQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",35452,35,1,#PYR2YVQU,#PYR2YVQU,5,,0,0,#QGL802QQ
+T_35_S_01_#PYR2YVQU,"CONFLICTO (el perfil de RoyaleAPI dice #QGL802QQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",35453,35,1,#PYR2YVQU,#PYR2YVQU,6,,0,0,#QGL802QQ
+T_34_S_02_#20GCYPPCRJ,"CONFLICTO (el perfil de RoyaleAPI dice #QJ8PLPV2, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32286,34,2,#20GCYPPCRJ,#20GCYPPCRJ,10,,0,0,#QJ8PLPV2
+T_34_S_02_#20GCYPPCRJ,"CONFLICTO (el perfil de RoyaleAPI dice #QJ8PLPV2, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32287,34,2,#20GCYPPCRJ,#20GCYPPCRJ,11,,0,0,#QJ8PLPV2
+T_34_S_02_#20GCYPPCRJ,"CONFLICTO (el perfil de RoyaleAPI dice #QJ8PLPV2, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32288,34,2,#20GCYPPCRJ,#20GCYPPCRJ,12,,0,0,#QJ8PLPV2
+T_34_S_02_#20GCYPPCRJ,"CONFLICTO (el perfil de RoyaleAPI dice #QJ8PLPV2, otras filas de la semana dicen #GQQPPJGR; no se aplica)",32289,34,2,#20GCYPPCRJ,#20GCYPPCRJ,13,,0,0,#QJ8PLPV2
+T_34_S_05_#VQR08VQRP,"CONFLICTO (el perfil de RoyaleAPI dice #QJG2PJG9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",35326,34,5,#VQR08VQRP,#VQR08VQRP,31,,0,0,#QJG2PJG9
+T_34_S_05_#VQR08VQRP,"CONFLICTO (el perfil de RoyaleAPI dice #QJG2PJG9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",35327,34,5,#VQR08VQRP,#VQR08VQRP,32,,0,0,#QJG2PJG9
+T_34_S_05_#VQR08VQRP,"CONFLICTO (el perfil de RoyaleAPI dice #QJG2PJG9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",35328,34,5,#VQR08VQRP,#VQR08VQRP,33,,0,0,#QJG2PJG9
+T_34_S_05_#VQR08VQRP,"CONFLICTO (el perfil de RoyaleAPI dice #QJG2PJG9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",35329,34,5,#VQR08VQRP,#VQR08VQRP,34,,0,0,#QJG2PJG9
+T_35_S_01_#LP900GVUR,"CONFLICTO (el perfil de RoyaleAPI dice #QPUGRV8Y, otras filas de la semana dicen #GCRG8L00; no se aplica)",35438,35,1,#LP900GVUR,#LP900GVUR,3,,0,0,#QPUGRV8Y
+T_35_S_01_#LP900GVUR,"CONFLICTO (el perfil de RoyaleAPI dice #QPUGRV8Y, otras filas de la semana dicen #GCRG8L00; no se aplica)",35439,35,1,#LP900GVUR,#LP900GVUR,4,,0,0,#QPUGRV8Y
+T_35_S_01_#LP900GVUR,"CONFLICTO (el perfil de RoyaleAPI dice #QPUGRV8Y, otras filas de la semana dicen #GCRG8L00; no se aplica)",35440,35,1,#LP900GVUR,#LP900GVUR,5,,0,0,#QPUGRV8Y
+T_35_S_01_#LP900GVUR,"CONFLICTO (el perfil de RoyaleAPI dice #QPUGRV8Y, otras filas de la semana dicen #GCRG8L00; no se aplica)",35441,35,1,#LP900GVUR,#LP900GVUR,6,,0,0,#QPUGRV8Y
+T_34_S_03_#L88CL9CU,"CONFLICTO (el perfil de RoyaleAPI dice #QQYCLYJP, otras filas de la semana dicen #GCRG8L00; no se aplica)",33046,34,3,#L88CL9CU,#L88CL9CU,17,,0,0,#QQYCLYJP
+T_34_S_03_#L88CL9CU,"CONFLICTO (el perfil de RoyaleAPI dice #QQYCLYJP, otras filas de la semana dicen #GCRG8L00; no se aplica)",33047,34,3,#L88CL9CU,#L88CL9CU,18,,0,0,#QQYCLYJP
+T_34_S_03_#L88CL9CU,"CONFLICTO (el perfil de RoyaleAPI dice #QQYCLYJP, otras filas de la semana dicen #GCRG8L00; no se aplica)",33048,34,3,#L88CL9CU,#L88CL9CU,19,,0,0,#QQYCLYJP
+T_34_S_03_#L88CL9CU,"CONFLICTO (el perfil de RoyaleAPI dice #QQYCLYJP, otras filas de la semana dicen #GCRG8L00; no se aplica)",33049,34,3,#L88CL9CU,#L88CL9CU,20,,0,0,#QQYCLYJP
+T_34_S_03_#VQYVR2VUP,"CONFLICTO (el perfil de RoyaleAPI dice #QRQJGCL9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",33278,34,3,#VQYVR2VUP,#VQYVR2VUP,17,,0,0,#QRQJGCL9
+T_34_S_03_#VQYVR2VUP,"CONFLICTO (el perfil de RoyaleAPI dice #QRQJGCL9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",33279,34,3,#VQYVR2VUP,#VQYVR2VUP,18,,0,0,#QRQJGCL9
+T_34_S_03_#VQYVR2VUP,"CONFLICTO (el perfil de RoyaleAPI dice #QRQJGCL9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",33280,34,3,#VQYVR2VUP,#VQYVR2VUP,19,,0,0,#QRQJGCL9
+T_34_S_03_#VQYVR2VUP,"CONFLICTO (el perfil de RoyaleAPI dice #QRQJGCL9, otras filas de la semana dicen #GQQPPJGR; no se aplica)",33281,34,3,#VQYVR2VUP,#VQYVR2VUP,20,,0,0,#QRQJGCL9
+T_34_S_03_#VPPCGQR2C,"CONFLICTO (el perfil de RoyaleAPI dice #QUR9LYLQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",33258,34,3,#VPPCGQR2C,#VPPCGQR2C,17,,0,0,#QUR9LYLQ
+T_34_S_03_#VPPCGQR2C,"CONFLICTO (el perfil de RoyaleAPI dice #QUR9LYLQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",33259,34,3,#VPPCGQR2C,#VPPCGQR2C,18,,0,0,#QUR9LYLQ
+T_34_S_03_#VPPCGQR2C,"CONFLICTO (el perfil de RoyaleAPI dice #QUR9LYLQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",33260,34,3,#VPPCGQR2C,#VPPCGQR2C,19,,0,0,#QUR9LYLQ
+T_34_S_03_#VPPCGQR2C,"CONFLICTO (el perfil de RoyaleAPI dice #QUR9LYLQ, otras filas de la semana dicen #GCRG8L00; no se aplica)",33261,34,3,#VPPCGQR2C,#VPPCGQR2C,20,,0,0,#QUR9LYLQ
+T_34_S_04_#8GPU08LGG,"CONFLICTO (el perfil de RoyaleAPI dice #RJUL2829, otras filas de la semana dicen #GCRG8L00; no se aplica)",33486,34,4,#8GPU08LGG,#8GPU08LGG,24,,0,0,#RJUL2829
+T_34_S_04_#8GPU08LGG,"CONFLICTO (el perfil de RoyaleAPI dice #RJUL2829, otras filas de la semana dicen #GCRG8L00; no se aplica)",33487,34,4,#8GPU08LGG,#8GPU08LGG,25,,0,0,#RJUL2829
+T_34_S_04_#8GPU08LGG,"CONFLICTO (el perfil de RoyaleAPI dice #RJUL2829, otras filas de la semana dicen #GCRG8L00; no se aplica)",33488,34,4,#8GPU08LGG,#8GPU08LGG,26,,0,0,#RJUL2829
+T_34_S_04_#8GPU08LGG,"CONFLICTO (el perfil de RoyaleAPI dice #RJUL2829, otras filas de la semana dicen #GCRG8L00; no se aplica)",33489,34,4,#8GPU08LGG,#8GPU08LGG,27,,0,0,#RJUL2829
+T_34_S_04_#LR8CQJCG8,"CONFLICTO (el perfil de RoyaleAPI dice #RVUPYJG0, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33886,34,4,#LR8CQJCG8,#LR8CQJCG8,24,,0,0,#RVUPYJG0
+T_34_S_04_#LR8CQJCG8,"CONFLICTO (el perfil de RoyaleAPI dice #RVUPYJG0, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33887,34,4,#LR8CQJCG8,#LR8CQJCG8,25,,0,0,#RVUPYJG0
+T_34_S_04_#LR8CQJCG8,"CONFLICTO (el perfil de RoyaleAPI dice #RVUPYJG0, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33888,34,4,#LR8CQJCG8,#LR8CQJCG8,26,,0,0,#RVUPYJG0
+T_34_S_04_#LR8CQJCG8,"CONFLICTO (el perfil de RoyaleAPI dice #RVUPYJG0, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33889,34,4,#LR8CQJCG8,#LR8CQJCG8,27,,0,0,#RVUPYJG0
+T_34_S_02_#8UG2GRYGG,"CONFLICTO (el perfil de RoyaleAPI dice #RYP0UU8P, otras filas de la semana dicen #GCRG8L00; no se aplica)",32338,34,2,#8UG2GRYGG,#8UG2GRYGG,10,,0,0,#RYP0UU8P
+T_34_S_02_#8UG2GRYGG,"CONFLICTO (el perfil de RoyaleAPI dice #RYP0UU8P, otras filas de la semana dicen #GCRG8L00; no se aplica)",32339,34,2,#8UG2GRYGG,#8UG2GRYGG,11,,0,0,#RYP0UU8P
+T_34_S_02_#8UG2GRYGG,"CONFLICTO (el perfil de RoyaleAPI dice #RYP0UU8P, otras filas de la semana dicen #GCRG8L00; no se aplica)",32340,34,2,#8UG2GRYGG,#8UG2GRYGG,12,,0,0,#RYP0UU8P
+T_34_S_02_#8UG2GRYGG,"CONFLICTO (el perfil de RoyaleAPI dice #RYP0UU8P, otras filas de la semana dicen #GCRG8L00; no se aplica)",32341,34,2,#8UG2GRYGG,#8UG2GRYGG,13,,0,0,#RYP0UU8P
+T_34_S_04_#PPRR2VC2V,"CONFLICTO (el perfil de RoyaleAPI dice #VCQUU08, otras filas de la semana dicen #GCRG8L00; no se aplica)",33914,34,4,#PPRR2VC2V,#PPRR2VC2V,24,,0,0,#VCQUU08
+T_34_S_04_#PPRR2VC2V,"CONFLICTO (el perfil de RoyaleAPI dice #VCQUU08, otras filas de la semana dicen #GCRG8L00; no se aplica)",33915,34,4,#PPRR2VC2V,#PPRR2VC2V,25,,0,0,#VCQUU08
+T_34_S_04_#PPRR2VC2V,"CONFLICTO (el perfil de RoyaleAPI dice #VCQUU08, otras filas de la semana dicen #GCRG8L00; no se aplica)",33916,34,4,#PPRR2VC2V,#PPRR2VC2V,26,,0,0,#VCQUU08
+T_34_S_04_#PPRR2VC2V,"CONFLICTO (el perfil de RoyaleAPI dice #VCQUU08, otras filas de la semana dicen #GCRG8L00; no se aplica)",33917,34,4,#PPRR2VC2V,#PPRR2VC2V,27,,0,0,#VCQUU08
+T_34_S_02_#UVVG9YVCL,"CONFLICTO (el perfil de RoyaleAPI dice #Y82QC9CJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32578,34,2,#UVVG9YVCL,#UVVG9YVCL,10,,0,0,#Y82QC9CJ
+T_34_S_02_#UVVG9YVCL,"CONFLICTO (el perfil de RoyaleAPI dice #Y82QC9CJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32579,34,2,#UVVG9YVCL,#UVVG9YVCL,11,,0,0,#Y82QC9CJ
+T_34_S_02_#UVVG9YVCL,"CONFLICTO (el perfil de RoyaleAPI dice #Y82QC9CJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32580,34,2,#UVVG9YVCL,#UVVG9YVCL,12,,0,0,#Y82QC9CJ
+T_34_S_02_#UVVG9YVCL,"CONFLICTO (el perfil de RoyaleAPI dice #Y82QC9CJ, otras filas de la semana dicen #GCRG8L00; no se aplica)",32581,34,2,#UVVG9YVCL,#UVVG9YVCL,13,,0,0,#Y82QC9CJ
+T_34_S_04_#U2VPQ2J8J,"CONFLICTO (el perfil de RoyaleAPI dice #Y88URG80, otras filas de la semana dicen #GCRG8L00; no se aplica)",34006,34,4,#U2VPQ2J8J,#U2VPQ2J8J,24,,0,0,#Y88URG80
+T_34_S_04_#U2VPQ2J8J,"CONFLICTO (el perfil de RoyaleAPI dice #Y88URG80, otras filas de la semana dicen #GCRG8L00; no se aplica)",34007,34,4,#U2VPQ2J8J,#U2VPQ2J8J,25,,0,0,#Y88URG80
+T_34_S_04_#U2VPQ2J8J,"CONFLICTO (el perfil de RoyaleAPI dice #Y88URG80, otras filas de la semana dicen #GCRG8L00; no se aplica)",34008,34,4,#U2VPQ2J8J,#U2VPQ2J8J,26,,0,0,#Y88URG80
+T_34_S_04_#U2VPQ2J8J,"CONFLICTO (el perfil de RoyaleAPI dice #Y88URG80, otras filas de la semana dicen #GCRG8L00; no se aplica)",34009,34,4,#U2VPQ2J8J,#U2VPQ2J8J,27,,0,0,#Y88URG80
+T_34_S_03_#PUJQC2PC,"CONFLICTO (el perfil de RoyaleAPI dice #YGQ892RY, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33078,34,3,#PUJQC2PC,#PUJQC2PC,17,,0,0,#YGQ892RY
+T_34_S_03_#PUJQC2PC,"CONFLICTO (el perfil de RoyaleAPI dice #YGQ892RY, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33079,34,3,#PUJQC2PC,#PUJQC2PC,18,,0,0,#YGQ892RY
+T_34_S_03_#PUJQC2PC,"CONFLICTO (el perfil de RoyaleAPI dice #YGQ892RY, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33080,34,3,#PUJQC2PC,#PUJQC2PC,19,,0,0,#YGQ892RY
+T_34_S_03_#PUJQC2PC,"CONFLICTO (el perfil de RoyaleAPI dice #YGQ892RY, otras filas de la semana dicen #GYCU9YRG; no se aplica)",33081,34,3,#PUJQC2PC,#PUJQC2PC,20,,0,0,#YGQ892RY
+T_34_S_04_#CJQC2CQL0,"CONFLICTO (el perfil de RoyaleAPI dice #YJGRCCPV, otras filas de la semana dicen #GCRG8L00; no se aplica)",33670,34,4,#CJQC2CQL0,#CJQC2CQL0,24,,0,0,#YJGRCCPV
+T_34_S_04_#CJQC2CQL0,"CONFLICTO (el perfil de RoyaleAPI dice #YJGRCCPV, otras filas de la semana dicen #GCRG8L00; no se aplica)",33671,34,4,#CJQC2CQL0,#CJQC2CQL0,25,,0,0,#YJGRCCPV
+T_34_S_04_#CJQC2CQL0,"CONFLICTO (el perfil de RoyaleAPI dice #YJGRCCPV, otras filas de la semana dicen #GCRG8L00; no se aplica)",33672,34,4,#CJQC2CQL0,#CJQC2CQL0,26,,0,0,#YJGRCCPV
+T_34_S_04_#CJQC2CQL0,"CONFLICTO (el perfil de RoyaleAPI dice #YJGRCCPV, otras filas de la semana dicen #GCRG8L00; no se aplica)",33673,34,4,#CJQC2CQL0,#CJQC2CQL0,27,,0,0,#YJGRCCPV
+T_34_S_05_#RQ8RRRJGP,"CONFLICTO (el perfil de RoyaleAPI dice #YV8YJG28, otras filas de la semana dicen #GCRG8L00; no se aplica)",35054,34,5,#RQ8RRRJGP,#RQ8RRRJGP,31,,0,0,#YV8YJG28
+T_34_S_05_#RQ8RRRJGP,"CONFLICTO (el perfil de RoyaleAPI dice #YV8YJG28, otras filas de la semana dicen #GCRG8L00; no se aplica)",35055,34,5,#RQ8RRRJGP,#RQ8RRRJGP,32,,0,0,#YV8YJG28
+T_34_S_05_#RQ8RRRJGP,"CONFLICTO (el perfil de RoyaleAPI dice #YV8YJG28, otras filas de la semana dicen #GCRG8L00; no se aplica)",35056,34,5,#RQ8RRRJGP,#RQ8RRRJGP,33,,0,0,#YV8YJG28
+T_34_S_05_#RQ8RRRJGP,"CONFLICTO (el perfil de RoyaleAPI dice #YV8YJG28, otras filas de la semana dicen #GCRG8L00; no se aplica)",35057,34,5,#RQ8RRRJGP,#RQ8RRRJGP,34,,0,0,#YV8YJG28
+T_34_S_04_#JGY090GGP,"CONFLICTO (el perfil de RoyaleAPI dice #YYQYPQV0, otras filas de la semana dicen #GCRG8L00; no se aplica)",33814,34,4,#JGY090GGP,#JGY090GGP,24,,0,0,#YYQYPQV0
+T_34_S_04_#JGY090GGP,"CONFLICTO (el perfil de RoyaleAPI dice #YYQYPQV0, otras filas de la semana dicen #GCRG8L00; no se aplica)",33815,34,4,#JGY090GGP,#JGY090GGP,25,,0,0,#YYQYPQV0
+T_34_S_04_#JGY090GGP,"CONFLICTO (el perfil de RoyaleAPI dice #YYQYPQV0, otras filas de la semana dicen #GCRG8L00; no se aplica)",33816,34,4,#JGY090GGP,#JGY090GGP,26,,0,0,#YYQYPQV0
+T_34_S_04_#JGY090GGP,"CONFLICTO (el perfil de RoyaleAPI dice #YYQYPQV0, otras filas de la semana dicen #GCRG8L00; no se aplica)",33817,34,4,#JGY090GGP,#JGY090GGP,27,,0,0,#YYQYPQV0
+T_34_S_03_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),32782,34,3,#8YYG9VCGC,#8YYG9VCGC,17,,0,0,
+T_34_S_03_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),32783,34,3,#8YYG9VCGC,#8YYG9VCGC,18,,0,0,
+T_34_S_03_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),32784,34,3,#8YYG9VCGC,#8YYG9VCGC,19,,0,0,
+T_34_S_03_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),32785,34,3,#8YYG9VCGC,#8YYG9VCGC,20,,0,0,
+T_34_S_03_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),33194,34,3,#URVY9RG9U,#URVY9RG9U,17,,0,0,
+T_34_S_03_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),33195,34,3,#URVY9RG9U,#URVY9RG9U,18,,0,0,
+T_34_S_03_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),33196,34,3,#URVY9RG9U,#URVY9RG9U,19,,0,0,
+T_34_S_03_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),33197,34,3,#URVY9RG9U,#URVY9RG9U,20,,0,0,
+T_34_S_04_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),33530,34,4,#8YYG9VCGC,#8YYG9VCGC,24,,0,0,
+T_34_S_04_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),33531,34,4,#8YYG9VCGC,#8YYG9VCGC,25,,0,0,
+T_34_S_04_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),33532,34,4,#8YYG9VCGC,#8YYG9VCGC,26,,0,0,
+T_34_S_04_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),33533,34,4,#8YYG9VCGC,#8YYG9VCGC,27,,0,0,
+T_34_S_04_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),34086,34,4,#URVY9RG9U,#URVY9RG9U,24,,0,0,
+T_34_S_04_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),34087,34,4,#URVY9RG9U,#URVY9RG9U,25,,0,0,
+T_34_S_04_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),34088,34,4,#URVY9RG9U,#URVY9RG9U,26,,0,0,
+T_34_S_04_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),34089,34,4,#URVY9RG9U,#URVY9RG9U,27,,0,0,
+T_34_S_05_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),34526,34,5,#8YYG9VCGC,#8YYG9VCGC,31,,0,0,
+T_34_S_05_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),34527,34,5,#8YYG9VCGC,#8YYG9VCGC,32,,0,0,
+T_34_S_05_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),34528,34,5,#8YYG9VCGC,#8YYG9VCGC,33,,0,0,
+T_34_S_05_#8YYG9VCGC,SIN CLAN (reconstruida sin Directorio),34529,34,5,#8YYG9VCGC,#8YYG9VCGC,34,,0,0,
+T_34_S_05_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),35170,34,5,#URVY9RG9U,#URVY9RG9U,31,,0,0,
+T_34_S_05_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),35171,34,5,#URVY9RG9U,#URVY9RG9U,32,,0,0,
+T_34_S_05_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),35172,34,5,#URVY9RG9U,#URVY9RG9U,33,,0,0,
+T_34_S_05_#URVY9RG9U,SIN CLAN (reconstruida sin Directorio),35173,34,5,#URVY9RG9U,#URVY9RG9U,34,,0,0,
+T_35_S_01_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35434,35,1,#JV2CCCP28,#JV2CCCP28,3,,0,0,
+T_35_S_01_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35435,35,1,#JV2CCCP28,#JV2CCCP28,4,,0,0,
+T_35_S_01_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35436,35,1,#JV2CCCP28,#JV2CCCP28,5,,0,0,
+T_35_S_01_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35437,35,1,#JV2CCCP28,#JV2CCCP28,6,,0,0,
+T_35_S_02_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35510,35,2,#JV2CCCP28,#JV2CCCP28,10,,0,0,
+T_35_S_02_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35511,35,2,#JV2CCCP28,#JV2CCCP28,11,,0,0,
+T_35_S_02_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35512,35,2,#JV2CCCP28,#JV2CCCP28,12,,0,0,
+T_35_S_02_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35513,35,2,#JV2CCCP28,#JV2CCCP28,13,,0,0,
+T_35_S_03_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35718,35,3,#JV2CCCP28,#JV2CCCP28,17,,0,0,
+T_35_S_03_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35719,35,3,#JV2CCCP28,#JV2CCCP28,18,,0,0,
+T_35_S_03_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35720,35,3,#JV2CCCP28,#JV2CCCP28,19,,0,0,
+T_35_S_03_#JV2CCCP28,SIN CLAN (reconstruida sin Directorio),35721,35,3,#JV2CCCP28,#JV2CCCP28,20,,0,0,
+T_35_S_03_#VJL00YJPG,SIN CLAN (reconstruida sin Directorio),35850,35,3,#VJL00YJPG,#VJL00YJPG,17,,0,0,
+T_35_S_03_#VJL00YJPG,SIN CLAN (reconstruida sin Directorio),35851,35,3,#VJL00YJPG,#VJL00YJPG,18,,0,0,
+T_35_S_03_#VJL00YJPG,SIN CLAN (reconstruida sin Directorio),35852,35,3,#VJL00YJPG,#VJL00YJPG,19,,0,0,
+T_35_S_03_#VJL00YJPG,SIN CLAN (reconstruida sin Directorio),35853,35,3,#VJL00YJPG,#VJL00YJPG,20,,0,0,

@@ -3,7 +3,7 @@
   "backfillPerfilHecho": false,
   "ultimaTemporadaCubierta": null,
   "ultimaSemanaCubierta": null,
-  "fechaUltimaConsulta": "17/11/2026",
+  "fechaUltimaConsulta": "22/11/2026",
   "registros": [
     {
       "temporadaInterna": 39,
@@ -2061,6 +2061,20 @@
       "cerrada": true,
       "externa": true,
       "clanTag": "#LCJ8U8L9",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 38,
+      "temporadaRoyaleAPI": 137,
+      "semana": 4,
+      "clan": "Play To win",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#GYRPQJ0L",
       "comentario": ""
     }
   ],
