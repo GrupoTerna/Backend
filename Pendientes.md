@@ -241,7 +241,6 @@ Cada fila termina con su **Revisión**. Solo tres tienen fecha (`PF441` y `PF439
 ## E. Acciones de la usuaria
 
 - [ ] `PF377`: revisar el panel de `admin.html` en tres tarjetas (partes 1 y 2 hechas, `Web` `ff25e46` y `cdbabf1`): cintas, rótulos y pastillas.
-- [ ] `PF559`: visitar con Tampermonkey los tags de la lista «Tags sin clan» que aún no tienen visita (unos 80 al 22-nov-2026; la lista se cruza con `Visitas_Perfil.csv`) y repetir `completarClanTagGuerraInforme()` (proyecto **Base**, `17_GuerraSheet.gs`).
 - [ ] **Revocar el token fine-grained de GitHub y borrar `Claude.txt`** al terminar la tanda (el token quedó escrito en esta conversación; no se copia aquí).
 - [ ] **Purga en Soporte de GitHub** de los commits viejos con celulares: tras la reescritura del historial (28-oct) siguen accesibles por su hash y por `refs/pull/*/head` (`§PF288` punto 3). Tratar esos números como expuestos.
 - [ ] **Confirmar o revertir las decisiones de Claude** del 17-nov (`§PF499` puntos 2, 3, 4, 5 y 8) y del 20-nov (`§PF542`, `§PF543`, `§PF544`, `§PF545`); no se ejecutó nada con ellas que no se pueda deshacer.
