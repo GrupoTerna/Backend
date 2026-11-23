@@ -103,6 +103,8 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
 
+- [ ] `PF559` — Filas de `Backup_Guerra.csv` sin clan: probar en Apps Script real (proyecto **Base**, archivo `17_GuerraSheet.gs`) `completarClanTagGuerraInforme()`: debe salir unas 3 629 «confirmadas por el perfil de RoyaleAPI», 189 en conflicto y 40 sin clan (prueba en Node del 22-nov-2026, `§PF559` punto 4); si coincide, `completarClanTagGuerraAplicar()`. Después visitar con Tampermonkey los tags de la lista que aún no tienen visita (unos 80 al 22-nov) y repetir el informe.
+
 ### B6. Clanes externos, infiltrados e índices
 
 - [ ] `PF375` — Probar el ⚠️ de punta a punta. (1) En Apps Script, en el proyecto Base, archivo `15_DeteccionInfiltrados.gs`, `generarIndiceClanesExternos()` hasta completar el índice y `actualizarAlertasClanesSospechosos()`; mirar el registro `[AlertasClanes] …` y que `Alertas_Clanes_Sospechosos.json` exista en `Otros`. (2) Con sesión de admin: ⚠️ a la izquierda del WhatsApp y del 📈 en `guerra.html` (en `directorio.html` ya se vio el 19-nov, `§PF521`), modal con clanes y semanas. (3) Confirmar con la usuaria las decisiones del punto 2 (archivo en vez de columna, `perfil.html` sin ⚠️).
