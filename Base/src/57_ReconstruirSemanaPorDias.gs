@@ -516,6 +516,15 @@ function _rsPlanificar(filas, objetivos, opciones) {
       omitir(excede + (notaCrrOmitida ? '; ' + notaCrrOmitida : ''), true); return;
     }
 
+    // §PF563 (23-nov-2026; pedido de la usuaria): un día en cero solo se crea si el jugador ESTABA en este clan. Los días anteriores a la primera fila real de la serie (su ingreso)
+    // que salen en cero no se crean cuando hay registro de que estuvo en otro clan esos días: sin esto, quien entra el domingo quedaba con ceros de jueves a sábado, que la web
+    // pinta como «no atacó» (0 = estuvo y no atacó; vacío = no estuvo, Contexto_Base_Web.md §PF563). Las ops de esos días se quitan del plan: no se crean ni se verifican.
+    var previos = _rsDiasAnterioresAlIngreso_(g, ops, otros, ob);
+    if (previos.dias.length) {
+      ops = ops.filter(function (op) { return previos.dias.indexOf(op.dia) < 0; });
+      notas.push('no se crean las filas de ' + previos.dias.map(function (d) { return EXC_DIAS_LETRAS.charAt(d); }).join('') + ': el jugador no estaba en este clan esos días (' + previos.motivo + ')');
+    }
+
     ops.forEach(function (op) {
       op.nuevo.origen = _excDiasOrigenNuevo(op.existe ? op.ant.origen : '', op.existe, op.estimadoDia);
       if (op.existe && op.ant.hoy === op.nuevo.hoy && op.ant.sem === op.nuevo.sem && op.ant.fame === op.nuevo.fame && op.ant.barcos === op.nuevo.barcos) {
@@ -533,6 +542,78 @@ function _rsPlanificar(filas, objetivos, opciones) {
   plan.terminado = !parado;
   plan.semanasPendientes = Object.keys(pendSet).length;
   return plan;
+}
+
+/**
+ * _rsDiasAnterioresAlIngreso_(g, ops, otros, ob) [→ Contexto_Base_Web.md §PF563]
+ * Días de la serie que NO se deben crear porque el jugador todavía no estaba en este clan. Candidatos: los días que no tienen fila, son ANTERIORES al primer día con actividad en este clan
+ * (una fila real, o un día reconstruido con ataques, fame o barcos: el ingreso) y salen en cero (0 ataques, 0 fame y 0 barcos). Una serie sin ninguna fila no tiene ingreso que mirar: no se toca. Un candidato se descarta si hay evidencia
+ * de que estuvo en otro clan: (1) otro clan del mismo jugador y semana tiene una fila de dato real ese día (con ataques, fame u origen que no sea «Reconstruido»), o (2) el JSON
+ * individual de RoyaleAPI trae esa semana en otro clan (también uno externo) con ataques, y caben en los días previos al ingreso (a lo más 4 por día; si no caben, el jugador
+ * cambió de clan más de una vez y no se decide). Devuelve { dias: [offsets 0..3], motivo: texto }.
+ */
+function _rsDiasAnterioresAlIngreso_(g, ops, otros, ob) {
+  var vacio = { dias: [], motivo: '' };
+  if (!Object.keys(g.dias).length) return vacio;
+  // Primer día con actividad en este clan: una fila real, o un día reconstruido con ataques, fame o barcos (ahí ya estaba en el clan; los ceros que vengan después son «no atacó»).
+  var primero = 4;
+  ops.forEach(function (op) {
+    if ((op.existe || op.nuevo.hoy > 0 || op.nuevo.fameDia > 0 || op.nuevo.barcosDia > 0) && op.dia < primero) primero = op.dia;
+  });
+  var candidatos = ops.filter(function (op) {
+    return !op.existe && op.dia < primero && op.nuevo.hoy === 0 && op.nuevo.fameDia === 0 && op.nuevo.barcosDia === 0;
+  });
+  if (!candidatos.length) return vacio;
+  var dias = [], motivos = [], pendientes = [];
+  candidatos.forEach(function (op) {
+    var enOtro = (otros || []).some(function (o) { var f = o.dias[op.dia]; return !!f && _rsFilaEsDatoReal_(f); });
+    if (enOtro) dias.push(op.dia); else pendientes.push(op.dia);
+  });
+  if (dias.length) motivos.push('otro clan de la hoja tiene dato real esos días');
+  if (pendientes.length) {
+    var ataquesOtros = _rsAtaquesEnOtrosClanes_(g, ob);
+    if (ataquesOtros > 0 && ataquesOtros <= 4 * primero) {
+      pendientes.forEach(function (d) { dias.push(d); });
+      motivos.push('el JSON de RoyaleAPI trae ' + ataquesOtros + ' ataques de esa semana en otro clan');
+    }
+  }
+  dias.sort(function (a, b) { return a - b; });
+  return { dias: dias, motivo: motivos.join('; ') };
+}
+
+/** ¿La fila de un clan es un dato real del día (y no un cero que puso la propia reconstrucción)? Con ataques o fame, o con un origen que no sea «Reconstruido». §PF563 */
+function _rsFilaEsDatoReal_(fila) {
+  if (_excDiasNum(fila[GC.ATAQUES_HOY - 1]) > 0 || _excDiasNum(fila[GC.FAME - 1]) > 0) return true;
+  return String(fila[GC.ORIGEN - 1] || '').indexOf('Reconstruido') !== 0;
+}
+
+var _rsJsonRegistrosCache_ = {};   // registros del JSON individual por Tag de jugador, leídos una sola vez por ejecución (§PF563)
+
+/**
+ * _rsAtaquesEnOtrosClanes_(g, ob) [→ Contexto_Base_Web.md §PF563]
+ * Suma los ataques que el JSON individual del jugador (RoyaleAPI) trae para esa temporada y semana en clanes DISTINTOS al de la serie (Terna o externos, filas `externa`).
+ * El clan se compara por Tag (el del registro, o el que corresponde a su nombre); solo si alguno de los dos no tiene Tag se compara por nombre. 0 si no hay JSON o falla la lectura.
+ */
+function _rsAtaquesEnOtrosClanes_(g, ob) {
+  var tag = String(g.tag || '').trim().toUpperCase();
+  if (!tag) return 0;
+  if (_rsJsonRegistrosCache_[tag] === undefined) {
+    var regs = [];
+    try {
+      var hist = _cargarHistorialGuerraIndividual(tag);
+      regs = (hist && hist.registros) ? hist.registros : [];
+    } catch (e) { regs = []; }
+    _rsJsonRegistrosCache_[tag] = regs;
+  }
+  var tagSerie = String(g.clanTag || '').trim().toUpperCase().replace(/^#/, '');
+  var total = 0;
+  _rsJsonRegistrosCache_[tag].forEach(function (r) {
+    if (!r || Number(r.temporadaInterna) !== Number(ob.temporada) || Number(r.semana) !== Number(ob.semana)) return;
+    var tagReg = String(r.clanTag || _clanTagDeFilaORespaldo_('', r.clan) || '').trim().toUpperCase().replace(/^#/, '');
+    var mismo = (tagSerie && tagReg) ? tagSerie === tagReg : String(r.clan || '') === String(g.clan || '');   // clan-por-nombre-ok: respaldo cuando alguno de los dos clanes no tiene Tag
+    if (!mismo) total += Number(r.ataques) > 0 ? Number(r.ataques) : 0;
+  });
+  return total;
 }
 
 /** Filas a modificar o crear que lleva el plan (la misma cuenta que se compara con RS_MAX_FILAS). §PF183 */
