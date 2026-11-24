@@ -105,7 +105,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
 
-- [ ] `PF564` — Probar en Apps Script real (proyecto **Base**, archivo `17_GuerraSheet.gs`) `corregirFilasManualesGuerraInforme()`: debe dar 8 campos por cambiar (N° 32219, 32220, 32221, 32243, 32244, 32245 y 40292 de `Backup_Guerra`); si coincide, `corregirFilasManualesGuerraAplicar()`. Después, con el informe de `completarClanTagGuerraInforme()`, comprobar si la regla del mismo día dejó otros casos como la N° 32221 y la 32245 entre las 14 filas que confirmó el 22-nov (`§PF564` punto 6).
+- [ ] `PF564` — Probar en Apps Script real (proyecto **Base**, archivo `17_GuerraSheet.gs`) `corregirFilasManualesGuerraInforme()`: debe dar 8 campos por cambiar (N° 32219, 32220, 32221, 32243, 32244, 32245 y 40292 de `Backup_Guerra`); si coincide, `corregirFilasManualesGuerraAplicar()`. La revisión de las otras 13 filas que confirmó la regla del mismo día ya está hecha (`§PF564` punto 6): solo la N° 32137 queda dudosa y no se toca.
 
 ### B6. Clanes externos, infiltrados e índices
 
