@@ -32,7 +32,6 @@ Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el códig
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
 
-- [ ] `PF570` — Corregir la lista fija de `borrarFilasA2ListaFijaGuerraAplicar()`: identifica las 15 filas de A2 por N° y el N° cambió tras el borrado de `§PF568`, así que en Apps Script real no borró ninguna (0 a borrar, 15 «NO SE BORRA»; `Backup_Guerra.csv` sigue en 39 814 filas). Las 15 siguen en el CSV y en 0, y se las halla por Tag + Clan_Tag + fecha; sus N° actuales están en `§PF570` punto 5. Las otras 55 de A2 quedan (`§PF569`).
 - [ ] `PF571` — Decidir qué hacer con las series que el informe de `§PF571` marca como «Probable error» (75) y «Revisar» (15), con el `Backup_Guerra.csv` del 24-nov-2026: tienen ceros reconstruidos antes de la primera fila real y señal de otro clan (otra serie de la hoja con dato real esos días, o ataques en otro clan en el JSON); ni el Historial (`§PF568`) ni la revisión de A2 (`§PF569`) las cubren. Las 1 080 «Se conserva» no tienen señal y no se tocan. Hoy no hay función de borrado para ellas.
 
 ### A3. Nuevos, reenumeración y migraciones
@@ -106,6 +105,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
 - [ ] `PF571` — Correr `seriesCerosInicialesInforme()` (proyecto **Base**, archivo `59_Verificar_CRR_vs_Backup.gs`) y comprobar que el registro dice 1 170 series de 206 jugadores (75 «Probable error», 15 «Revisar», 1 080 «Se conserva», 75 con otra serie en la hoja) con el `Backup_Guerra.csv` del 24-nov-2026 00:20 (las cifras cambian si el CSV ya cambió); revisar el CSV «Cruce_CerosIniciales_vs_JSON …» en `Informes/Cruce_Meta`.
 - [ ] `PF572` — Correr `aplicarTotalesSemanaDesdeHistorialInforme()` (proyecto **Base**, archivo `48_Herramientas_Debug.gs`) y comprobar que, en las series de `#2PUYLPPRG` y `#VJQLY8JV8` (temporadas 18 a 33), ya no omite días por «ataques en otro clan» cuando esos ataques son del propio clan del jugador.
+- [ ] `PF570` — Correr `borrarFilasA2ListaFijaGuerraInforme()` (proyecto **Base**, archivo `17_GuerraSheet.gs`) y comprobar que dice «A borrar: 15»; si es así, correr `borrarFilasA2ListaFijaGuerraAplicar()` y después `generarGuerraDesglose()` (proyecto **Base**, archivo `18_CorreccionGuerra.gs`). La primera corrida (con la lista por N°) no borró nada; la versión corregida identifica por Tag + Clan_Tag + fecha (`§PF570` punto 7).
 
 ### B6. Clanes externos, infiltrados e índices
 
