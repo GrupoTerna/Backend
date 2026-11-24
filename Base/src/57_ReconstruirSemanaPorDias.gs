@@ -171,10 +171,14 @@ function _totSemanaPorDias_(aplicar, esContinuacion) {
     var nCrrCambian = plan.series.filter(function (s) { return s.crrCambia; }).length;   // §PF183: series donde lo nuevo de CurrentRiverRace cambia el reparto
 
     var nombresCsv = [];
-    var series = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Filas existentes', 'Total RoyaleAPI ataques/barcos/fame', 'Nivel', 'Soluciones', 'Clase', 'Accion', 'Filas a modificar', 'Filas a crear', 'Notas']];
+    var series = [['Temporada', 'Semana', 'Tag', 'Nombre', 'Clan', 'Filas existentes', 'Total RoyaleAPI ataques/barcos/fame', 'Nivel', 'Soluciones', 'Clase', 'Accion', 'Filas a modificar', 'Filas a crear', 'Notas',
+      'Confianza del reparto', 'Prioridad de revision', 'Evidencia de otro clan esa semana', 'Dudas']];   // §PF573: las cuatro ultimas columnas son solo analisis; Aplicar no las lee
+    var analisisTxt = '';
+    if (!aplicar) analisisTxt = _rsAnalizarSeries_(plan, objetivos, filas);
     plan.series.forEach(function (s) {
       var g = s.grupo;
-      series.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, s.patron, s.tot.a + '/' + s.tot.b + '/' + s.tot.f, s.nivel, s.soluciones, s.clase, s.accion, s.nMod, s.nCrear, s.notas]);
+      series.push([g.temporada, g.semana, g.tag, g.nombre, g.clan, s.patron, s.tot.a + '/' + s.tot.b + '/' + s.tot.f, s.nivel, s.soluciones, s.clase, s.accion, s.nMod, s.nCrear, s.notas,
+        s.confianza || '', s.prioridad || '', s.otroClan || '', s.dudas || '']);
     });
     if (!aplicar && series.length > 1) {
       var nomSeries = 'AplicarTotalesSemana_Historial ' + marca + ' (informe).csv';
@@ -241,13 +245,92 @@ function _totSemanaPorDias_(aplicar, esContinuacion) {
     }
     Logger.log('[Semana por dias] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + ' (' + Math.round((Date.now() - t0) / 1000) + ' s). Backup_Guerra.csv: ' + filas.length + ' filas. ' + avance +
       'Series del informe: ' + plan.series.length + ' (' + resumenSeries + '). ' + 'Series que CAMBIAN con CurrentRiverRace por clan y niveles nuevos (§PF183): ' + nCrrCambian + '. ' +
-      'Filas a modificar: ' + nModificar + ', a crear: ' + nCrear + '. ' + revisionTxt +
+      'Filas a modificar: ' + nModificar + ', a crear: ' + nCrear + '. ' + (analisisTxt ? analisisTxt + ' ' : '') + revisionTxt +
       (verificacion ? verificacion + ' ' : '') + (nombresCsv.length ? 'Detalle en Drive: ' + nombresCsv.join(' y ') + '.' : 'Nada que escribir.') +
       (aplicar ? '' : ' (No se escribio nada en el Backup ni en Guerra.)'));
     if (!aplicar) _rsContinuacionInforme_(avanzar && !plan.terminado);
   } finally {
     lock.releaseLock();
   }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// ANALISIS DE LAS SERIES POR ESCRIBIR (§PF573, 24-nov-2026) — solo informa; no cambia que se crea ni que se escribe
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * Anota en cada serie con Accion 'Escribir' cuanto se puede confiar en lo que se crearia y si hay motivos para dudar de que la fila deba existir:
+ *  - serie.confianza: 'Firme (reparto unico)', 'Cero (total 0)', 'Estimada (hasta 10 repartos)', 'Estimada (11 a 200 repartos)' o 'Estimada (mas de 200 repartos)'.
+ *    Con mas de 200 repartos posibles solo el total de la semana es firme: el dia por dia lo elige el codigo.
+ *  - serie.otroClan: otros clanes (por Tag) donde el mismo jugador tiene ataques esa semana, segun los JSON (objetivos) y segun el Backup.
+ *  - serie.dudas y serie.prioridad ('Alta', 'Media', 'Baja'): Alta = mas de 200 repartos, o fila en cero con ataques del jugador en otro clan (el caso que §PF568 borro);
+ *    Media = 11 a 200 repartos, cero sin ninguna otra evidencia, clan sin Tag o semana de la temporada mas reciente.
+ * No modifica filas, ops ni plan.casos. Devuelve una frase para el registro con el reparto de las series por confianza y prioridad.
+ */
+function _rsAnalizarSeries_(plan, objetivos, filas) {
+  var llave = function (t, sm, tag) { return Number(t) + '|' + Number(sm) + '|' + String(tag || '').trim().toUpperCase(); };
+  var porObj = {}, porBk = {}, maxTemp = 0;
+  (objetivos || []).forEach(function (ob) {
+    if (Number(ob.temporada) > maxTemp) maxTemp = Number(ob.temporada);
+    var k = llave(ob.temporada, ob.semana, ob.tag);
+    if (!porObj[k]) porObj[k] = [];
+    porObj[k].push(ob);
+  });
+  (filas || []).forEach(function (f) {
+    if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') return;
+    var ataques = Number(String(f[GC.ATAQUES_HOY - 1] || '').trim()) || 0;
+    var ct = String(f[GC.CLAN_TAG - 1] || '').trim().toUpperCase();
+    if (ataques <= 0 || !ct) return;
+    var k = llave(f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.TAG - 1]);
+    if (!porBk[k]) porBk[k] = {};
+    porBk[k][ct] = (porBk[k][ct] || 0) + ataques;
+  });
+  var porConf = {}, porPrio = { Alta: 0, Media: 0, Baja: 0 }, nEscribir = 0;
+  plan.series.forEach(function (s) {
+    s.confianza = ''; s.prioridad = ''; s.otroClan = ''; s.dudas = '';
+    if (s.accion !== 'Escribir') return;
+    nEscribir++;
+    var a = Number(s.tot.a) || 0, f = Number(s.tot.f) || 0, n = Number(s.soluciones) || 0;
+    var propio = String(s.grupo.clanTag || (s.ob && s.ob.clanTag) || '').trim().toUpperCase();
+    var k = llave(s.grupo.temporada, s.grupo.semana, s.grupo.tag);
+    var otros = {};
+    (porObj[k] || []).forEach(function (ob) {
+      var ct = String(ob.clanTag || '').trim().toUpperCase();
+      if (!ct || !propio || ct === propio || !(Number(ob.jsonAtaques) > 0)) return;
+      if (!otros[ct]) otros[ct] = [];
+      otros[ct].push('JSON ' + ob.jsonAtaques);
+    });
+    var bk = porBk[k] || {};
+    Object.keys(bk).forEach(function (ct) {
+      if (!propio || ct === propio) return;
+      if (!otros[ct]) otros[ct] = [];
+      otros[ct].push('Backup ' + bk[ct]);
+    });
+    var lista = Object.keys(otros).sort().map(function (ct) { return ct + ' (' + otros[ct].join(', ') + ' ataques)'; });
+    s.otroClan = lista.join('; ');
+    var dudas = [], prio = 'Baja', esCero = a === 0 && f === 0;
+    var subir = function (nivel) { if (nivel === 'Alta' || (nivel === 'Media' && prio === 'Baja')) prio = nivel; };
+    if (esCero) s.confianza = 'Cero (total 0)';
+    else if (n === 1) s.confianza = 'Firme (reparto unico)';
+    else if (n >= 2 && n <= 10) s.confianza = 'Estimada (hasta 10 repartos)';
+    else if (n > 10 && n <= 200) s.confianza = 'Estimada (11 a 200 repartos)';
+    else if (n > 200) s.confianza = 'Estimada (mas de 200 repartos)';
+    else s.confianza = 'Sin dato de repartos';
+    if (n > 200) { dudas.push('el dia por dia es una eleccion entre ' + n + ' repartos; solo el total de la semana es firme'); subir('Alta'); }
+    else if (n > 10) { dudas.push('reparto elegido entre ' + n + ' posibles'); subir('Media'); }
+    if (esCero && lista.length) { dudas.push('fila en cero en este clan y el jugador tiene ataques en otro clan esa semana (el caso que borro §PF568)'); subir('Alta'); }
+    else if (esCero && !s.patron) { dudas.push('cero sin ninguna fila en este clan ni evidencia de otro: no se sabe si el jugador estaba en el clan'); subir('Media'); }
+    if (!propio) { dudas.push('clan sin Tag: no se pudo buscar al jugador en otros clanes'); subir('Media'); }
+    if (maxTemp && Number(s.grupo.temporada) === maxTemp) { dudas.push('semana de la temporada mas reciente'); subir('Media'); }
+    s.dudas = dudas.join('; '); s.prioridad = prio;
+    if (!porConf[s.confianza]) porConf[s.confianza] = { series: 0, filas: 0 };
+    porConf[s.confianza].series++; porConf[s.confianza].filas += s.nCrear + s.nMod;
+    porPrio[prio]++;
+  });
+  if (!nEscribir) return 'Analisis de las series por escribir (§PF573): ninguna serie por escribir en esta pasada.';
+  return 'Analisis de las series por escribir (§PF573): ' + nEscribir + ' serie(s) (' +
+    Object.keys(porConf).sort().map(function (c) { return c + ': ' + porConf[c].series + ' serie(s), ' + porConf[c].filas + ' fila(s)'; }).join(' | ') +
+    '). Prioridad de revision: Alta ' + porPrio.Alta + ', Media ' + porPrio.Media + ', Baja ' + porPrio.Baja + '.';
 }
 
 // ---------------------------------------------------------------------------------------------------------------
