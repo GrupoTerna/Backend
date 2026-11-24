@@ -975,34 +975,87 @@ function _renumerarNuevos(sh) {
 function _construirMapaSemanasGuerraTerna() {
   var mapa = {};
   var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
-  if (!sh || sh.getLastRow() < 2) return mapa;
-
   var nombresTerna = _getNombresClanesTernaOrdenados();
-  var lastRow = sh.getLastRow();
-  var data = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
 
   var semanasPorTag = {}; // TAG -> { 'temporada-semana': true, ... }
-  for (var i = 0; i < data.length; i++) {
-    var r = data[i];
-    var tg = String(r[GC.TAG - 1] || '').trim().toUpperCase();
-    if (!tg) continue;
 
-    var clanNombre = String(r[GC.CLAN - 1] || '').trim();
-    if (nombresTerna.indexOf(clanNombre) < 0) continue;
+  // 1) Hoja Guerra (fuente de siempre).
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (sh && sh.getLastRow() >= 2) {
+    var lastRow = sh.getLastRow();
+    var data = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
+    for (var i = 0; i < data.length; i++) {
+      var r = data[i];
+      var tg = String(r[GC.TAG - 1] || '').trim().toUpperCase();
+      if (!tg) continue;
 
-    var ataques = Number(r[GC.ATAQUES_SEM - 1]) || 0;
-    if (ataques <= 0) continue;
+      var clanNombre = String(r[GC.CLAN - 1] || '').trim();
+      if (nombresTerna.indexOf(clanNombre) < 0) continue;
 
-    var clave = String(r[GC.TEMPORADA - 1]) + '-' + String(r[GC.SEMANA - 1]);
-    if (!semanasPorTag[tg]) semanasPorTag[tg] = {};
-    semanasPorTag[tg][clave] = true;
+      var ataques = Number(r[GC.ATAQUES_SEM - 1]) || 0;
+      if (ataques <= 0) continue;
+
+      var clave = String(r[GC.TEMPORADA - 1]) + '-' + String(r[GC.SEMANA - 1]);
+      if (!semanasPorTag[tg]) semanasPorTag[tg] = {};
+      semanasPorTag[tg][clave] = true;
+    }
+  }
+
+  // 2) §PF579 (24-nov-2026, pedido de la usuaria): también Backup_Guerra.csv, por si la hoja Guerra todavía no se actualizó o le faltan filas. Se unen las semanas de las dos fuentes (una semana cuenta una sola vez aunque salga en las dos).
+  var semanasCsv = _semanasGuerraTernaDesdeCsv_(nombresTerna);
+  for (var tgC in semanasCsv) {
+    if (!semanasPorTag[tgC]) semanasPorTag[tgC] = {};
+    for (var claveC in semanasCsv[tgC]) semanasPorTag[tgC][claveC] = true;
   }
 
   for (var tag in semanasPorTag) {
     mapa[tag] = Object.keys(semanasPorTag[tag]).length;
   }
   return mapa;
+}
+
+// §PF579: caché de las semanas leídas de Backup_Guerra.csv dentro de una misma ejecución (la purga, la siembra y la lista piden el mapa una tras otra; leer y analizar el CSV cada vez sería lento). Vence a los 2 minutos.
+var _CACHE_SEMANAS_CSV_ = null;
+var CACHE_SEMANAS_CSV_TTL_MS = 120000;
+
+/**
+ * _semanasGuerraTernaDesdeCsv_(nombresTerna) (§PF579, 24-nov-2026; sin probar en Apps Script real)
+ * Lee Backup_Guerra.csv (mismo formato de columnas que la hoja Guerra) y devuelve { TAG: { 'temporada-semana': true } } con las semanas en que el
+ * jugador hizo al menos un ataque (AtaquesHoy o AtaquesSemana mayor que 0) en un clan Terna. El clan se identifica por su Tag (ClanTag); solo si la
+ * fila no lo trae (filas viejas, anteriores al 7-nov-2026) se compara el nombre. Si el archivo no existe o no se puede leer devuelve {} y deja un aviso
+ * en el registro: el mapa sigue saliendo de la hoja Guerra. Usa una caché de 2 minutos.
+ */
+function _semanasGuerraTernaDesdeCsv_(nombresTerna) {
+  var ahora = Date.now();
+  if (_CACHE_SEMANAS_CSV_ && (ahora - _CACHE_SEMANAS_CSV_.ts) < CACHE_SEMANAS_CSV_TTL_MS) return _CACHE_SEMANAS_CSV_.datos;
+  var out = {};
+  try {
+    var texto = _loadCSVFromDrive('Backup_Guerra.csv');
+    var filas = texto ? _parseCSV(texto) : null;
+    if (filas && filas.length >= 2) {
+      for (var i = 1; i < filas.length; i++) {
+        var f = filas[i];
+        var tg = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+        if (!tg) continue;
+        var tagClan = String(f[GC.CLAN_TAG - 1] || '').trim().toUpperCase();
+        var esTerna = tagClan
+          ? (CFG.TERNA_TAGS.indexOf(tagClan) >= 0)
+          : (nombresTerna.indexOf(String(f[GC.CLAN - 1] || '').trim()) >= 0); // clan-por-nombre-ok: filas anteriores al 7-nov-2026 sin ClanTag
+        if (!esTerna) continue;
+        if ((Number(f[GC.ATAQUES_HOY - 1]) || 0) <= 0 && (Number(f[GC.ATAQUES_SEM - 1]) || 0) <= 0) continue;
+        var temporada = String(f[GC.TEMPORADA - 1] || '').trim();
+        var semana = String(f[GC.SEMANA - 1] || '').trim();
+        if (!temporada || !semana) continue;
+        if (!out[tg]) out[tg] = {};
+        out[tg][temporada + '-' + semana] = true;
+      }
+    }
+  } catch (e) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo leer Backup_Guerra.csv para contar semanas (' + (e.message || e) + '). Se usa solo la hoja Guerra.');
+    out = {};
+  }
+  _CACHE_SEMANAS_CSV_ = { ts: Date.now(), datos: out };
+  return out;
 }
 
 /**
