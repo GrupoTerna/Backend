@@ -32,7 +32,7 @@ Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el códig
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
 
-- [ ] `PF568` — Decidir qué hacer con las 70 filas de A2 (42 semanas de jugador, 24 jugadores): «Reconstruido» en 0 con clan, de jugadores que ya habían salido de ese clan según el Historial, pero cuya semana trae también filas con datos u otro origen. No se borraron. Hoy no hay función para borrarlas (`§PF567` punto 2, `§PF568`).
+- [ ] `PF569` — Decidir si se borran 15 de las 70 filas de A2: 7 que el propio Historial contradice (ingreso posterior dentro de la semana) y 8 con ataque del jugador en otro clan ese mismo día; sus N° están en `§PF569`. Las otras 55 quedan: 49 probablemente reales y 6 no concluyentes. Hoy no hay función de borrado con lista fija de N° (`§PF569` punto 5).
 
 ### A3. Nuevos, reenumeración y migraciones
 
