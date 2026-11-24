@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 17:30:59 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 18:08:05 */
 
 
 
@@ -18394,6 +18394,9 @@ var NUEVOS_RESTORE_LOTE_MAX = 5;
 // §PF575 (24-nov-2026): tope de miembros nuevos del Directorio que _sembrarNuevosDesdeDirectorio_() agrega a «Nuevos» en UNA corrida. Cada candidato nuevo cuesta como uno del botón de Nuevos (decenas de segundos por lote de 8, §PF311); lo que pasa del tope queda para la corrida siguiente.
 var NUEVOS_SEMBRAR_MAX_POR_CORRIDA = 8;
 
+// §PF576 (24-nov-2026): días desde el ingreso (Fecha_ing del Directorio) para que un miembro cuente como ingreso reciente al decidir a quién se le visita el perfil en la Corrección de Guerra sin backfill (_tagsNuevosParaPerfil_()). Es la misma ventana de 7 días de _tagIngresoRecienteDeFilaDir_() (37_Web_API.gs); si aquella cambia, esta debe cambiar igual (si divergen solo cuesta alguna visita de perfil de más o de menos).
+var NUEVOS_PERFIL_DIAS_INGRESO = 7;
+
 // ===== PARTE 1 — Funciones que se corren a mano =====
 
 // ----- Reordenar la hoja y reparar el formato de los encabezados -----
@@ -20323,6 +20326,53 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
     if (n.indexOf(nt) >= 0 || nt.indexOf(n) >= 0) return true;
   }
   return false;
+}
+
+/**
+ * _tagsNuevosParaPerfil_(infoJugadores) (§PF576, 24-nov-2026; sin probar en Apps Script real)
+ * Tags cuyo PERFIL de RoyaleAPI debe visitar el botón «Corrección de Guerra» de Tampermonkey aunque se corra SIN backfill y aunque Log o Analytics ya los hayan
+ * cubierto, para que _alimentarNuevosDesdeCorrecciones_() reciba filas de perfil suyas y llene la hoja «Nuevos». Sin esto, un ingreso reciente (que sí sale en el Log de su
+ * clan) no recibía visita de perfil y su fila, sembrada vacía por _sembrarNuevosDesdeDirectorio_() (§PF575), se quedaba sin historial.
+ * infoJugadores: los jugadores de la lista de la corrección (todos Activos en un clan Terna por tag), cada uno { tag, rango, admin, fechaIng } con los valores de la hoja
+ * física del Directorio (fechaIng es un Date si la celda es una fecha). Entran los que:
+ *   (a) ya tienen fila en «Nuevos» (para que su cuadrícula no se congele, como en _alimentarNuevosDesdeCorrecciones_()); no se pide rango ni Admin, porque si la fila sigue
+ *       en la hoja es que _purgarNuevosEstablecidos() y _purgarNuevosExpulsados() todavía no la borraron; o
+ *   (b) ingresaron hace NUEVOS_PERFIL_DIAS_INGRESO días o menos (Fecha_ing), con rango Miembro y sin Admin, igual que _sembrarNuevosDesdeDirectorio_().
+ * No se usa _tagIngresoRecienteDeFilaDir_() porque pide V_Guerra, que está en Players y no en la hoja física del Directorio que lee esa lista (§PF042); por eso la rama (b)
+ * mira solo la fecha. Tampoco se usa el mapa de semanas de guerra (_construirMapaSemanasGuerraTerna() lee toda la hoja Guerra y esa lista tiene el tiempo contado, §PF043):
+ * un establecido que aún figure en «Nuevos» o ingresó hace poco solo cuesta una visita de perfil de más.
+ * Devuelve los tags tal como vienen en infoJugadores (los mismos de jugadores[].tag, que Tampermonkey compara tal cual), sin repetidos y en el mismo orden. Si no se puede
+ * leer la hoja «Nuevos», solo cuenta la rama (b); no lanza error por eso.
+ */
+function _tagsNuevosParaPerfil_(infoJugadores) {
+  var salida = [];
+  if (!infoJugadores || !infoJugadores.length) return salida;
+  var tagsEnHoja = {};
+  try {
+    tagsEnHoja = _obtenerTagsEnHojaNuevos(_getSs());
+  } catch (eTags) {
+    Logger.log('[Nuevos-Perfil] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) + '); solo se consideran los ingresos recientes por fecha.');
+    tagsEnHoja = {};
+  }
+  var ahora = new Date().getTime();
+  var limiteMs = NUEVOS_PERFIL_DIAS_INGRESO * 86400000;
+  var vistos = {};
+  for (var i = 0; i < infoJugadores.length; i++) {
+    var j = infoJugadores[i] || {};
+    var tag = String(j.tag || '').trim();
+    var clave = tag.toUpperCase();
+    if (!tag || vistos[clave]) continue;
+    var entra = tagsEnHoja[clave] === true;
+    if (!entra && String(j.rango || '').trim() === 'Miembro' && String(j.admin || '').trim() !== 'Sí' &&
+        j.fechaIng instanceof Date && !isNaN(j.fechaIng.getTime())) {
+      var transcurrido = ahora - j.fechaIng.getTime();
+      entra = transcurrido >= 0 && transcurrido <= limiteMs;
+    }
+    if (!entra) continue;
+    vistos[clave] = true;
+    salida.push(tag);
+  }
+  return salida;
 }
 
 /**
@@ -34132,6 +34182,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
   var tInicio = Date.now();
   var ss = _getSs();
   var jugadores = [];
+  var infoNuevosPerfil = []; // §PF576: por cada jugador de la lista, rango, Admin y Fecha_ing (para _tagsNuevosParaPerfil_)
   if (!soloClanes) {
     // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §18B107]
     // PF042: se lee solo el Directorio físico (layout IC) en vez de _leerDirectorioFisicoComoDC(), que además leía Players y Links y armaba filas de 60 columnas para todos los registros; los seis campos que usa esta lista (estado, clan, tag, nombre, nom_multi, clan_tag) salen todos de la hoja Directorio y no se pisan con Players/Links. [→ Contexto_Base_Web.md §PF042]
@@ -34140,11 +34191,13 @@ function _obtenerListaCorreccionGuerra(opciones) {
     var ix; // índices 0-based según el layout de las filas leídas
     if (shDirCorr && shDirCorr.getLastRow() >= 2) {
       dirData = shDirCorr.getRange(2, 1, shDirCorr.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-      ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, tag: IC.TAG - 1, nombre: IC.NOMBRE - 1, nomMulti: IC.NOM_MULTI - 1, clan: IC.CLAN - 1 };
+      ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, tag: IC.TAG - 1, nombre: IC.NOMBRE - 1, nomMulti: IC.NOM_MULTI - 1, clan: IC.CLAN - 1,
+            rango: IC.RANGO - 1, admin: IC.ADMIN - 1, fechaIng: IC.FECHA_ING - 1 }; // §PF576: rango, Admin y Fecha_ing para _tagsNuevosParaPerfil_
     } else {
       var lecturaDirCorr = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
       dirData = (lecturaDirCorr.origen === 'csv') ? lecturaDirCorr.filas : [];
-      ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, tag: DC.TAG - 1, nombre: DC.NOMBRE - 1, nomMulti: DC.NOM_MULTI - 1, clan: DC.CLAN - 1 };
+      ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, tag: DC.TAG - 1, nombre: DC.NOMBRE - 1, nomMulti: DC.NOM_MULTI - 1, clan: DC.CLAN - 1,
+            rango: DC.RANGO - 1, admin: DC.ADMIN - 1, fechaIng: DC.FECHA_ING - 1 }; // §PF576
     }
 
     for (var i = 0; i < dirData.length; i++) {
@@ -34163,6 +34216,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
         clan: String(r[ix.clan] || ''),
         royaleApiUrl: 'https://royaleapi.com/player/' + tagJugador.replace('#', '') + '/'
       });
+      infoNuevosPerfil.push({ tag: tagJugador, rango: String(r[ix.rango] || '').trim(), admin: String(r[ix.admin] || '').trim(), fechaIng: r[ix.fechaIng] }); // §PF576
     }
   }
   var tDirectorio = Date.now();
@@ -34186,9 +34240,14 @@ function _obtenerListaCorreccionGuerra(opciones) {
     try { regresadosSinPerfil = _tagsRegresadosSinPerfilTrasRegreso_(mapaOverlayLista); }
     catch (eReg) { Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo calcular quién regresó (' + (eReg.message || eReg) + '); la lista sale sin ese campo.'); }
   }
+  var nuevosParaPerfil = [];
+  if (!soloClanes) { // §PF576: quien ya está en «Nuevos» o es ingreso reciente se visita aunque Log/Analytics lo cubran; un fallo no frena la lista
+    try { nuevosParaPerfil = _tagsNuevosParaPerfil_(infoNuevosPerfil); }
+    catch (eNp) { Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo calcular quién alimenta «Nuevos» (' + (eNp.message || eNp) + '); la lista sale sin ese campo.'); }
+  }
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
              ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
-             jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
+             jugadores.length + ' jugador(es) · ' + nuevosParaPerfil.length + ' para «Nuevos» · total ' + (Date.now() - tInicio) + ' ms');
 
   return {
     ok: true,
@@ -34209,7 +34268,9 @@ function _obtenerListaCorreccionGuerra(opciones) {
     // Tampermonkey v3.10 visita su perfil aunque Log/Analytics los hayan cubierto, una sola vez: al guardarse su perfil salen de esta lista.
     sinPerfilEnCsv: sinPerfilEnCsv,
     // §PF314 (PF253 opción B): activos que salieron de los clanes Terna y regresaron, sin perfil leído desde el regreso. Tampermonkey v3.17 visita su perfil (todas las semanas) y el backend decide qué reemplaza o agrega.
-    regresadosSinPerfil: regresadosSinPerfil
+    regresadosSinPerfil: regresadosSinPerfil,
+    // §PF576: activos que ya tienen fila en «Nuevos» o ingresaron hace 7 días o menos (rango Miembro, sin Admin). Tampermonkey visita su perfil sin backfill aunque Log/Analytics los cubran, para que _alimentarNuevosDesdeCorrecciones_() llene su fila. Sin el campo, Tampermonkey no visita a nadie de más.
+    nuevosParaPerfil: nuevosParaPerfil
   };
 }
 
