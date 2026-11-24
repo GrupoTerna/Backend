@@ -5053,6 +5053,107 @@ function _filasEnCeroFueraDelClanEjecutar_(aplicar) {
 }
 
 /**
+ * FILAS_A2_LISTA_FIJA_ [→ Contexto_Base_Web.md §PF570]
+ * Las 15 filas de A2 que la revisión de §PF569 dejó con evidencia para borrarse. n = N° de Backup_Guerra.csv, tag, clanTag y fecha (dd/mm/aaaa) identifican la fila; nivel 1 = el Historial reingresa al jugador al clan dentro de la semana, después del día de la fila; nivel 2 = ese mismo día el jugador atacó en otro clan.
+ */
+var FILAS_A2_LISTA_FIJA_ = [
+  { n: '17905', tag: '#JCUPQ88J', clanTag: '#GCRG8L00', fecha: '09/07/2026', nivel: 2 },
+  { n: '17912', tag: '#Y8CVG9VYL', clanTag: '#GCRG8L00', fecha: '09/07/2026', nivel: 2 },
+  { n: '18203', tag: '#QRQULCCV8', clanTag: '#GYCU9YRG', fecha: '13/08/2026', nivel: 1 },
+  { n: '18204', tag: '#QRQULCCV8', clanTag: '#GYCU9YRG', fecha: '14/08/2026', nivel: 1 },
+  { n: '18205', tag: '#QRQULCCV8', clanTag: '#GYCU9YRG', fecha: '15/08/2026', nivel: 1 },
+  { n: '28122', tag: '#JR9J0JCQ9', clanTag: '#GYCU9YRG', fecha: '13/08/2026', nivel: 2 },
+  { n: '28127', tag: '#JVVG9YUG0', clanTag: '#GYCU9YRG', fecha: '14/08/2026', nivel: 2 },
+  { n: '29316', tag: '#GLPC8YQGV', clanTag: '#GCRG8L00', fecha: '27/08/2026', nivel: 2 },
+  { n: '29317', tag: '#GLPC8YQGV', clanTag: '#GCRG8L00', fecha: '28/08/2026', nivel: 2 },
+  { n: '29318', tag: '#GLPC8YQGV', clanTag: '#GCRG8L00', fecha: '29/08/2026', nivel: 2 },
+  { n: '29548', tag: '#2Q8GJVR8V', clanTag: '#GYCU9YRG', fecha: '03/09/2026', nivel: 1 },
+  { n: '29549', tag: '#2Q8GJVR8V', clanTag: '#GYCU9YRG', fecha: '04/09/2026', nivel: 1 },
+  { n: '31595', tag: '#U98RJ28PG', clanTag: '#GYCU9YRG', fecha: '15/10/2026', nivel: 1 },
+  { n: '31596', tag: '#U98RJ28PG', clanTag: '#GYCU9YRG', fecha: '16/10/2026', nivel: 1 },
+  { n: '31815', tag: '#2C982888C', clanTag: '#GYCU9YRG', fecha: '27/08/2026', nivel: 2 }
+];
+
+/**
+ * _filasA2ListaFijaPlan_(filas, lista, maxTemp) [→ Contexto_Base_Web.md §PF570]
+ * Función pura (no toca Drive ni hojas). filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado. lista: elementos como los de FILAS_A2_LISTA_FIJA_. maxTemp: temporada más reciente del CSV (sus filas no se borran: viven en la hoja Guerra).
+ * Una fila se borra solo si N° aparece UNA vez y coincide con Tag, Clan_Tag, el día de Fecha, etapa Guerra, Origen «Reconstruido…» y AtaquesHoy, Barcos y Fame en 0; si algo no coincide NO se borra y se explica. Devuelve { borrar: [idx], detalle: [[estado, idx o -1, texto, item]] }.
+ */
+function _filasA2ListaFijaPlan_(filas, lista, maxTemp) {
+  var norm = function (v) { return String(v === undefined || v === null ? '' : v).trim(); };
+  var borrar = [], detalle = [];
+  lista.forEach(function (it) {
+    var idxs = [];
+    for (var i = 0; i < filas.length; i++) { if (norm(filas[i][GC.NUM - 1]) === it.n) idxs.push(i); }
+    if (idxs.length === 0) { detalle.push(['NO ESTA', -1, 'No hay fila con N° ' + it.n + ' (ya borrada o N° renumerado).', it]); return; }
+    if (idxs.length > 1) { detalle.push(['NO SE BORRA', idxs[0], 'El N° ' + it.n + ' aparece ' + idxs.length + ' veces; no se sabe cual borrar.', it]); return; }
+    var f = filas[idxs[0]], motivos = [];
+    if (norm(f[GC.TAG - 1]).toUpperCase() !== it.tag) motivos.push('Tag ' + norm(f[GC.TAG - 1]) + ' en vez de ' + it.tag);
+    if (norm(f[GC.CLAN_TAG - 1]).toUpperCase() !== it.clanTag) motivos.push('Clan_Tag ' + norm(f[GC.CLAN_TAG - 1]) + ' en vez de ' + it.clanTag);
+    if (norm(f[GC.FECHA - 1]).substring(0, 10) !== it.fecha) motivos.push('Fecha ' + norm(f[GC.FECHA - 1]).substring(0, 10) + ' en vez de ' + it.fecha);
+    if (norm(f[GC.ETAPA - 1]) !== 'Guerra') motivos.push('Etapa ' + norm(f[GC.ETAPA - 1]));
+    if (norm(f[GC.ORIGEN - 1]).indexOf('Reconstruido') !== 0) motivos.push('Origen ' + norm(f[GC.ORIGEN - 1]));
+    if ((Number(norm(f[GC.ATAQUES_HOY - 1])) || 0) !== 0 || (Number(norm(f[GC.BARCOS - 1])) || 0) !== 0 || (Number(norm(f[GC.FAME - 1])) || 0) !== 0) motivos.push('ya no esta en 0');
+    if (maxTemp && Number(norm(f[GC.TEMPORADA - 1])) === maxTemp) motivos.push('es de la temporada mas reciente');
+    if (motivos.length) { detalle.push(['NO SE BORRA', idxs[0], 'No coincide: ' + motivos.join('; ') + '.', it]); return; }
+    borrar.push(idxs[0]);
+    detalle.push(['BORRAR', idxs[0], 'Nivel ' + it.nivel + (it.nivel === 1 ? ': el Historial reingresa al jugador al clan despues de este dia.' : ': ese dia el jugador ataco en otro clan.'), it]);
+  });
+  return { borrar: borrar, detalle: detalle };
+}
+
+/**
+ * borrarFilasA2ListaFijaGuerraInforme() [→ Contexto_Base_Web.md §PF570]
+ * SOLO INFORMA: deja en Drive «Borrar_Filas_A2_Lista_Fija_Guerra <fecha> (informe).csv» con lo que se borraría de las 15 filas de FILAS_A2_LISTA_FIJA_. No cambia Backup_Guerra.csv.
+ */
+function borrarFilasA2ListaFijaGuerraInforme() { _borrarFilasA2ListaFijaGuerra_(false); }
+
+/**
+ * borrarFilasA2ListaFijaGuerraAplicar() [→ Contexto_Base_Web.md §PF570]
+ * Borra de Backup_Guerra.csv las filas de FILAS_A2_LISTA_FIJA_ que sigan coincidiendo (decisión de la usuaria del 24-nov-2026 tras §PF569). Respaldo previo «Backup_Guerra ANTES de borrar lista fija A2 <fecha>.csv», candado de script y tope de 15 filas. No renumera N°. Después correr generarGuerraDesglose().
+ */
+function borrarFilasA2ListaFijaGuerraAplicar() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[FilasA2ListaFija] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try { _borrarFilasA2ListaFijaGuerra_(true); } finally { lock.releaseLock(); }
+}
+
+function _borrarFilasA2ListaFijaGuerra_(aplicar) {
+  var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvText) { Logger.log('[FilasA2ListaFija] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length < 2) { Logger.log('[FilasA2ListaFija] Backup_Guerra.csv no tiene filas de datos; no se hace nada.'); return; }
+  var encabezado = parsed[0], filas = parsed.slice(1);
+  if (String(encabezado[GC.NUM - 1] || '').trim() !== 'N°' || String(encabezado[GC.TAG - 1] || '').trim() !== 'Tag' || String(encabezado[GC.ORIGEN - 1] || '').trim() !== 'Origen' || String(encabezado[GC.CLAN_TAG - 1] || '').trim() !== 'Clan_Tag' || String(encabezado[GC.ETAPA - 1] || '').trim() !== 'Etapa') {
+    Logger.log('[FilasA2ListaFija] El encabezado de Backup_Guerra.csv no tiene el orden actual de columnas; no se toca nada.');
+    return;
+  }
+  for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+  var maxTemp = 0;
+  filas.forEach(function (f) { var t = Number(String(f[GC.TEMPORADA - 1]).trim()); if (!isNaN(t) && t > maxTemp) maxTemp = t; });
+  var plan = _filasA2ListaFijaPlan_(filas, FILAS_A2_LISTA_FIJA_, maxTemp);
+  var informe = [['Estado', 'N°', 'Fecha', 'Dia', 'Temporada', 'Semana', 'PeriodIndex', 'Tag', 'Nombre', 'Clan_Tag', 'Detalle']];
+  var noBorra = 0;
+  plan.detalle.forEach(function (d) {
+    if (d[0] !== 'BORRAR') noBorra++;
+    var f = d[1] >= 0 ? filas[d[1]] : null;
+    informe.push([d[0] === 'BORRAR' && aplicar ? 'BORRADA' : d[0], d[3].n, f ? f[GC.FECHA - 1] : d[3].fecha, f ? f[GC.DIA - 1] : '', f ? f[GC.TEMPORADA - 1] : '', f ? f[GC.SEMANA - 1] : '', f ? f[GC.PERIOD_IDX - 1] : '', d[3].tag, f ? f[GC.NOMBRE - 1] : '', d[3].clanTag, d[2]]);
+  });
+  var hecho = false;
+  if (aplicar && plan.borrar.length) {
+    _saveCSVToDrive('Backup_Guerra ANTES de borrar lista fija A2 ' + marca + '.csv', csvText);
+    var quitar = {};
+    plan.borrar.forEach(function (i) { quitar[i] = true; });
+    _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas.filter(function (f, i) { return !quitar[i]; }))));
+    hecho = true;
+  }
+  var nombreInforme = 'Borrar_Filas_A2_Lista_Fija_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+  _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+  Logger.log('[FilasA2ListaFija] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + '. En la lista: ' + FILAS_A2_LISTA_FIJA_.length + '. A borrar: ' + plan.borrar.length + (hecho ? ' (borradas)' : '') + '. No se borran: ' + noBorra + '. ' + (aplicar ? (hecho ? 'Falta correr generarGuerraDesglose(). ' : '') : 'No se escribio nada; para borrar correr borrarFilasA2ListaFijaGuerraAplicar(). ') + 'Detalle en Drive: ' + nombreInforme + '.');
+}
+
+/**
  * _clanTagPlanInactivos_(inact, fuentes) [→ Contexto_Base_Web.md §PF423]
  * Función pura (no toca Drive ni hojas). inact: filas parseadas de Backup_Inactivos.csv CON encabezado. fuentes: [{ nombre, filas }], cada una con encabezado y con columnas Tag y ClanTag (o Clan_Tag).
  * Una fila de Inactivos entra al plan solo si trae Clan y ClanTag vacíos. «Confirmada»: dos o más fuentes distintas coinciden en UN solo Tag. «Probable» (no se aplicaría): una sola fuente con UN Tag.
