@@ -1,0 +1,1171 @@
+ID,Veredicto,Temporada,Semana,Clan,Clan_Tag,Tag,Nombre,Días en cero,Primer día con dato,Ataques de la semana en la hoja,Otras series del jugador esa semana (hoja),Días con dato real en otro clan (hoja),Ataques en otros clanes (JSON),Otros clanes (JSON),Ataques en este clan (JSON),Motivo
+T_34_S_02_#JCUPQ88J,Probable error,34,2,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,J,V,12,GrupoXTerna™3,J,0,,12,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_34_S_02_#Y8CVG9VYL,Probable error,34,2,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,ᴳ乂ᵀ ⚜️ ⒿⒺⓇⓈⓄⓃ ⚡,J,V,12,GrupoXTerna™2,J,0,,12,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_34_S_02_#8YCLY8CRU,Probable error,34,2,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,J,V,11,Grupo乂Terna™,J,0,,11,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_34_S_02_#QRQULCCV8,Probable error,34,2,GrupoXTerna™2,#GYCU9YRG,#QRQULCCV8,ᴳ乂ᵀ ⚜️ Maikel,"J, V",S,8,Grupo乂Terna™,"J, V",0,,8,"otro clan de la hoja tiene dato real el J, V; el JSON no trae otro clan esa semana"
+T_34_S_02_#UYU0PGUYJ,Probable error,34,2,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,J,V,6,Grupo乂Terna™,J,0,,6,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_34_S_03_#U8G029GUQ,Probable error,34,3,GrupoXTerna™3,#GQQPPJGR,#U8G029GUQ,,"J, V, S",D,4,Mini乂Ternas™,"J, V, S",0,,4,"otro clan de la hoja tiene dato real el J, V, S; el JSON no trae otro clan esa semana"
+T_34_S_03_#C8GPVLVJL,Probable error,34,3,GrupoXTerna™2,#GYCU9YRG,#C8GPVLVJL,~$VNThONY$~,"J, V",S,8,,,8,Akatsuki (externo): 8,8,el JSON trae 8 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_34_S_03_#JCUPQ88J,Probable error,34,3,GrupoXTerna™2,#GYCU9YRG,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,J,V,8,Grupo乂Terna™,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_34_S_05_#LRQ8YJRCU,Probable error,34,5,GrupoXTerna™3,#GQQPPJGR,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,J,V,12,Grupo乂Terna™,J,0,,12,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_01_#JCUPQ88J,Probable error,35,1,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,J,V,8,GrupoXTerna™2,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_01_#Y8CVG9VYL,Probable error,35,1,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,J,V,8,GrupoXTerna™2,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_02_#JVVG9YUG0,Probable error,35,2,GrupoXTerna™2,#GYCU9YRG,#JVVG9YUG0,,"J, V",S,8,GrupoXTerna™3,"J, V",0,,8,"otro clan de la hoja tiene dato real el J, V; el JSON no trae otro clan esa semana"
+T_35_S_02_#U8G029GUQ,Probable error,35,2,GrupoXTerna™2,#GYCU9YRG,#U8G029GUQ,,"J, V, S",D,4,GrupoXTerna™3,"J, V, S",0,,4,"otro clan de la hoja tiene dato real el J, V, S; el JSON no trae otro clan esa semana"
+T_35_S_03_#8YCLY8CRU,Probable error,35,3,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V",S,8,GrupoXTerna™3,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_03_#QRQULCCV8,Probable error,35,3,Grupo乂Terna™,#GCRG8L00,#QRQULCCV8,,J,V,12,GrupoXTerna™2,J,0,,12,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_03_#P8Y0CQ9VR,Probable error,35,3,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,,"J, V",S,8,GrupoXTerna™3,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_03_#RR8CRJPUV,Probable error,35,3,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,8,GrupoXTerna™3,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_03_#UJY0PGPUV,Probable error,35,3,GrupoXTerna™2,#GYCU9YRG,#UJY0PGPUV,,"J, V, S",D,2,Mini乂Ternas™,J,0,,2,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_03_#UYU0PGUYJ,Probable error,35,3,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V, S",D,4,GrupoXTerna™3,J,0,,4,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_03_#V9L9V9YV0,Probable error,35,3,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V, S",D,4,GrupoXTerna™3,J,0,,4,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_03_#VUVC9P8VL,Probable error,35,3,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,"J, V, S",D,3,GrupoXTerna™3,J,0,,3,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_04_#RR8CRJPUV,Probable error,35,4,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,V,4,GrupoXTerna™2,J,0,,4,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_04_#V9L9V9YV0,Probable error,35,4,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,J,V,8,GrupoXTerna™2; Mini乂Ternas™,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_35_S_04_#UJY0PGPUV,Probable error,35,4,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,"J, V",S,8,GrupoXTerna™2; GrupoXTerna™3,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_36_S_01_#V9L9V9YV0,Probable error,36,1,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,J,V,8,GrupoXTerna™3; GrupoXTerna™2,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_36_S_01_#VUVC9P8VL,Probable error,36,1,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,J,V,8,Mini乂Ternas™; GrupoXTerna™3,J,0,,8,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_36_S_02_#8G222CQUR,Probable error,36,2,Grupo乂Terna™,#GCRG8L00,#8G222CQUR,FredG,"J, V, S",D,0,,,6,LA GRAN CAMPAÑA (externo): 6,0,el JSON trae 6 ataques de esa semana en otro clan y caben en los 3 día(s) anteriores al primer dato (hasta 12)
+T_36_S_02_#JCUPQ88J,Probable error,36,2,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,J,V,8,GrupoXTerna™3,J,4,GrupoXTerna™3: 4,8,otro clan de la hoja tiene dato real el J; el JSON también trae 4 ataques en otro clan
+T_36_S_02_#JVVG9YUG0,Probable error,36,2,Grupo乂Terna™,#GCRG8L00,#JVVG9YUG0,Fiorela.,J,V,2,GrupoXTerna™2,,4,GrupoXTerna™2: 4,2,el JSON trae 4 ataques de esa semana en otro clan y caben en los 1 día(s) anteriores al primer dato (hasta 4)
+T_36_S_02_#V9L9V9YV0,Probable error,36,2,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,"J, V",S,4,GrupoXTerna™3; GrupoXTerna™2,V,4,GrupoXTerna™3: 4,4,otro clan de la hoja tiene dato real el V; el JSON también trae 4 ataques en otro clan
+T_36_S_02_#J8V9PQJP9,Probable error,36,2,GrupoXTerna™3,#GQQPPJGR,#J8V9PQJP9,ilmiatraxxp,"J, V",S,7,Grupo乂Terna™,"J, V",4,Grupo乂Terna™: 4,7,"otro clan de la hoja tiene dato real el J, V; el JSON también trae 4 ataques en otro clan"
+T_36_S_02_#UJY0PGPUV,Probable error,36,2,GrupoXTerna™3,#GQQPPJGR,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,J,V,4,Mini乂Ternas™; GrupoXTerna™2; Grupo乂Terna™,J,4,Mini乂Ternas™: 4,4,otro clan de la hoja tiene dato real el J; el JSON también trae 4 ataques en otro clan
+T_36_S_02_#V9L9V9YV0,Probable error,36,2,GrupoXTerna™3,#GQQPPJGR,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,J,V,4,GrupoXTerna™2; Grupo乂Terna™,,4,Grupo乂Terna™: 4,4,el JSON trae 4 ataques de esa semana en otro clan y caben en los 1 día(s) anteriores al primer dato (hasta 4)
+T_36_S_02_#8YCLY8CRU,Probable error,36,2,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,J,V,12,Grupo乂Terna™,J,4,Grupo乂Terna™: 4,12,otro clan de la hoja tiene dato real el J; el JSON también trae 4 ataques en otro clan
+T_36_S_02_#JR9J0JCQ9,Probable error,36,2,GrupoXTerna™2,#GYCU9YRG,#JR9J0JCQ9,LUCKY,J,V,12,Grupo乂Terna™,J,4,Grupo乂Terna™: 4,12,otro clan de la hoja tiene dato real el J; el JSON también trae 4 ataques en otro clan
+T_36_S_02_#JVVG9YUG0,Probable error,36,2,GrupoXTerna™2,#GYCU9YRG,#JVVG9YUG0,Fiorela.,"J, V",S,4,Grupo乂Terna™,V,2,Grupo乂Terna™: 2,4,otro clan de la hoja tiene dato real el V; el JSON también trae 2 ataques en otro clan
+T_36_S_02_#QRQULCCV8,Probable error,36,2,GrupoXTerna™2,#GYCU9YRG,#QRQULCCV8,,"J, V, S",D,4,Grupo乂Terna™,"J, V, S",12,Grupo乂Terna™: 12,4,"otro clan de la hoja tiene dato real el J, V, S; el JSON también trae 12 ataques en otro clan"
+T_36_S_03_#2C982888C,Probable error,36,3,Grupo乂Terna™,#GCRG8L00,#2C982888C,,"J, V, S",D,4,GrupoXTerna™3,S,4,GrupoXTerna™3: 4,4,otro clan de la hoja tiene dato real el S; el JSON también trae 4 ataques en otro clan
+T_36_S_03_#JCUPQ88J,Probable error,36,3,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,"J, V, S",D,4,GrupoXTerna™3,"V, S",8,GrupoXTerna™3: 8,4,"otro clan de la hoja tiene dato real el V, S; el JSON también trae 8 ataques en otro clan"
+T_36_S_03_#UJY0PGPUV,Probable error,36,3,Grupo乂Terna™,#GCRG8L00,#UJY0PGPUV,,"J, V, S",D,4,Mini乂Ternas™; GrupoXTerna™3; GrupoXTerna™2,"J, V, S",4,GrupoXTerna™3: 4,4,"otro clan de la hoja tiene dato real el J, V, S; el JSON también trae 4 ataques en otro clan"
+T_36_S_03_#V9L9V9YV0,Probable error,36,3,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,"J, V, S",D,4,GrupoXTerna™3; GrupoXTerna™2,S,4,GrupoXTerna™3: 4,4,otro clan de la hoja tiene dato real el S; el JSON también trae 4 ataques en otro clan
+T_36_S_03_#Y8CVG9VYL,Probable error,36,3,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,"J, V, S",D,4,GrupoXTerna™2,"J, V, S",8,GrupoXTerna™2: 8,4,"otro clan de la hoja tiene dato real el J, V, S; el JSON también trae 8 ataques en otro clan"
+T_36_S_03_#2C982888C,Probable error,36,3,GrupoXTerna™3,#GQQPPJGR,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,"J, V",S,4,Grupo乂Terna™,,4,Grupo乂Terna™: 4,4,el JSON trae 4 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_36_S_03_#JCUPQ88J,Probable error,36,3,GrupoXTerna™3,#GQQPPJGR,#JCUPQ88J,ᴳ乂ᵀ⚜️ⓁⒺⒼⒺⓃⒹ⚡,J,V,8,Grupo乂Terna™,,4,Grupo乂Terna™: 4,8,el JSON trae 4 ataques de esa semana en otro clan y caben en los 1 día(s) anteriores al primer dato (hasta 4)
+T_36_S_03_#UJY0PGPUV,Probable error,36,3,GrupoXTerna™3,#GQQPPJGR,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,J,V,4,Mini乂Ternas™; GrupoXTerna™2; Grupo乂Terna™,J,4,Grupo乂Terna™: 4,4,otro clan de la hoja tiene dato real el J; el JSON también trae 4 ataques en otro clan
+T_36_S_03_#V9L9V9YV0,Probable error,36,3,GrupoXTerna™3,#GQQPPJGR,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,"J, V",S,4,Grupo乂Terna™; GrupoXTerna™2,,4,Grupo乂Terna™: 4,4,el JSON trae 4 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_36_S_03_#UQJJ288YU,Probable error,36,3,GrupoXTerna™2,#GYCU9YRG,#UQJJ288YU,Demon,J,V,3,,,4,LAMPA.COM (externo): 4,3,el JSON trae 4 ataques de esa semana en otro clan y caben en los 1 día(s) anteriores al primer dato (hasta 4)
+T_36_S_04_#22C090RVJ,Probable error,36,4,Grupo乂Terna™,#GCRG8L00,#22C090RVJ,反覆分Mc-->WiLL,"J, V",S,4,Mini乂Ternas™; GrupoXTerna™2,"J, V",0,,4,"otro clan de la hoja tiene dato real el J, V; el JSON no trae otro clan esa semana"
+T_36_S_04_#CRR2889JU,Probable error,36,4,Grupo乂Terna™,#GCRG8L00,#CRR2889JU,¹⁶┊BUFFON ⚡,"J, V, S",D,0,,,12,ALIANZA LIMA 7 (externo): 12,0,el JSON trae 12 ataques de esa semana en otro clan y caben en los 3 día(s) anteriores al primer dato (hasta 12)
+T_36_S_04_#GLPC8YQGV,Probable error,36,4,Grupo乂Terna™,#GCRG8L00,#GLPC8YQGV,,"J, V, S",D,4,GrupoXTerna™2,"J, V, S",12,GrupoXTerna™2: 12,4,"otro clan de la hoja tiene dato real el J, V, S; el JSON también trae 12 ataques en otro clan"
+T_36_S_04_#JR9J0JCQ9,Probable error,36,4,Grupo乂Terna™,#GCRG8L00,#JR9J0JCQ9,,"J, V, S",D,4,GrupoXTerna™2,"J, V, S",12,GrupoXTerna™2: 12,4,"otro clan de la hoja tiene dato real el J, V, S; el JSON también trae 12 ataques en otro clan"
+T_36_S_04_#VPRRYY9VU,Probable error,36,4,GrupoXTerna™3,#GQQPPJGR,#VPRRYY9VU,Xephyr,"J, V, S",D,0,,,1,UCHIHA (externo): 1,0,el JSON trae 1 ataques de esa semana en otro clan y caben en los 3 día(s) anteriores al primer dato (hasta 12)
+T_36_S_04_#2C982888C,Probable error,36,4,GrupoXTerna™2,#GYCU9YRG,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,J,V,8,GrupoXTerna™3; Grupo乂Terna™,J,8,GrupoXTerna™3: 8,8,otro clan de la hoja tiene dato real el J; el JSON también trae 8 ataques en otro clan
+T_36_S_04_#J2CCYYLUU,Probable error,36,4,GrupoXTerna™2,#GYCU9YRG,#J2CCYYLUU,deClow,"J, V",S,4,,,8,LosChuperAmigos (externo): 8,4,el JSON trae 8 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_36_S_05_#RR8CRJPUV,Probable error,36,5,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,"J, V",S,4,GrupoXTerna™2,V,4,GrupoXTerna™2: 4,4,otro clan de la hoja tiene dato real el V; el JSON también trae 4 ataques en otro clan
+T_36_S_05_#RR8CRJPUV,Probable error,36,5,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,V,4,Grupo乂Terna™,,4,Grupo乂Terna™: 4,4,el JSON trae 4 ataques de esa semana en otro clan y caben en los 1 día(s) anteriores al primer dato (hasta 4)
+T_37_S_01_#RJQL8U2P,Probable error,37,1,Grupo乂Terna™,#GCRG8L00,#RJQL8U2P,wisman35,"J, V",S,8,,,8,INFINITY (externo): 8,8,el JSON trae 8 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_37_S_01_#22C090RVJ,Probable error,37,1,GrupoXTerna™2,#GYCU9YRG,#22C090RVJ,反覆分Mc-->WiLL,"J, V, S",D,4,Mini乂Ternas™,"J, V, S",0,,4,"otro clan de la hoja tiene dato real el J, V, S; el JSON no trae otro clan esa semana"
+T_37_S_01_#CRYQYYYQP,Probable error,37,1,GrupoXTerna™2,#GYCU9YRG,#CRYQYYYQP,ᴹᴿメ,"J, V",S,0,,,4,JASHIN (externo): 4,0,el JSON trae 4 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_37_S_01_#PQY0GVGLG,Probable error,37,1,GrupoXTerna™2,#GYCU9YRG,#PQY0GVGLG,Alvaro,"J, V",S,0,,,8,novatos✨✨ (externo): 8,0,el JSON trae 8 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_37_S_01_#U8G029GUQ,Probable error,37,1,GrupoXTerna™2,#GYCU9YRG,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,"J, V",S,7,GrupoXTerna™3,V,4,GrupoXTerna™3: 4,7,otro clan de la hoja tiene dato real el V; el JSON también trae 4 ataques en otro clan
+T_37_S_01_#V9L9V9YV0,Probable error,37,1,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,"J, V, S",D,0,GrupoXTerna™3,S,0,,0,otro clan de la hoja tiene dato real el S; el JSON no trae otro clan esa semana
+T_37_S_01_#VL9C0Q8PV,Probable error,37,1,GrupoXTerna™2,#GYCU9YRG,#VL9C0Q8PV,神殺し,"J, V",S,8,,,8,.Team Perú. (externo): 8,8,el JSON trae 8 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_37_S_02_#JV2QVGPJJ,Probable error,37,2,Grupo乂Terna™,#GCRG8L00,#JV2QVGPJJ,Griffin ⁴²⁰,"J, V, S",D,2,,,3,Peru (externo): 3,2,el JSON trae 3 ataques de esa semana en otro clan y caben en los 3 día(s) anteriores al primer dato (hasta 12)
+T_37_S_04_#U9G0GCRLC,Probable error,37,4,GrupoXTerna™2,#GYCU9YRG,#U9G0GCRLC,T O N Y°,"J, V",S,0,Grupo乂Terna™,,1,TEAM PÓKER VIP (externo): 1,0,el JSON trae 1 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_38_S_02_#8VU0Y9LJ0,Probable error,38,2,GrupoXTerna™2,#GYCU9YRG,#8VU0Y9LJ0,Yisus Craiz,"J, V, S",D,0,GrupoXTerna™3,"J, V, S",16,GrupoXTerna™3: 16,0,"otro clan de la hoja tiene dato real el J, V, S; el JSON también trae 16 ataques en otro clan"
+T_38_S_02_#CURRGR8QY,Probable error,38,2,GrupoXTerna™2,#GYCU9YRG,#CURRGR8QY,Kildrak,J,V,2,,,4,Penguin Soldier (externo): 4,2,el JSON trae 4 ataques de esa semana en otro clan y caben en los 1 día(s) anteriores al primer dato (hasta 4)
+T_38_S_02_#U98RJ28PG,Probable error,38,2,GrupoXTerna™2,#GYCU9YRG,#U98RJ28PG,kiu,"J, V",S,3,,,4,LA GRAN CAMPAÑA (externo): 4,3,el JSON trae 4 ataques de esa semana en otro clan y caben en los 2 día(s) anteriores al primer dato (hasta 8)
+T_38_S_03_#JVVG9YUG0,Probable error,38,3,Grupo乂Terna™,#GCRG8L00,#JVVG9YUG0,Fiorela.,"J, V, S",D,4,GrupoXTerna™2,"V, S",5,GrupoXTerna™2: 5,4,"otro clan de la hoja tiene dato real el V, S; el JSON también trae 5 ataques en otro clan"
+T_38_S_03_#UJY0PGPUV,Probable error,38,3,Grupo乂Terna™,#GCRG8L00,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,"J, V",S,4,GrupoXTerna™2; GrupoXTerna™3,V,0,,4,otro clan de la hoja tiene dato real el V; el JSON no trae otro clan esa semana
+T_38_S_03_#JVVG9YUG0,Probable error,38,3,GrupoXTerna™2,#GYCU9YRG,#JVVG9YUG0,Fiorela.,J,V,5,Grupo乂Terna™,,4,Grupo乂Terna™: 4,5,el JSON trae 4 ataques de esa semana en otro clan y caben en los 1 día(s) anteriores al primer dato (hasta 4)
+T_38_S_03_#P8Y0CQ9VR,Probable error,38,3,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,J,V,4,Grupo乂Terna™,J,0,,4,otro clan de la hoja tiene dato real el J; el JSON no trae otro clan esa semana
+T_38_S_03_#U8G029GUQ,Probable error,38,3,GrupoXTerna™2,#GYCU9YRG,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,J,V,8,Grupo乂Terna™; GrupoXTerna™3,J,4,Grupo乂Terna™: 4,8,otro clan de la hoja tiene dato real el J; el JSON también trae 4 ataques en otro clan
+T_38_S_03_#UJY0PGPUV,Probable error,38,3,GrupoXTerna™2,#GYCU9YRG,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,J,V,0,Grupo乂Terna™; GrupoXTerna™3,,4,Grupo乂Terna™: 4,0,el JSON trae 4 ataques de esa semana en otro clan y caben en los 1 día(s) anteriores al primer dato (hasta 4)
+T_38_S_03_#UYU0PGUYJ,Probable error,38,3,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,J,V,8,Grupo乂Terna™,J,4,Grupo乂Terna™: 4,8,otro clan de la hoja tiene dato real el J; el JSON también trae 4 ataques en otro clan
+T_34_S_01_#UYU0PGUYJ,Revisar,34,1,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,J,V,12,GrupoXTerna™3,,0,,12,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_36_S_02_#2C982888C,Revisar,36,2,Grupo乂Terna™,#GCRG8L00,#2C982888C,#2C982888C,"J, V",S,4,GrupoXTerna™3,,0,,4,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_36_S_02_#VUVC9P8VL,Revisar,36,2,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,J,V,8,Grupo乂Terna™; Mini乂Ternas™,,0,,8,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_36_S_02_#P8Y0CQ9VR,Revisar,36,2,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,J,V,12,Grupo乂Terna™,,0,,12,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_36_S_03_#22C090RVJ,Revisar,36,3,Mini乂Ternas™,#GG99LCJY,#22C090RVJ,反覆分Mc-->WiLL,"J, V",S,0,GrupoXTerna™2,,0,,0,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_36_S_03_#8YCLY8CRU,Revisar,36,3,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,J,V,12,Grupo乂Terna™,,0,,12,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_36_S_03_#P8Y0CQ9VR,Revisar,36,3,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,J,V,8,Grupo乂Terna™,,0,,8,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_36_S_05_#UYU0PGUYJ,Revisar,36,5,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,J,V,4,Grupo乂Terna™,,8,Grupo乂Terna™: 8,4,el JSON trae 8 ataques en otro clan y no caben en los 1 día(s) anteriores al primer dato (hasta 4): pudo cambiar de clan más de una vez
+T_37_S_01_#VRCQGQU88,Revisar,37,1,Grupo乂Terna™,#GCRG8L00,#VRCQGQU88,#VRCQGQU88,J,V,1,,,6,DarkLegend^w^ (externo): 6,1,el JSON trae 6 ataques en otro clan y no caben en los 1 día(s) anteriores al primer dato (hasta 4): pudo cambiar de clan más de una vez
+T_37_S_01_#U8G029GUQ,Revisar,37,1,GrupoXTerna™3,#GQQPPJGR,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,J,V,4,GrupoXTerna™2,,7,GrupoXTerna™2: 7,4,el JSON trae 7 ataques en otro clan y no caben en los 1 día(s) anteriores al primer dato (hasta 4): pudo cambiar de clan más de una vez
+T_37_S_01_#V9L9V9YV0,Revisar,37,1,GrupoXTerna™3,#GQQPPJGR,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,"J, V",S,0,GrupoXTerna™2,,0,,0,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_37_S_01_#VUVC9P8VL,Revisar,37,1,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,"J, V",S,4,GrupoXTerna™3,,0,,4,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_37_S_02_#RPG09R9PQ,Revisar,37,2,GrupoXTerna™2,#GYCU9YRG,#RPG09R9PQ,~Matcref~,J,V,0,,,8,CATALUNYA (externo): 8,0,el JSON trae 8 ataques en otro clan y no caben en los 1 día(s) anteriores al primer dato (hasta 4): pudo cambiar de clan más de una vez
+T_37_S_02_#U8G029GUQ,Revisar,37,2,GrupoXTerna™2,#GYCU9YRG,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,J,V,0,GrupoXTerna™3,,0,,0,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_38_S_03_#VUVC9P8VL,Revisar,38,3,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,ᴳ乂ᵀ ⚜️ Percape,J,V,3,Grupo乂Terna™,,0,,3,"hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan"
+T_13_S_01_#8YCLY8CRU,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_01_#900PCRQ2R,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_01_#P8Y0CQ9VR,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_01_#RR8CRJPUV,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_01_#U8G029GUQ,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_01_#U9P0PYQQ2,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_01_#UYU0PGUYJ,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_01_#V20GJRC9Y,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_01_#V9L9V9YV0,Se conserva,13,1,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_02_#8YCLY8CRU,Se conserva,13,2,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_13_S_02_#900PCRQ2R,Se conserva,13,2,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_13_S_02_#P8Y0CQ9VR,Se conserva,13,2,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_13_S_02_#RR8CRJPUV,Se conserva,13,2,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_13_S_02_#U8G029GUQ,Se conserva,13,2,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_13_S_02_#U9P0PYQQ2,Se conserva,13,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_13_S_02_#UYU0PGUYJ,Se conserva,13,2,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_13_S_02_#V20GJRC9Y,Se conserva,13,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,10,,,0,,10,sin señal de otro clan
+T_13_S_03_#8YCLY8CRU,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_13_S_03_#900PCRQ2R,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_13_S_03_#P8Y0CQ9VR,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_13_S_03_#RR8CRJPUV,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,J,V,11,,,0,,11,sin señal de otro clan
+T_13_S_03_#U8G029GUQ,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_13_S_03_#U9P0PYQQ2,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_13_S_03_#UYU0PGUYJ,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_13_S_03_#V20GJRC9Y,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_03_#V9L9V9YV0,Se conserva,13,3,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,J,V,10,,,0,,10,sin señal de otro clan
+T_13_S_05_#V0C08QU0V,Se conserva,13,5,Grupo乂Terna™,#GCRG8L00,#V0C08QU0V,#V0C08QU0V,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_13_S_05_#V20GJRC9Y,Se conserva,13,5,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_13_S_05_#8YCLY8CRU,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_13_S_05_#900PCRQ2R,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,10,,,0,,10,sin señal de otro clan
+T_13_S_05_#P8Y0CQ9VR,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_13_S_05_#RR8CRJPUV,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_13_S_05_#U8G029GUQ,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#U8G029GUQ,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_13_S_05_#U9P0PYQQ2,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#U9P0PYQQ2,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_13_S_05_#UYU0PGUYJ,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_13_S_05_#V9L9V9YV0,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_13_S_05_#VUVC9P8VL,Se conserva,13,5,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_14_S_01_#8YCLY8CRU,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_14_S_01_#900PCRQ2R,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_14_S_01_#P8Y0CQ9VR,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_14_S_01_#RR8CRJPUV,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_14_S_01_#U8G029GUQ,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#U8G029GUQ,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_14_S_01_#U9P0PYQQ2,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#U9P0PYQQ2,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_14_S_01_#UYU0PGUYJ,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_14_S_01_#V9L9V9YV0,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_14_S_01_#VUVC9P8VL,Se conserva,14,1,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_14_S_02_#RR8CRJPUV,Se conserva,14,2,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_14_S_02_#UYU0PGUYJ,Se conserva,14,2,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,J,V,9,,,0,,9,sin señal de otro clan
+T_14_S_02_#V9L9V9YV0,Se conserva,14,2,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,J,V,10,,,0,,10,sin señal de otro clan
+T_14_S_02_#VUVC9P8VL,Se conserva,14,2,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,J,V,10,,,0,,10,sin señal de otro clan
+T_14_S_03_#U9P0PYQQ2,Se conserva,14,3,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_14_S_03_#R8LY88C9Q,Se conserva,14,3,GrupoXTerna™2,#GYCU9YRG,#R8LY88C9Q,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_14_S_03_#RR8CRJPUV,Se conserva,14,3,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_14_S_03_#UYU0PGUYJ,Se conserva,14,3,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_14_S_03_#V9L9V9YV0,Se conserva,14,3,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_14_S_04_#8YCLY8CRU,Se conserva,14,4,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,J,V,10,,,0,,10,sin señal de otro clan
+T_14_S_04_#900PCRQ2R,Se conserva,14,4,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,J,V,10,,,0,,10,sin señal de otro clan
+T_14_S_04_#P8Y0CQ9VR,Se conserva,14,4,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,10,,,0,,10,sin señal de otro clan
+T_14_S_04_#U8G029GUQ,Se conserva,14,4,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,10,,,0,,10,sin señal de otro clan
+T_14_S_04_#U9P0PYQQ2,Se conserva,14,4,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,10,,,0,,10,sin señal de otro clan
+T_14_S_04_#URRG2QG20,Se conserva,14,4,Grupo乂Terna™,#GCRG8L00,#URRG2QG20,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_14_S_04_#RR8CRJPUV,Se conserva,14,4,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_14_S_04_#UYU0PGUYJ,Se conserva,14,4,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_14_S_04_#V9L9V9YV0,Se conserva,14,4,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_14_S_04_#VUVC9P8VL,Se conserva,14,4,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_15_S_01_#8YCLY8CRU,Se conserva,15,1,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_01_#P8Y0CQ9VR,Se conserva,15,1,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,10,,,0,,10,sin señal de otro clan
+T_15_S_01_#U8G029GUQ,Se conserva,15,1,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_01_#RR8CRJPUV,Se conserva,15,1,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_15_S_01_#URRG2QG20,Se conserva,15,1,GrupoXTerna™2,#GYCU9YRG,#URRG2QG20,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_15_S_01_#UYU0PGUYJ,Se conserva,15,1,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_15_S_01_#V9L9V9YV0,Se conserva,15,1,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_15_S_01_#VUVC9P8VL,Se conserva,15,1,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,J,V,9,,,0,,9,sin señal de otro clan
+T_15_S_02_#8YCLY8CRU,Se conserva,15,2,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_02_#RR8CRJPUV,Se conserva,15,2,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_02_#URRG2QG20,Se conserva,15,2,GrupoXTerna™2,#GYCU9YRG,#URRG2QG20,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_02_#UYU0PGUYJ,Se conserva,15,2,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_02_#V9L9V9YV0,Se conserva,15,2,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_02_#VUVC9P8VL,Se conserva,15,2,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_03_#8YCLY8CRU,Se conserva,15,3,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_15_S_03_#RR8CRJPUV,Se conserva,15,3,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_15_S_03_#URRG2QG20,Se conserva,15,3,GrupoXTerna™2,#GYCU9YRG,#URRG2QG20,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_03_#UYU0PGUYJ,Se conserva,15,3,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,J,V,10,,,0,,10,sin señal de otro clan
+T_15_S_03_#V9L9V9YV0,Se conserva,15,3,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,J,V,10,,,0,,10,sin señal de otro clan
+T_15_S_03_#VUVC9P8VL,Se conserva,15,3,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,J,V,10,,,0,,10,sin señal de otro clan
+T_15_S_04_#900PCRQ2R,Se conserva,15,4,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_04_#P8Y0CQ9VR,Se conserva,15,4,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_04_#U8G029GUQ,Se conserva,15,4,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_04_#U9P0PYQQ2,Se conserva,15,4,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_15_S_04_#8YCLY8CRU,Se conserva,15,4,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_15_S_04_#RR8CRJPUV,Se conserva,15,4,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_15_S_04_#URRG2QG20,Se conserva,15,4,GrupoXTerna™2,#GYCU9YRG,#URRG2QG20,,J,V,10,,,0,,10,sin señal de otro clan
+T_15_S_04_#UYU0PGUYJ,Se conserva,15,4,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_15_S_04_#V9L9V9YV0,Se conserva,15,4,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_15_S_04_#VUVC9P8VL,Se conserva,15,4,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,J,V,10,,,0,,10,sin señal de otro clan
+T_16_S_01_#8YCLY8CRU,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_01_#900PCRQ2R,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_01_#P8Y0CQ9VR,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_01_#RR8CRJPUV,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_01_#U8G029GUQ,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_01_#U9P0PYQQ2,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_01_#UYU0PGUYJ,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_01_#V20GJRC9Y,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_01_#V9L9V9YV0,Se conserva,16,1,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_02_#VUVC9P8VL,Se conserva,16,2,Grupo乂Terna™,#GCRG8L00,#VUVC9P8VL,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_03_#8YCLY8CRU,Se conserva,16,3,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_03_#900PCRQ2R,Se conserva,16,3,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_03_#P8Y0CQ9VR,Se conserva,16,3,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_03_#RR8CRJPUV,Se conserva,16,3,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_03_#U8G029GUQ,Se conserva,16,3,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_03_#U9P0PYQQ2,Se conserva,16,3,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_03_#UYU0PGUYJ,Se conserva,16,3,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_04_#900PCRQ2R,Se conserva,16,4,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_16_S_04_#P8Y0CQ9VR,Se conserva,16,4,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_04_#RR8CRJPUV,Se conserva,16,4,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_04_#U8G029GUQ,Se conserva,16,4,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_04_#U9P0PYQQ2,Se conserva,16,4,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,10,,,0,,10,sin señal de otro clan
+T_16_S_04_#V20GJRC9Y,Se conserva,16,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_16_S_04_#V9L9V9YV0,Se conserva,16,4,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_16_S_05_#P8Y0CQ9VR,Se conserva,16,5,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_16_S_05_#RR8CRJPUV,Se conserva,16,5,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_16_S_05_#U8G029GUQ,Se conserva,16,5,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_17_S_01_#V20GJRC9Y,Se conserva,17,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_17_S_02_#U9P0PYQQ2,Se conserva,17,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_17_S_02_#V20GJRC9Y,Se conserva,17,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_17_S_04_#V20GJRC9Y,Se conserva,17,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_18_S_01_#V20GJRC9Y,Se conserva,18,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_18_S_02_#V20GJRC9Y,Se conserva,18,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_18_S_03_#V20GJRC9Y,Se conserva,18,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_18_S_03_#VJQLY8JV8,Se conserva,18,3,Grupo乂Terna™,#GCRG8L00,#VJQLY8JV8,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_18_S_04_#V20GJRC9Y,Se conserva,18,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_18_S_04_#VJQLY8JV8,Se conserva,18,4,Grupo乂Terna™,#GCRG8L00,#VJQLY8JV8,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_19_S_01_#U9P0PYQQ2,Se conserva,19,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_01_#V20GJRC9Y,Se conserva,19,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_01_#20P80C9229,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#20P80C9229,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_19_S_01_#900PCRQ2R,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_01_#P8Y0CQ9VR,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_01_#RR8CRJPUV,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_01_#U8G029GUQ,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_01_#UJC9P8QC2,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#UJC9P8QC2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_19_S_01_#UJY0PGPUV,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#UJY0PGPUV,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_19_S_01_#UYU0PGUYJ,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_19_S_01_#V9L9V9YV0,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_01_#VJQLY8JV8,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#VJQLY8JV8,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_19_S_01_#VUVC9P8VL,Se conserva,19,1,GrupoXTerna™2,#GYCU9YRG,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_02_#8YCLY8CRU,Se conserva,19,2,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_02_#900PCRQ2R,Se conserva,19,2,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_02_#P8Y0CQ9VR,Se conserva,19,2,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_02_#U8G029GUQ,Se conserva,19,2,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_02_#UYU0PGUYJ,Se conserva,19,2,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_19_S_02_#V9L9V9YV0,Se conserva,19,2,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_19_S_02_#VUVC9P8VL,Se conserva,19,2,Grupo乂Terna™,#GCRG8L00,#VUVC9P8VL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_19_S_02_#RR8CRJPUV,Se conserva,19,2,GrupoXTerna™3,#GQQPPJGR,#RR8CRJPUV,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_19_S_02_#U9P0PYQQ2,Se conserva,19,2,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_19_S_02_#VJQLY8JV8,Se conserva,19,2,GrupoXTerna™3,#GQQPPJGR,#VJQLY8JV8,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_19_S_02_#UJC9P8QC2,Se conserva,19,2,GrupoXTerna™2,#GYCU9YRG,#UJC9P8QC2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_19_S_02_#VY0UJ82PV,Se conserva,19,2,GrupoXTerna™2,#GYCU9YRG,#VY0UJ82PV,,J,V,11,,,0,,11,sin señal de otro clan
+T_19_S_03_#20P80C9229,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#20P80C9229,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_03_#8YCLY8CRU,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#8YCLY8CRU,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_19_S_03_#900PCRQ2R,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_03_#RR8CRJPUV,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_03_#U9P0PYQQ2,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_19_S_03_#UJY0PGPUV,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#UJY0PGPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_03_#URRG2QG20,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#URRG2QG20,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_19_S_03_#UYU0PGUYJ,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_03_#V9L9V9YV0,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_03_#VJQLY8JV8,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#VJQLY8JV8,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_19_S_03_#VUVC9P8VL,Se conserva,19,3,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_04_#V20GJRC9Y,Se conserva,19,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_04_#YQQUVQL0P,Se conserva,19,4,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,ᴳ乂ᵀ⚜️LoloMaster,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_04_#20080J8GRY,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#20080J8GRY,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_19_S_04_#20P80C9229,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#20P80C9229,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_04_#900PCRQ2R,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_04_#P8Y0CQ9VR,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_04_#RR8CRJPUV,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_04_#U8G029GUQ,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_04_#U9P0PYQQ2,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_04_#UJY0PGPUV,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#UJY0PGPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_04_#URRG2QG20,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#URRG2QG20,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_04_#V9L9V9YV0,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_04_#VJQLY8JV8,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#VJQLY8JV8,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_19_S_04_#VUVC9P8VL,Se conserva,19,4,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_04_#UJC9P8QC2,Se conserva,19,4,GrupoXTerna™2,#GYCU9YRG,#UJC9P8QC2,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_19_S_04_#VY0UJ82PV,Se conserva,19,4,GrupoXTerna™2,#GYCU9YRG,#VY0UJ82PV,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_19_S_05_#8J892C02C,Se conserva,19,5,Grupo乂Terna™,#GCRG8L00,#8J892C02C,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_05_#900PCRQ2R,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_05_#P8Y0CQ9VR,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_05_#RR8CRJPUV,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_05_#U8G029GUQ,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_05_#U9P0PYQQ2,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_05_#UYU0PGUYJ,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_05_#V9L9V9YV0,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_19_S_05_#VJQLY8JV8,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#VJQLY8JV8,,J,V,12,,,0,,12,sin señal de otro clan
+T_19_S_05_#VUVC9P8VL,Se conserva,19,5,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_19_S_05_#UJC9P8QC2,Se conserva,19,5,GrupoXTerna™2,#GYCU9YRG,#UJC9P8QC2,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_20_S_01_#V20GJRC9Y,Se conserva,20,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_20_S_01_#YQQUVQL0P,Se conserva,20,1,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,ᴳ乂ᵀ⚜️LoloMaster,J,V,12,,,0,,12,sin señal de otro clan
+T_20_S_03_#V20GJRC9Y,Se conserva,20,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_20_S_04_#R8LY88C9Q,Se conserva,20,4,Grupo乂Terna™,#GCRG8L00,#R8LY88C9Q,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_01_#9YC08RJC8,Se conserva,21,1,Grupo乂Terna™,#GCRG8L00,#9YC08RJC8,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_01_#V20GJRC9Y,Se conserva,21,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_21_S_01_#VY0UJ82PV,Se conserva,21,1,GrupoXTerna™2,#GYCU9YRG,#VY0UJ82PV,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_02_#V20GJRC9Y,Se conserva,21,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_02_#V9L9V9YV0,Se conserva,21,2,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_02_#VUVC9P8VL,Se conserva,21,2,Grupo乂Terna™,#GCRG8L00,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_03_#20P80C9229,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#20P80C9229,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_03_#8YCLY8CRU,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#8YCLY8CRU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_21_S_03_#JR9J0JCQ9,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_03_#P8Y0CQ9VR,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_03_#RR8CRJPUV,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_03_#U8G029GUQ,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_03_#U9P0PYQQ2,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_03_#UYU0PGUYJ,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_03_#V9L9V9YV0,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_21_S_03_#VUVC9P8VL,Se conserva,21,3,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_21_S_03_#Q98RGPGCU,Se conserva,21,3,GrupoXTerna™2,#GYCU9YRG,#Q98RGPGCU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_04_#8YCLY8CRU,Se conserva,21,4,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_04_#900PCRQ2R,Se conserva,21,4,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_04_#P8Y0CQ9VR,Se conserva,21,4,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_21_S_04_#RR8CRJPUV,Se conserva,21,4,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_04_#U8G029GUQ,Se conserva,21,4,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_21_S_04_#UYU0PGUYJ,Se conserva,21,4,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_04_#V20GJRC9Y,Se conserva,21,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_21_S_04_#JR9J0JCQ9,Se conserva,21,4,GrupoXTerna™3,#GQQPPJGR,#JR9J0JCQ9,,J,V,10,,,0,,10,sin señal de otro clan
+T_21_S_04_#U9P0PYQQ2,Se conserva,21,4,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_21_S_04_#Q98RGPGCU,Se conserva,21,4,GrupoXTerna™2,#GYCU9YRG,#Q98RGPGCU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_22_S_01_#8YCLY8CRU,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_01_#900PCRQ2R,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_01_#P8Y0CQ9VR,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_01_#RR8CRJPUV,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_01_#U8G029GUQ,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_01_#U9P0PYQQ2,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_22_S_01_#UYU0PGUYJ,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_01_#V9L9V9YV0,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#V9L9V9YV0,,J,V,10,,,0,,10,sin señal de otro clan
+T_22_S_01_#VUVC9P8VL,Se conserva,22,1,Grupo乂Terna™,#GCRG8L00,#VUVC9P8VL,,J,V,11,,,0,,11,sin señal de otro clan
+T_22_S_01_#JR9J0JCQ9,Se conserva,22,1,GrupoXTerna™3,#GQQPPJGR,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_02_#900PCRQ2R,Se conserva,22,2,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_22_S_02_#U9P0PYQQ2,Se conserva,22,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_22_S_02_#UYU0PGUYJ,Se conserva,22,2,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_22_S_02_#VQCG0G09G,Se conserva,22,2,Grupo乂Terna™,#GCRG8L00,#VQCG0G09G,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_02_#YQQUVQL0P,Se conserva,22,2,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_02_#JR9J0JCQ9,Se conserva,22,2,GrupoXTerna™3,#GQQPPJGR,#JR9J0JCQ9,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_22_S_02_#VUVC9P8VL,Se conserva,22,2,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_22_S_02_#V9L9V9YV0,Se conserva,22,2,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_22_S_03_#8J892C02C,Se conserva,22,3,Grupo乂Terna™,#GCRG8L00,#8J892C02C,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_03_#P8Y0CQ9VR,Se conserva,22,3,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_03_#V20GJRC9Y,Se conserva,22,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_03_#YQQUVQL0P,Se conserva,22,3,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_03_#JR9J0JCQ9,Se conserva,22,3,GrupoXTerna™3,#GQQPPJGR,#JR9J0JCQ9,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_22_S_03_#VUVC9P8VL,Se conserva,22,3,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_22_S_03_#V9L9V9YV0,Se conserva,22,3,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,J,V,10,,,0,,10,sin señal de otro clan
+T_22_S_04_#80PPY9R9G,Se conserva,22,4,Grupo乂Terna™,#GCRG8L00,#80PPY9R9G,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_22_S_04_#82GCLPGJR,Se conserva,22,4,Grupo乂Terna™,#GCRG8L00,#82GCLPGJR,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_04_#RG2G9LVRP,Se conserva,22,4,Grupo乂Terna™,#GCRG8L00,#RG2G9LVRP,LuchO ^-^,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_22_S_04_#V20GJRC9Y,Se conserva,22,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_04_#VQCG0G09G,Se conserva,22,4,Grupo乂Terna™,#GCRG8L00,#VQCG0G09G,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_04_#YQQUVQL0P,Se conserva,22,4,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_04_#JR9J0JCQ9,Se conserva,22,4,GrupoXTerna™3,#GQQPPJGR,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_04_#VUVC9P8VL,Se conserva,22,4,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_22_S_04_#Q98RGPGCU,Se conserva,22,4,GrupoXTerna™2,#GYCU9YRG,#Q98RGPGCU,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_22_S_04_#V9L9V9YV0,Se conserva,22,4,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_22_S_04_#VY0UJ82PV,Se conserva,22,4,GrupoXTerna™2,#GYCU9YRG,#VY0UJ82PV,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_05_#V20GJRC9Y,Se conserva,22,5,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_22_S_05_#JR9J0JCQ9,Se conserva,22,5,GrupoXTerna™3,#GQQPPJGR,#JR9J0JCQ9,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_22_S_05_#VUVC9P8VL,Se conserva,22,5,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_22_S_05_#Q98RGPGCU,Se conserva,22,5,GrupoXTerna™2,#GYCU9YRG,#Q98RGPGCU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_22_S_05_#V9L9V9YV0,Se conserva,22,5,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_23_S_01_#900PCRQ2R,Se conserva,23,1,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_23_S_01_#U9P0PYQQ2,Se conserva,23,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_23_S_01_#VUVC9P8VL,Se conserva,23,1,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,J,V,12,,,0,,12,sin señal de otro clan
+T_23_S_02_#900PCRQ2R,Se conserva,23,2,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_23_S_02_#U9P0PYQQ2,Se conserva,23,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_23_S_02_#UYU0PGUYJ,Se conserva,23,2,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_23_S_02_#VUVC9P8VL,Se conserva,23,2,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,J,V,9,,,0,,9,sin señal de otro clan
+T_23_S_03_#900PCRQ2R,Se conserva,23,3,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_23_S_03_#JGGLGVCGU,Se conserva,23,3,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_23_S_03_#U9P0PYQQ2,Se conserva,23,3,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_23_S_03_#UYU0PGUYJ,Se conserva,23,3,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_23_S_03_#YQQUVQL0P,Se conserva,23,3,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_23_S_03_#VUVC9P8VL,Se conserva,23,3,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,J,V,12,,,0,,12,sin señal de otro clan
+T_23_S_03_#V9L9V9YV0,Se conserva,23,3,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_23_S_04_#RR8CRJPUV,Se conserva,23,4,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_23_S_04_#U9P0PYQQ2,Se conserva,23,4,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_23_S_04_#UYU0PGUYJ,Se conserva,23,4,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_23_S_04_#C8Q0C88UL,Se conserva,23,4,GrupoXTerna™3,#GQQPPJGR,#C8Q0C88UL,,J,V,12,,,0,,12,sin señal de otro clan
+T_23_S_04_#VUVC9P8VL,Se conserva,23,4,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_23_S_04_#900PCRQ2R,Se conserva,23,4,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_24_S_01_#80PPY9R9G,Se conserva,24,1,Grupo乂Terna™,#GCRG8L00,#80PPY9R9G,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_01_#82GCLPGJR,Se conserva,24,1,Grupo乂Terna™,#GCRG8L00,#82GCLPGJR,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_01_#JR9J0JCQ9,Se conserva,24,1,Grupo乂Terna™,#GCRG8L00,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_01_#U9P0PYQQ2,Se conserva,24,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_24_S_01_#VQCG0G09G,Se conserva,24,1,Grupo乂Terna™,#GCRG8L00,#VQCG0G09G,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_01_#VUVC9P8VL,Se conserva,24,1,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_24_S_01_#900PCRQ2R,Se conserva,24,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_24_S_02_#U9P0PYQQ2,Se conserva,24,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_24_S_02_#VVLUYCGYC,Se conserva,24,2,Grupo乂Terna™,#GCRG8L00,#VVLUYCGYC,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_02_#C8Q0C88UL,Se conserva,24,2,GrupoXTerna™3,#GQQPPJGR,#C8Q0C88UL,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_02_#VUVC9P8VL,Se conserva,24,2,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_24_S_02_#900PCRQ2R,Se conserva,24,2,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,11,,,0,,11,sin señal de otro clan
+T_24_S_03_#80PPY9R9G,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#80PPY9R9G,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#82GCLPGJR,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#82GCLPGJR,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#JGGLGVCGU,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#JR9J0JCQ9,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#U9P0PYQQ2,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_24_S_03_#UVU2UYYC2,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#UVU2UYYC2,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#UYU0PGUYJ,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_24_S_03_#V20GJRC9Y,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#VQCG0G09G,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#VQCG0G09G,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#VVLUYCGYC,Se conserva,24,3,Grupo乂Terna™,#GCRG8L00,#VVLUYCGYC,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#VUVC9P8VL,Se conserva,24,3,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_24_S_03_#900PCRQ2R,Se conserva,24,3,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_03_#GY0GJ09C0,Se conserva,24,3,GrupoXTerna™2,#GYCU9YRG,#GY0GJ09C0,,J,V,12,,,0,,12,sin señal de otro clan
+T_24_S_04_#2UUY2YQUY,Se conserva,24,4,Grupo乂Terna™,#GCRG8L00,#2UUY2YQUY,F r a n c o 梦,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_24_S_04_#U8G029GUQ,Se conserva,24,4,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_24_S_04_#U9P0PYQQ2,Se conserva,24,4,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_24_S_04_#UYU0PGUYJ,Se conserva,24,4,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_24_S_04_#C8Q0C88UL,Se conserva,24,4,GrupoXTerna™3,#GQQPPJGR,#C8Q0C88UL,,J,V,10,,,0,,10,sin señal de otro clan
+T_25_S_01_#82GCLPGJR,Se conserva,25,1,Grupo乂Terna™,#GCRG8L00,#82GCLPGJR,Diego 7u7r,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#8J892C02C,Se conserva,25,1,Grupo乂Terna™,#GCRG8L00,#8J892C02C,Diego Shelby,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#JGGLGVCGU,Se conserva,25,1,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#JR9J0JCQ9,Se conserva,25,1,Grupo乂Terna™,#GCRG8L00,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#U9P0PYQQ2,Se conserva,25,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_25_S_01_#UVU2UYYC2,Se conserva,25,1,Grupo乂Terna™,#GCRG8L00,#UVU2UYYC2,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#VQCG0G09G,Se conserva,25,1,Grupo乂Terna™,#GCRG8L00,#VQCG0G09G,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#VVLUYCGYC,Se conserva,25,1,Grupo乂Terna™,#GCRG8L00,#VVLUYCGYC,Ari,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#C8Q0C88UL,Se conserva,25,1,GrupoXTerna™3,#GQQPPJGR,#C8Q0C88UL,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#VUVC9P8VL,Se conserva,25,1,GrupoXTerna™3,#GQQPPJGR,#VUVC9P8VL,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_01_#900PCRQ2R,Se conserva,25,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_02_#20080J8GRY,Se conserva,25,2,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_02_#2098PGRCPC,Se conserva,25,2,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_25_S_02_#UJY0PGPUV,Se conserva,25,2,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_02_#URRG2QG20,Se conserva,25,2,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_25_S_02_#V0J90R2V2,Se conserva,25,2,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_25_S_02_#V8LPC909C,Se conserva,25,2,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_25_S_02_#U9P0PYQQ2,Se conserva,25,2,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_02_#900PCRQ2R,Se conserva,25,2,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_03_#JGGLGVCGU,Se conserva,25,3,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_03_#P8Y0CQ9VR,Se conserva,25,3,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_03_#U8G029GUQ,Se conserva,25,3,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_03_#UYU0PGUYJ,Se conserva,25,3,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_03_#V20GJRC9Y,Se conserva,25,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_03_#20080J8GRY,Se conserva,25,3,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_03_#2098PGRCPC,Se conserva,25,3,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_25_S_03_#RR8CRJPUV,Se conserva,25,3,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_25_S_03_#V9L9V9YV0,Se conserva,25,3,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_25_S_03_#VJQLY8JV8,Se conserva,25,3,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_03_#VUVC9P8VL,Se conserva,25,3,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_03_#C8Q0C88UL,Se conserva,25,3,GrupoXTerna™3,#GQQPPJGR,#C8Q0C88UL,,J,V,9,,,0,,9,sin señal de otro clan
+T_25_S_03_#U9P0PYQQ2,Se conserva,25,3,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_25_S_03_#900PCRQ2R,Se conserva,25,3,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_04_#8YCLY8CRU,Se conserva,25,4,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_04_#JR9J0JCQ9,Se conserva,25,4,Grupo乂Terna™,#GCRG8L00,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_04_#P8Y0CQ9VR,Se conserva,25,4,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_04_#UYU0PGUYJ,Se conserva,25,4,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_25_S_04_#YQQUVQL0P,Se conserva,25,4,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_25_S_04_#20080J8GRY,Se conserva,25,4,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_04_#2098PGRCPC,Se conserva,25,4,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_25_S_04_#URRG2QG20,Se conserva,25,4,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_25_S_04_#V9L9V9YV0,Se conserva,25,4,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_04_#VUVC9P8VL,Se conserva,25,4,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_04_#U9P0PYQQ2,Se conserva,25,4,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_05_#U8G029GUQ,Se conserva,25,5,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_05_#U9P0PYQQ2,Se conserva,25,5,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_25_S_05_#UVU2UYYC2,Se conserva,25,5,Grupo乂Terna™,#GCRG8L00,#UVU2UYYC2,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_05_#V20GJRC9Y,Se conserva,25,5,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_25_S_05_#20080J8GRY,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_25_S_05_#2098PGRCPC,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_25_S_05_#20LUCQG0LJ,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#20LUCQG0LJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_05_#20P80C9229,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#20P80C9229,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_05_#UJY0PGPUV,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_05_#URRG2QG20,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_25_S_05_#V0J90R2V2,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_05_#V8LPC909C,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_25_S_05_#VJQLY8JV8,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_05_#VUVC9P8VL,Se conserva,25,5,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_25_S_05_#900PCRQ2R,Se conserva,25,5,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_01_#8YCLY8CRU,Se conserva,26,1,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_01_#JR9J0JCQ9,Se conserva,26,1,Grupo乂Terna™,#GCRG8L00,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_01_#QRQULCCV8,Se conserva,26,1,Grupo乂Terna™,#GCRG8L00,#QRQULCCV8,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_01_#U8G029GUQ,Se conserva,26,1,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_01_#U9P0PYQQ2,Se conserva,26,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_01_#V20GJRC9Y,Se conserva,26,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_01_#20080J8GRY,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,J,V,11,,,0,,11,sin señal de otro clan
+T_26_S_01_#2098PGRCPC,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_01_#20LUCQG0LJ,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#20LUCQG0LJ,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_26_S_01_#RR8CRJPUV,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_01_#URRG2QG20,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_26_S_01_#UYU0PGUYJ,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_26_S_01_#V0J90R2V2,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_01_#V8LPC909C,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_26_S_01_#V9L9V9YV0,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_01_#VUVC9P8VL,Se conserva,26,1,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_01_#900PCRQ2R,Se conserva,26,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_02_#P8Y0CQ9VR,Se conserva,26,2,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#U8G029GUQ,Se conserva,26,2,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_02_#V20GJRC9Y,Se conserva,26,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_02_#20080J8GRY,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_02_#2098PGRCPC,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#20P80C9229,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#20P80C9229,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#8YCLY8CRU,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#RR8CRJPUV,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#UJY0PGPUV,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#URRG2QG20,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#UYU0PGUYJ,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#V8LPC909C,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_26_S_02_#V9L9V9YV0,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#VUVC9P8VL,Se conserva,26,2,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_02_#C8Q0C88UL,Se conserva,26,2,GrupoXTerna™3,#GQQPPJGR,#C8Q0C88UL,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_02_#U9P0PYQQ2,Se conserva,26,2,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_02_#900PCRQ2R,Se conserva,26,2,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_03_#900PCRQ2R,Se conserva,26,3,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_03_#JCUPQ88J,Se conserva,26,3,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#U8G029GUQ,Se conserva,26,3,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#U9P0PYQQ2,Se conserva,26,3,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_03_#UYU0PGUYJ,Se conserva,26,3,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#V20GJRC9Y,Se conserva,26,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_03_#YQQUVQL0P,Se conserva,26,3,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_03_#20080J8GRY,Se conserva,26,3,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_03_#8YCLY8CRU,Se conserva,26,3,Mini乂Ternas™,#GG99LCJY,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#P8Y0CQ9VR,Se conserva,26,3,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#RR8CRJPUV,Se conserva,26,3,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#UJY0PGPUV,Se conserva,26,3,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#URRG2QG20,Se conserva,26,3,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#V9L9V9YV0,Se conserva,26,3,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_03_#VUVC9P8VL,Se conserva,26,3,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_04_#JCUPQ88J,Se conserva,26,4,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_04_#Y8CVG9VYL,Se conserva,26,4,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_26_S_04_#20080J8GRY,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_26_S_04_#2098PGRCPC,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,J,V,12,,,0,,12,sin señal de otro clan
+T_26_S_04_#8YCLY8CRU,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#8YCLY8CRU,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_26_S_04_#P8Y0CQ9VR,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_26_S_04_#RR8CRJPUV,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_26_S_04_#U8G029GUQ,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#U8G029GUQ,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_26_S_04_#URRG2QG20,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_26_S_04_#UYU0PGUYJ,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_26_S_04_#V0J90R2V2,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_26_S_04_#V8LPC909C,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_26_S_04_#V9L9V9YV0,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_26_S_04_#VJQLY8JV8,Se conserva,26,4,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_26_S_04_#U9P0PYQQ2,Se conserva,26,4,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_04_#900PCRQ2R,Se conserva,26,4,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_26_S_04_#YQQUVQL0P,Se conserva,26,4,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_01_#JCUPQ88J,Se conserva,27,1,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_27_S_01_#U8G029GUQ,Se conserva,27,1,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_01_#Y8CVG9VYL,Se conserva,27,1,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_01_#2098PGRCPC,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_01_#8YCLY8CRU,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#8YCLY8CRU,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_27_S_01_#P8Y0CQ9VR,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_01_#RR8CRJPUV,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_27_S_01_#UJY0PGPUV,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_27_S_01_#URRG2QG20,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_01_#UYU0PGUYJ,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_01_#V0J90R2V2,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_01_#V8LPC909C,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_27_S_01_#V9L9V9YV0,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_01_#VJQLY8JV8,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_01_#VUVC9P8VL,Se conserva,27,1,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_01_#U9P0PYQQ2,Se conserva,27,1,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_01_#900PCRQ2R,Se conserva,27,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_27_S_01_#Q98RGPGCU,Se conserva,27,1,GrupoXTerna™2,#GYCU9YRG,#Q98RGPGCU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_02_#JCUPQ88J,Se conserva,27,2,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#JR9J0JCQ9,Se conserva,27,2,Grupo乂Terna™,#GCRG8L00,#JR9J0JCQ9,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_02_#QRQULCCV8,Se conserva,27,2,Grupo乂Terna™,#GCRG8L00,#QRQULCCV8,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_02_#U9P0PYQQ2,Se conserva,27,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#V20GJRC9Y,Se conserva,27,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_02_#Y8CVG9VYL,Se conserva,27,2,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#20080J8GRY,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#2098PGRCPC,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_02_#20LUCQG0LJ,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#20LUCQG0LJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_02_#20P80C9229,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#20P80C9229,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_27_S_02_#8YCLY8CRU,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#P8Y0CQ9VR,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#RR8CRJPUV,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#U8G029GUQ,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#UJY0PGPUV,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#URRG2QG20,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#UYU0PGUYJ,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#V0J90R2V2,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_27_S_02_#V8LPC909C,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_27_S_02_#V9L9V9YV0,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#VJQLY8JV8,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_02_#VUVC9P8VL,Se conserva,27,2,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_02_#900PCRQ2R,Se conserva,27,2,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_02_#JC99L0Y8P,Se conserva,27,2,GrupoXTerna™2,#GYCU9YRG,#JC99L0Y8P,,J,V,10,,,0,,10,sin señal de otro clan
+T_27_S_02_#Q98RGPGCU,Se conserva,27,2,GrupoXTerna™2,#GYCU9YRG,#Q98RGPGCU,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_02_#YQQUVQL0P,Se conserva,27,2,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_03_#8YCLY8CRU,Se conserva,27,3,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_03_#900PCRQ2R,Se conserva,27,3,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_03_#C8Q0C88UL,Se conserva,27,3,Grupo乂Terna™,#GCRG8L00,#C8Q0C88UL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_03_#JCUPQ88J,Se conserva,27,3,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_27_S_03_#RR8CRJPUV,Se conserva,27,3,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_03_#U8G029GUQ,Se conserva,27,3,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_03_#U9P0PYQQ2,Se conserva,27,3,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_03_#Y8CVG9VYL,Se conserva,27,3,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_03_#20080J8GRY,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_03_#2098PGRCPC,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,J,V,11,,,0,,11,sin señal de otro clan
+T_27_S_03_#20LUCQG0LJ,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#20LUCQG0LJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_03_#20P80C9229,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#20P80C9229,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_03_#P8Y0CQ9VR,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_27_S_03_#UJY0PGPUV,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_03_#URRG2QG20,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_03_#UYU0PGUYJ,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_27_S_03_#V0J90R2V2,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_03_#V8LPC909C,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_27_S_03_#V9L9V9YV0,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_03_#VJQLY8JV8,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_03_#VUVC9P8VL,Se conserva,27,3,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,J,V,9,,,0,,9,sin señal de otro clan
+T_27_S_03_#RGCL8LGJC,Se conserva,27,3,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,J,V,11,,,0,,11,sin señal de otro clan
+T_27_S_03_#Q9J8ULV0,Se conserva,27,3,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_03_#YGL2QV8LG,Se conserva,27,3,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#82GCLPGJR,Se conserva,27,4,Grupo乂Terna™,#GCRG8L00,#82GCLPGJR,Diego 7u7r,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#8J892C02C,Se conserva,27,4,Grupo乂Terna™,#GCRG8L00,#8J892C02C,Diego Shelby,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#9YC08RJC8,Se conserva,27,4,Grupo乂Terna™,#GCRG8L00,#9YC08RJC8,Mini Diego :),J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#JGGLGVCGU,Se conserva,27,4,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#V20GJRC9Y,Se conserva,27,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_04_#20080J8GRY,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#2098PGRCPC,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#20LUCQG0LJ,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#20LUCQG0LJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#20P80C9229,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#20P80C9229,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#2C982888C,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#JCUPQ88J,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#JCUPQ88J,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#RR8CRJPUV,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#U8G029GUQ,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#UJY0PGPUV,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#URRG2QG20,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#UYU0PGUYJ,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_27_S_04_#V0J90R2V2,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_04_#V8LPC909C,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_27_S_04_#V9L9V9YV0,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#VJQLY8JV8,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_27_S_04_#VUVC9P8VL,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#Y8CVG9VYL,Se conserva,27,4,Mini乂Ternas™,#GG99LCJY,#Y8CVG9VYL,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#RGCL8LGJC,Se conserva,27,4,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#U9P0PYQQ2,Se conserva,27,4,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_27_S_04_#900PCRQ2R,Se conserva,27,4,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_27_S_04_#Q98RGPGCU,Se conserva,27,4,GrupoXTerna™2,#GYCU9YRG,#Q98RGPGCU,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#Q9J8ULV0,Se conserva,27,4,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#QR8JGLC9Q,Se conserva,27,4,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,12,,,0,,12,sin señal de otro clan
+T_27_S_04_#YGL2QV8LG,Se conserva,27,4,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_27_S_04_#YQQUVQL0P,Se conserva,27,4,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_01_#20080J8GRY,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_01_#2098PGRCPC,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,J,V,10,,,0,,10,sin señal de otro clan
+T_28_S_01_#20LUCQG0LJ,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#20LUCQG0LJ,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_28_S_01_#8YCLY8CRU,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#8YCLY8CRU,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_28_S_01_#JCUPQ88J,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#JCUPQ88J,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_01_#P8Y0CQ9VR,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_28_S_01_#RR8CRJPUV,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_28_S_01_#U8G029GUQ,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#U8G029GUQ,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_28_S_01_#UYU0PGUYJ,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,J,V,11,,,0,,11,sin señal de otro clan
+T_28_S_01_#V0J90R2V2,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_28_S_01_#V8LPC909C,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_01_#V9L9V9YV0,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_01_#VJQLY8JV8,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_01_#VUVC9P8VL,Se conserva,28,1,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_01_#RGCL8LGJC,Se conserva,28,1,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,J,V,9,,,0,,9,sin señal de otro clan
+T_28_S_01_#U9P0PYQQ2,Se conserva,28,1,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_01_#900PCRQ2R,Se conserva,28,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_01_#Q9J8ULV0,Se conserva,28,1,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_01_#QR8JGLC9Q,Se conserva,28,1,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,10,,,0,,10,sin señal de otro clan
+T_28_S_01_#YQQUVQL0P,Se conserva,28,1,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_02_#20080J8GRY,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_02_#2098PGRCPC,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_02_#P8Y0CQ9VR,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_02_#RR8CRJPUV,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_02_#U8G029GUQ,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#U8G029GUQ,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_28_S_02_#UJY0PGPUV,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_28_S_02_#URRG2QG20,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_02_#UYU0PGUYJ,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_28_S_02_#V8LPC909C,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_28_S_02_#V9L9V9YV0,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_02_#VUVC9P8VL,Se conserva,28,2,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_28_S_02_#RGCL8LGJC,Se conserva,28,2,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,J,V,11,,,0,,11,sin señal de otro clan
+T_28_S_02_#U9P0PYQQ2,Se conserva,28,2,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_02_#900PCRQ2R,Se conserva,28,2,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_02_#Q9J8ULV0,Se conserva,28,2,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,J,V,9,,,0,,9,sin señal de otro clan
+T_28_S_02_#YGL2QV8LG,Se conserva,28,2,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_28_S_03_#8YCLY8CRU,Se conserva,28,3,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_28_S_03_#V20GJRC9Y,Se conserva,28,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_03_#VR92C8LYU,Se conserva,28,3,Grupo乂Terna™,#GCRG8L00,#VR92C8LYU,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_03_#Y8CVG9VYL,Se conserva,28,3,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_03_#20080J8GRY,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_28_S_03_#2098PGRCPC,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_03_#2C982888C,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_03_#P8Y0CQ9VR,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_28_S_03_#RR8CRJPUV,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_28_S_03_#U8G029GUQ,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#U8G029GUQ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_03_#UYU0PGUYJ,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_28_S_03_#V8LPC909C,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_28_S_03_#V9L9V9YV0,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_28_S_03_#VUVC9P8VL,Se conserva,28,3,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_03_#RGCL8LGJC,Se conserva,28,3,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_28_S_03_#U9P0PYQQ2,Se conserva,28,3,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_03_#900PCRQ2R,Se conserva,28,3,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_28_S_03_#Q9J8ULV0,Se conserva,28,3,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_03_#YGL2QV8LG,Se conserva,28,3,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_04_#8YCLY8CRU,Se conserva,28,4,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_04_#U8G029GUQ,Se conserva,28,4,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_04_#U9P0PYQQ2,Se conserva,28,4,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_04_#V20GJRC9Y,Se conserva,28,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_04_#VR92C8LYU,Se conserva,28,4,Grupo乂Terna™,#GCRG8L00,#VR92C8LYU,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_04_#P8Y0CQ9VR,Se conserva,28,4,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_04_#RR8CRJPUV,Se conserva,28,4,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_28_S_04_#UYU0PGUYJ,Se conserva,28,4,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_28_S_04_#V9L9V9YV0,Se conserva,28,4,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_04_#VUVC9P8VL,Se conserva,28,4,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_28_S_04_#RGCL8LGJC,Se conserva,28,4,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_28_S_04_#900PCRQ2R,Se conserva,28,4,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_04_#Q9J8ULV0,Se conserva,28,4,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_28_S_04_#QR8JGLC9Q,Se conserva,28,4,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,10,,,0,,10,sin señal de otro clan
+T_28_S_04_#YGL2QV8LG,Se conserva,28,4,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,J,V,11,,,0,,11,sin señal de otro clan
+T_28_S_05_#8YCLY8CRU,Se conserva,28,5,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_05_#900PCRQ2R,Se conserva,28,5,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_05_#JR9J0JCQ9,Se conserva,28,5,Grupo乂Terna™,#GCRG8L00,#JR9J0JCQ9,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_05_#RR8CRJPUV,Se conserva,28,5,Grupo乂Terna™,#GCRG8L00,#RR8CRJPUV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_05_#U8G029GUQ,Se conserva,28,5,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_05_#V20GJRC9Y,Se conserva,28,5,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_05_#20080J8GRY,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_28_S_05_#2098PGRCPC,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_05_#20LUCQG0LJ,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#20LUCQG0LJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_05_#20P80C9229,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#20P80C9229,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_05_#P8Y0CQ9VR,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_05_#UJY0PGPUV,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#UJY0PGPUV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_05_#URRG2QG20,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_05_#V0J90R2V2,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_05_#V8LPC909C,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,J,V,12,,,0,,12,sin señal de otro clan
+T_28_S_05_#V9L9V9YV0,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_05_#VJQLY8JV8,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_28_S_05_#VUVC9P8VL,Se conserva,28,5,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_28_S_05_#RGCL8LGJC,Se conserva,28,5,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_05_#U9P0PYQQ2,Se conserva,28,5,GrupoXTerna™3,#GQQPPJGR,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_05_#Q9J8ULV0,Se conserva,28,5,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_28_S_05_#QR8JGLC9Q,Se conserva,28,5,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_29_S_01_#2GG8PJ8GC,Se conserva,29,1,Grupo乂Terna™,#GCRG8L00,#2GG8PJ8GC,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_01_#U8G029GUQ,Se conserva,29,1,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_29_S_01_#U9P0PYQQ2,Se conserva,29,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_29_S_01_#P8Y0CQ9VR,Se conserva,29,1,Mini乂Ternas™,#GG99LCJY,#P8Y0CQ9VR,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_29_S_01_#RR8CRJPUV,Se conserva,29,1,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_01_#URRG2QG20,Se conserva,29,1,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_01_#UYU0PGUYJ,Se conserva,29,1,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_29_S_01_#V8LPC909C,Se conserva,29,1,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_01_#V9L9V9YV0,Se conserva,29,1,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_01_#VJQLY8JV8,Se conserva,29,1,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,J,V,11,,,0,,11,sin señal de otro clan
+T_29_S_01_#RGCL8LGJC,Se conserva,29,1,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,J,V,11,,,0,,11,sin señal de otro clan
+T_29_S_01_#900PCRQ2R,Se conserva,29,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_29_S_01_#Q9J8ULV0,Se conserva,29,1,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_29_S_01_#QR8JGLC9Q,Se conserva,29,1,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_29_S_01_#YQQUVQL0P,Se conserva,29,1,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_02_#JCUPQ88J,Se conserva,29,2,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_02_#U9P0PYQQ2,Se conserva,29,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_02_#YQQUVQL0P,Se conserva,29,2,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_29_S_02_#2098PGRCPC,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_02_#2C982888C,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_02_#90QYJQRQ8,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#90QYJQRQ8,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_02_#RR8CRJPUV,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_02_#UYU0PGUYJ,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#UYU0PGUYJ,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_29_S_02_#V0J90R2V2,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_02_#V8LPC909C,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_29_S_02_#V9L9V9YV0,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_29_S_02_#VJQLY8JV8,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_02_#VUVC9P8VL,Se conserva,29,2,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_02_#RGCL8LGJC,Se conserva,29,2,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_29_S_02_#J2JJ8LGV9,Se conserva,29,2,GrupoXTerna™2,#GYCU9YRG,#J2JJ8LGV9,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_02_#JC99L0Y8P,Se conserva,29,2,GrupoXTerna™2,#GYCU9YRG,#JC99L0Y8P,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_02_#Q9J8ULV0,Se conserva,29,2,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_29_S_03_#JCUPQ88J,Se conserva,29,3,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_03_#R98JQRU99,Se conserva,29,3,Grupo乂Terna™,#GCRG8L00,#R98JQRU99,,J,V,9,,,0,,9,sin señal de otro clan
+T_29_S_03_#22C090RVJ,Se conserva,29,3,Mini乂Ternas™,#GG99LCJY,#22C090RVJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_03_#RGCL8LGJC,Se conserva,29,3,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,J,V,11,,,0,,11,sin señal de otro clan
+T_29_S_03_#JC99L0Y8P,Se conserva,29,3,GrupoXTerna™2,#GYCU9YRG,#JC99L0Y8P,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_29_S_03_#Q9J8ULV0,Se conserva,29,3,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_29_S_03_#QR8JGLC9Q,Se conserva,29,3,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,10,,,0,,10,sin señal de otro clan
+T_29_S_04_#CUQG9CJUG,Se conserva,29,4,Grupo乂Terna™,#GCRG8L00,#CUQG9CJUG,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_04_#LVVP82CU9,Se conserva,29,4,Grupo乂Terna™,#GCRG8L00,#LVVP82CU9,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_04_#RGCL8LGJC,Se conserva,29,4,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_29_S_04_#GLPC8YQGV,Se conserva,29,4,GrupoXTerna™2,#GYCU9YRG,#GLPC8YQGV,,J,V,12,,,0,,12,sin señal de otro clan
+T_29_S_04_#Q9J8ULV0,Se conserva,29,4,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_29_S_04_#YQQUVQL0P,Se conserva,29,4,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_01_#U9P0PYQQ2,Se conserva,30,1,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_01_#V20GJRC9Y,Se conserva,30,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_01_#20080J8GRY,Se conserva,30,1,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_30_S_01_#20YVVYCU2,Se conserva,30,1,Mini乂Ternas™,#GG99LCJY,#20YVVYCU2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_01_#V9L9V9YV0,Se conserva,30,1,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_01_#VUVC9P8VL,Se conserva,30,1,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_01_#RGCL8LGJC,Se conserva,30,1,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,J,V,11,,,0,,11,sin señal de otro clan
+T_30_S_01_#900PCRQ2R,Se conserva,30,1,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_01_#J2JJ8LGV9,Se conserva,30,1,GrupoXTerna™2,#GYCU9YRG,#J2JJ8LGV9,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_01_#Q9J8ULV0,Se conserva,30,1,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_01_#QR8JGLC9Q,Se conserva,30,1,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,11,,,0,,11,sin señal de otro clan
+T_30_S_01_#YGL2QV8LG,Se conserva,30,1,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,J,V,11,,,0,,11,sin señal de otro clan
+T_30_S_02_#JGGLGVCGU,Se conserva,30,2,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_02_#U8PQR2QQV,Se conserva,30,2,Grupo乂Terna™,#GCRG8L00,#U8PQR2QQV,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_02_#UJUGRYY9C,Se conserva,30,2,Grupo乂Terna™,#GCRG8L00,#UJUGRYY9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_02_#V20GJRC9Y,Se conserva,30,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_02_#VLY0G9LU9,Se conserva,30,2,Grupo乂Terna™,#GCRG8L00,#VLY0G9LU9,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_02_#RR8CRJPUV,Se conserva,30,2,Mini乂Ternas™,#GG99LCJY,#RR8CRJPUV,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_30_S_02_#V0JPP0UJR,Se conserva,30,2,Mini乂Ternas™,#GG99LCJY,#V0JPP0UJR,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_02_#V9L9V9YV0,Se conserva,30,2,Mini乂Ternas™,#GG99LCJY,#V9L9V9YV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_02_#VUVC9P8VL,Se conserva,30,2,Mini乂Ternas™,#GG99LCJY,#VUVC9P8VL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_02_#900PCRQ2R,Se conserva,30,2,GrupoXTerna™2,#GYCU9YRG,#900PCRQ2R,,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_30_S_02_#QR8JGLC9Q,Se conserva,30,2,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_03_#GLPC8YQGV,Se conserva,30,3,Grupo乂Terna™,#GCRG8L00,#GLPC8YQGV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_03_#JGGLGVCGU,Se conserva,30,3,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_03_#U8PQR2QQV,Se conserva,30,3,Grupo乂Terna™,#GCRG8L00,#U8PQR2QQV,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_30_S_03_#UJUGRYY9C,Se conserva,30,3,Grupo乂Terna™,#GCRG8L00,#UJUGRYY9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_03_#V20GJRC9Y,Se conserva,30,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_03_#22C090RVJ,Se conserva,30,3,Mini乂Ternas™,#GG99LCJY,#22C090RVJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_03_#V0JPP0UJR,Se conserva,30,3,Mini乂Ternas™,#GG99LCJY,#V0JPP0UJR,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_03_#V9P20U8RC,Se conserva,30,3,Mini乂Ternas™,#GG99LCJY,#V9P20U8RC,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_03_#L28JYY2J,Se conserva,30,3,GrupoXTerna™3,#GQQPPJGR,#L28JYY2J,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_03_#RGCL8LGJC,Se conserva,30,3,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_30_S_03_#LJ0CYCG9V,Se conserva,30,3,GrupoXTerna™2,#GYCU9YRG,#LJ0CYCG9V,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_03_#Q9J8ULV0,Se conserva,30,3,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_03_#QR8JGLC9Q,Se conserva,30,3,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,11,,,0,,11,sin señal de otro clan
+T_30_S_03_#YGL2QV8LG,Se conserva,30,3,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_03_#YQQUVQL0P,Se conserva,30,3,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_04_#900PCRQ2R,Se conserva,30,4,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_04_#JGGLGVCGU,Se conserva,30,4,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_04_#R98JQRU99,Se conserva,30,4,Grupo乂Terna™,#GCRG8L00,#R98JQRU99,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_04_#U9P0PYQQ2,Se conserva,30,4,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_04_#UJUGRYY9C,Se conserva,30,4,Grupo乂Terna™,#GCRG8L00,#UJUGRYY9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_04_#V20GJRC9Y,Se conserva,30,4,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_30_S_04_#RGCL8LGJC,Se conserva,30,4,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_04_#C289JPLQG,Se conserva,30,4,GrupoXTerna™2,#GYCU9YRG,#C289JPLQG,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_04_#J2JJ8LGV9,Se conserva,30,4,GrupoXTerna™2,#GYCU9YRG,#J2JJ8LGV9,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_04_#Q98RGPGCU,Se conserva,30,4,GrupoXTerna™2,#GYCU9YRG,#Q98RGPGCU,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_04_#Q9J8ULV0,Se conserva,30,4,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_30_S_04_#QR8JGLC9Q,Se conserva,30,4,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,12,,,0,,12,sin señal de otro clan
+T_30_S_04_#YGL2QV8LG,Se conserva,30,4,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_01_#2GG8PJ8GC,Se conserva,31,1,Grupo乂Terna™,#GCRG8L00,#2GG8PJ8GC,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_01_#90U80RR2Y,Se conserva,31,1,Grupo乂Terna™,#GCRG8L00,#90U80RR2Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_01_#R98JQRU99,Se conserva,31,1,Grupo乂Terna™,#GCRG8L00,#R98JQRU99,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_01_#UJUGRYY9C,Se conserva,31,1,Grupo乂Terna™,#GCRG8L00,#UJUGRYY9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_01_#V20GJRC9Y,Se conserva,31,1,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_01_#20P80C9229,Se conserva,31,1,Mini乂Ternas™,#GG99LCJY,#20P80C9229,,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_31_S_01_#22C090RVJ,Se conserva,31,1,Mini乂Ternas™,#GG99LCJY,#22C090RVJ,,J,V,10,,,0,,10,sin señal de otro clan
+T_31_S_01_#RGCL8LGJC,Se conserva,31,1,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_01_#U8PQR2QQV,Se conserva,31,1,GrupoXTerna™2,#GYCU9YRG,#U8PQR2QQV,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_01_#YGL2QV8LG,Se conserva,31,1,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,J,V,10,,,0,,10,sin señal de otro clan
+T_31_S_02_#20YVVYCU2,Se conserva,31,2,Grupo乂Terna™,#GCRG8L00,#20YVVYCU2,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_02_#8YCLY8CRU,Se conserva,31,2,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_02_#900PCRQ2R,Se conserva,31,2,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_02_#JGGLGVCGU,Se conserva,31,2,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_02_#U9P0PYQQ2,Se conserva,31,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_02_#UJUGRYY9C,Se conserva,31,2,Grupo乂Terna™,#GCRG8L00,#UJUGRYY9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_02_#UYU0PGUYJ,Se conserva,31,2,Grupo乂Terna™,#GCRG8L00,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_02_#V20GJRC9Y,Se conserva,31,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_02_#V0JPP0UJR,Se conserva,31,2,Mini乂Ternas™,#GG99LCJY,#V0JPP0UJR,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_02_#V9P20U8RC,Se conserva,31,2,Mini乂Ternas™,#GG99LCJY,#V9P20U8RC,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_02_#RGCL8LGJC,Se conserva,31,2,GrupoXTerna™3,#GQQPPJGR,#RGCL8LGJC,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_02_#YLYGC9Y9C,Se conserva,31,2,GrupoXTerna™3,#GQQPPJGR,#YLYGC9Y9C,,J,V,10,,,0,,10,sin señal de otro clan
+T_31_S_02_#JC99L0Y8P,Se conserva,31,2,GrupoXTerna™2,#GYCU9YRG,#JC99L0Y8P,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_02_#L28JYY2J,Se conserva,31,2,GrupoXTerna™2,#GYCU9YRG,#L28JYY2J,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_02_#PQL2YYRGG,Se conserva,31,2,GrupoXTerna™2,#GYCU9YRG,#PQL2YYRGG,#PQL2YYRGG,J,V,11,,,0,,11,sin señal de otro clan
+T_31_S_02_#YQQUVQL0P,Se conserva,31,2,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_03_#80PPY9R9G,Se conserva,31,3,Grupo乂Terna™,#GCRG8L00,#80PPY9R9G,,J,V,9,,,0,,9,sin señal de otro clan
+T_31_S_03_#CUQG9CJUG,Se conserva,31,3,Grupo乂Terna™,#GCRG8L00,#CUQG9CJUG,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_03_#JGGLGVCGU,Se conserva,31,3,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_03_#LVVP82CU9,Se conserva,31,3,Grupo乂Terna™,#GCRG8L00,#LVVP82CU9,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_03_#VR92C8LYU,Se conserva,31,3,Grupo乂Terna™,#GCRG8L00,#VR92C8LYU,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_03_#22C090RVJ,Se conserva,31,3,Mini乂Ternas™,#GG99LCJY,#22C090RVJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_03_#90QYJQRQ8,Se conserva,31,3,Mini乂Ternas™,#GG99LCJY,#90QYJQRQ8,,J,V,11,,,0,,11,sin señal de otro clan
+T_31_S_03_#L28JYY2J,Se conserva,31,3,GrupoXTerna™3,#GQQPPJGR,#L28JYY2J,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_03_#Q9J8ULV0,Se conserva,31,3,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_03_#YQQUVQL0P,Se conserva,31,3,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_04_#2GG8PJ8GC,Se conserva,31,4,Grupo乂Terna™,#GCRG8L00,#2GG8PJ8GC,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_04_#2PUYLPPRG,Se conserva,31,4,Grupo乂Terna™,#GCRG8L00,#2PUYLPPRG,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_04_#80PPY9R9G,Se conserva,31,4,Grupo乂Terna™,#GCRG8L00,#80PPY9R9G,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_04_#JGGLGVCGU,Se conserva,31,4,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_04_#VR92C8LYU,Se conserva,31,4,Grupo乂Terna™,#GCRG8L00,#VR92C8LYU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_04_#90QYJQRQ8,Se conserva,31,4,Mini乂Ternas™,#GG99LCJY,#90QYJQRQ8,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_31_S_04_#V0JPP0UJR,Se conserva,31,4,Mini乂Ternas™,#GG99LCJY,#V0JPP0UJR,,J,V,9,,,0,,9,sin señal de otro clan
+T_31_S_04_#V9P20U8RC,Se conserva,31,4,Mini乂Ternas™,#GG99LCJY,#V9P20U8RC,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_04_#YLYGC9Y9C,Se conserva,31,4,GrupoXTerna™3,#GQQPPJGR,#YLYGC9Y9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_04_#JQPGGUGPR,Se conserva,31,4,GrupoXTerna™2,#GYCU9YRG,#JQPGGUGPR,Mayer7zㅤghㅤ❄️,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_04_#VLY0G9LU9,Se conserva,31,4,GrupoXTerna™2,#GYCU9YRG,#VLY0G9LU9,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_04_#YQQUVQL0P,Se conserva,31,4,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,J,V,9,,,0,,9,sin señal de otro clan
+T_31_S_05_#22C090RVJ,Se conserva,31,5,Grupo乂Terna™,#GCRG8L00,#22C090RVJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_05_#90U80RR2Y,Se conserva,31,5,Grupo乂Terna™,#GCRG8L00,#90U80RR2Y,,J,V,11,,,0,,11,sin señal de otro clan
+T_31_S_05_#C8Q0C88UL,Se conserva,31,5,Grupo乂Terna™,#GCRG8L00,#C8Q0C88UL,,J,V,11,,,0,,11,sin señal de otro clan
+T_31_S_05_#JGGLGVCGU,Se conserva,31,5,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_05_#LVVP82CU9,Se conserva,31,5,Grupo乂Terna™,#GCRG8L00,#LVVP82CU9,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_05_#LYVJU9UJJ,Se conserva,31,5,Grupo乂Terna™,#GCRG8L00,#LYVJU9UJJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_31_S_05_#R98JQRU99,Se conserva,31,5,Grupo乂Terna™,#GCRG8L00,#R98JQRU99,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_05_#U08PJQU8V,Se conserva,31,5,Grupo乂Terna™,#GCRG8L00,#U08PJQU8V,nicxzzm_,J,V,10,,,0,,10,sin señal de otro clan
+T_31_S_05_#V0JPP0UJR,Se conserva,31,5,Mini乂Ternas™,#GG99LCJY,#V0JPP0UJR,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_31_S_05_#V9P20U8RC,Se conserva,31,5,Mini乂Ternas™,#GG99LCJY,#V9P20U8RC,,J,V,11,,,0,,11,sin señal de otro clan
+T_31_S_05_#J2JJ8LGV9,Se conserva,31,5,GrupoXTerna™2,#GYCU9YRG,#J2JJ8LGV9,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_31_S_05_#QR8JGLC9Q,Se conserva,31,5,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_05_#RGQUGU0CU,Se conserva,31,5,GrupoXTerna™2,#GYCU9YRG,#RGQUGU0CU,,J,V,12,,,0,,12,sin señal de otro clan
+T_31_S_05_#YQQUVQL0P,Se conserva,31,5,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_01_#2PUYLPPRG,Se conserva,32,1,Grupo乂Terna™,#GCRG8L00,#2PUYLPPRG,,J,V,10,,,0,,10,sin señal de otro clan
+T_32_S_01_#C8Q0C88UL,Se conserva,32,1,Grupo乂Terna™,#GCRG8L00,#C8Q0C88UL,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_01_#JGGLGVCGU,Se conserva,32,1,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_01_#U08PJQU8V,Se conserva,32,1,Grupo乂Terna™,#GCRG8L00,#U08PJQU8V,nicxzzm_,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_32_S_01_#UVU2UYYC2,Se conserva,32,1,Grupo乂Terna™,#GCRG8L00,#UVU2UYYC2,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_32_S_01_#22C090RVJ,Se conserva,32,1,Mini乂Ternas™,#GG99LCJY,#22C090RVJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_01_#LYVJU9UJJ,Se conserva,32,1,Mini乂Ternas™,#GG99LCJY,#LYVJU9UJJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_01_#V0JPP0UJR,Se conserva,32,1,Mini乂Ternas™,#GG99LCJY,#V0JPP0UJR,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_01_#V9P20U8RC,Se conserva,32,1,Mini乂Ternas™,#GG99LCJY,#V9P20U8RC,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_01_#YLYGC9Y9C,Se conserva,32,1,GrupoXTerna™3,#GQQPPJGR,#YLYGC9Y9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_01_#U8PQR2QQV,Se conserva,32,1,GrupoXTerna™2,#GYCU9YRG,#U8PQR2QQV,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_02_#2PUYLPPRG,Se conserva,32,2,Grupo乂Terna™,#GCRG8L00,#2PUYLPPRG,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_02_#80PPY9R9G,Se conserva,32,2,Grupo乂Terna™,#GCRG8L00,#80PPY9R9G,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_02_#829GQP0JL,Se conserva,32,2,Grupo乂Terna™,#GCRG8L00,#829GQP0JL,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_02_#8PYCU9U9Q,Se conserva,32,2,Grupo乂Terna™,#GCRG8L00,#8PYCU9U9Q,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_32_S_02_#C8Q0C88UL,Se conserva,32,2,Grupo乂Terna™,#GCRG8L00,#C8Q0C88UL,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_02_#JVVG9YUG0,Se conserva,32,2,Grupo乂Terna™,#GCRG8L00,#JVVG9YUG0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_32_S_02_#V20GJRC9Y,Se conserva,32,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_32_S_02_#Q9J8ULV0,Se conserva,32,2,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_32_S_02_#QR8JGLC9Q,Se conserva,32,2,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_03_#2PUYLPPRG,Se conserva,32,3,Grupo乂Terna™,#GCRG8L00,#2PUYLPPRG,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_32_S_03_#JVVG9YUG0,Se conserva,32,3,Grupo乂Terna™,#GCRG8L00,#JVVG9YUG0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_32_S_03_#V20GJRC9Y,Se conserva,32,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_32_S_03_#V9YLPQY0L,Se conserva,32,3,Grupo乂Terna™,#GCRG8L00,#V9YLPQY0L,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_32_S_03_#LYVJU9UJJ,Se conserva,32,3,Mini乂Ternas™,#GG99LCJY,#LYVJU9UJJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_32_S_03_#Q09UJ2UP2,Se conserva,32,3,Mini乂Ternas™,#GG99LCJY,#Q09UJ2UP2,MASTER K.,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_03_#V0JPP0UJR,Se conserva,32,3,Mini乂Ternas™,#GG99LCJY,#V0JPP0UJR,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_03_#V9P20U8RC,Se conserva,32,3,Mini乂Ternas™,#GG99LCJY,#V9P20U8RC,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_03_#LRQ8YJRCU,Se conserva,32,3,GrupoXTerna™3,#GQQPPJGR,#LRQ8YJRCU,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_03_#J2JJ8LGV9,Se conserva,32,3,GrupoXTerna™2,#GYCU9YRG,#J2JJ8LGV9,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_03_#YQQUVQL0P,Se conserva,32,3,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_32_S_04_#2L2RPYRYR,Se conserva,32,4,Grupo乂Terna™,#GCRG8L00,#2L2RPYRYR,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_32_S_04_#C8Q0C88UL,Se conserva,32,4,Grupo乂Terna™,#GCRG8L00,#C8Q0C88UL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_32_S_04_#UJUGRYY9C,Se conserva,32,4,Grupo乂Terna™,#GCRG8L00,#UJUGRYY9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#VR92C8LYU,Se conserva,32,4,Grupo乂Terna™,#GCRG8L00,#VR92C8LYU,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#900PCRQ2R,Se conserva,32,4,GrupoXTerna™3,#GQQPPJGR,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_32_S_04_#LYVJU9UJJ,Se conserva,32,4,GrupoXTerna™3,#GQQPPJGR,#LYVJU9UJJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#V9P20U8RC,Se conserva,32,4,GrupoXTerna™3,#GQQPPJGR,#V9P20U8RC,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#2PUYLPPRG,Se conserva,32,4,GrupoXTerna™2,#GYCU9YRG,#2PUYLPPRG,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#8VU0Y9LJ0,Se conserva,32,4,GrupoXTerna™2,#GYCU9YRG,#8VU0Y9LJ0,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#92V9L92GV,Se conserva,32,4,GrupoXTerna™2,#GYCU9YRG,#92V9L92GV,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#CYR2PVLLY,Se conserva,32,4,GrupoXTerna™2,#GYCU9YRG,#CYR2PVLLY,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#VLY0G9LU9,Se conserva,32,4,GrupoXTerna™2,#GYCU9YRG,#VLY0G9LU9,,J,V,12,,,0,,12,sin señal de otro clan
+T_32_S_04_#YQQUVQL0P,Se conserva,32,4,GrupoXTerna™2,#GYCU9YRG,#YQQUVQL0P,,J,V,10,,,0,,10,sin señal de otro clan
+T_33_S_01_#QG2PP89G2,Se conserva,33,1,Grupo乂Terna™,#GCRG8L00,#QG2PP89G2,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_01_#VR92C8LYU,Se conserva,33,1,Grupo乂Terna™,#GCRG8L00,#VR92C8LYU,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_01_#Q09UJ2UP2,Se conserva,33,1,GrupoXTerna™3,#GQQPPJGR,#Q09UJ2UP2,MASTER K.,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_01_#V9P20U8RC,Se conserva,33,1,GrupoXTerna™3,#GQQPPJGR,#V9P20U8RC,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_01_#2PUYLPPRG,Se conserva,33,1,GrupoXTerna™2,#GYCU9YRG,#2PUYLPPRG,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_01_#8C0PQ9PR9,Se conserva,33,1,GrupoXTerna™2,#GYCU9YRG,#8C0PQ9PR9,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_01_#LJ0CYCG9V,Se conserva,33,1,GrupoXTerna™2,#GYCU9YRG,#LJ0CYCG9V,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_01_#U8PQR2QQV,Se conserva,33,1,GrupoXTerna™2,#GYCU9YRG,#U8PQR2QQV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#22C090RVJ,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#22C090RVJ,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#2PUYLPPRG,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#2PUYLPPRG,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#900PCRQ2R,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_02_#90U80RR2Y,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#90U80RR2Y,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_02_#GY0GJ09C0,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#GY0GJ09C0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#J8V9PQJP9,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#J8V9PQJP9,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_02_#LJ0CYCG9V,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#LJ0CYCG9V,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_02_#LRQ8YJRCU,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#LRQ8YJRCU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#Q98RGPGCU,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#Q98RGPGCU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#U9P0PYQQ2,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_33_S_02_#V20GJRC9Y,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_02_#VLY0G9LU9,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#VLY0G9LU9,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#Y8CVG9VYL,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_02_#YQQUVQL0P,Se conserva,33,2,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#90QYJQRQ8,Se conserva,33,2,GrupoXTerna™3,#GQQPPJGR,#90QYJQRQ8,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#JVVG9YUG0,Se conserva,33,2,GrupoXTerna™3,#GQQPPJGR,#JVVG9YUG0,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_02_#LYVJU9UJJ,Se conserva,33,2,GrupoXTerna™3,#GQQPPJGR,#LYVJU9UJJ,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_33_S_02_#V9P20U8RC,Se conserva,33,2,GrupoXTerna™3,#GQQPPJGR,#V9P20U8RC,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_02_#8UYPVR8R,Se conserva,33,2,GrupoXTerna™2,#GYCU9YRG,#8UYPVR8R,Brad Kc Nov,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_33_S_02_#8VU0Y9LJ0,Se conserva,33,2,GrupoXTerna™2,#GYCU9YRG,#8VU0Y9LJ0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#9U9QUL02R,Se conserva,33,2,GrupoXTerna™2,#GYCU9YRG,#9U9QUL02R,,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_33_S_02_#GLPC8YQGV,Se conserva,33,2,GrupoXTerna™2,#GYCU9YRG,#GLPC8YQGV,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_02_#QR8JGLC9Q,Se conserva,33,2,GrupoXTerna™2,#GYCU9YRG,#QR8JGLC9Q,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#RGQUGU0CU,Se conserva,33,2,GrupoXTerna™2,#GYCU9YRG,#RGQUGU0CU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#U8PQR2QQV,Se conserva,33,2,GrupoXTerna™2,#GYCU9YRG,#U8PQR2QQV,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_02_#YGL2QV8LG,Se conserva,33,2,GrupoXTerna™2,#GYCU9YRG,#YGL2QV8LG,,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_33_S_03_#228VUG2RU,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#228VUG2RU,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#22C090RVJ,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#22C090RVJ,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#2GG8PJ8GC,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#2GG8PJ8GC,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#2PUYLPPRG,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#2PUYLPPRG,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#80LPLV92P,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#80LPLV92P,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#8C0PQ9PR9,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#8C0PQ9PR9,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#900PCRQ2R,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_03_#J8V9PQJP9,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#J8V9PQJP9,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#JCUPQ88J,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_03_#LJ0CYCG9V,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#LJ0CYCG9V,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#Q98RGPGCU,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#Q98RGPGCU,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#QR8JGLC9Q,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#QR8JGLC9Q,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#QRQULCCV8,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#QRQULCCV8,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#U8PQR2QQV,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#U8PQR2QQV,,J,V,11,,,0,,11,sin señal de otro clan
+T_33_S_03_#V20GJRC9Y,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#V20GJRC9Y,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_03_#VQCG0G09G,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#VQCG0G09G,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#VR92C8LYU,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#VR92C8LYU,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#Y8CVG9VYL,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_03_#YGL2QV8LG,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#YGL2QV8LG,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#YQQUVQL0P,Se conserva,33,3,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#2C982888C,Se conserva,33,3,Mini乂Ternas™,#GG99LCJY,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_03_#90QYJQRQ8,Se conserva,33,3,GrupoXTerna™3,#GQQPPJGR,#90QYJQRQ8,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_03_#LYVJU9UJJ,Se conserva,33,3,GrupoXTerna™3,#GQQPPJGR,#LYVJU9UJJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_03_#Q09UJ2UP2,Se conserva,33,3,GrupoXTerna™3,#GQQPPJGR,#Q09UJ2UP2,MASTER K.,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_03_#R8JRQ0PY8,Se conserva,33,3,GrupoXTerna™3,#GQQPPJGR,#R8JRQ0PY8,josecitopro7,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_33_S_03_#V9P20U8RC,Se conserva,33,3,GrupoXTerna™3,#GQQPPJGR,#V9P20U8RC,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#GLPC8YQGV,Se conserva,33,3,GrupoXTerna™2,#GYCU9YRG,#GLPC8YQGV,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_03_#JVVG9YUG0,Se conserva,33,3,GrupoXTerna™2,#GYCU9YRG,#JVVG9YUG0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_03_#LRQ8YJRCU,Se conserva,33,3,GrupoXTerna™2,#GYCU9YRG,#LRQ8YJRCU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_04_#2C982888C,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_04_#8YCLY8CRU,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#8YCLY8CRU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_04_#900PCRQ2R,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#900PCRQ2R,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_04_#C8Q0C88UL,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#C8Q0C88UL,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_04_#JGGLGVCGU,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#JGGLGVCGU,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_04_#P8Y0CQ9VR,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_04_#U8G029GUQ,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#U8G029GUQ,,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_33_S_04_#U9P0PYQQ2,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#U9P0PYQQ2,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_04_#YQQUVQL0P,Se conserva,33,4,Grupo乂Terna™,#GCRG8L00,#YQQUVQL0P,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_04_#20P2UP80UY,Se conserva,33,4,Mini乂Ternas™,#GG99LCJY,#20P2UP80UY,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_04_#90QYJQRQ8,Se conserva,33,4,GrupoXTerna™3,#GQQPPJGR,#90QYJQRQ8,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_04_#LYVJU9UJJ,Se conserva,33,4,GrupoXTerna™3,#GQQPPJGR,#LYVJU9UJJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_33_S_04_#CYR2PVLLY,Se conserva,33,4,GrupoXTerna™2,#GYCU9YRG,#CYR2PVLLY,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_04_#JVVG9YUG0,Se conserva,33,4,GrupoXTerna™2,#GYCU9YRG,#JVVG9YUG0,,J,V,12,,,0,,12,sin señal de otro clan
+T_33_S_04_#Q9J8ULV0,Se conserva,33,4,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_04_#U2QJ2LCY9,Se conserva,33,4,GrupoXTerna™2,#GYCU9YRG,#U2QJ2LCY9,,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_33_S_04_#UYU0PGUYJ,Se conserva,33,4,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_34_S_01_#LYVJU9UJJ,Se conserva,34,1,Mini乂Ternas™,#GG99LCJY,#LYVJU9UJJ,fggij09,J,V,4,,,0,,4,sin señal de otro clan
+T_34_S_01_#U8G029GUQ,Se conserva,34,1,Mini乂Ternas™,#GG99LCJY,#U8G029GUQ,ᴳ乂ᵀ ⚜️ Ｒｅｙｐｅｒ♥️,J,V,7,,,0,,7,sin señal de otro clan
+T_34_S_01_#2CR90VVV,Se conserva,34,1,GrupoXTerna™3,#GQQPPJGR,#2CR90VVV,Marf96,J,V,4,,,0,,4,sin señal de otro clan
+T_34_S_01_#900PCRQ2R,Se conserva,34,1,GrupoXTerna™3,#GQQPPJGR,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_01_#9Y88C8U8Y,Se conserva,34,1,GrupoXTerna™3,#GQQPPJGR,#9Y88C8U8Y,xXROBERTOXx,J,V,4,,,0,,4,sin señal de otro clan
+T_34_S_01_#UQL8V0YVJ,Se conserva,34,1,GrupoXTerna™3,#GQQPPJGR,#UQL8V0YVJ,Yamil,J,V,4,,,0,,4,sin señal de otro clan
+T_34_S_01_#22C090RVJ,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#22C090RVJ,反覆分Mc-->WiLL,J,V,11,,,0,,11,sin señal de otro clan
+T_34_S_01_#8YCLY8CRU,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_01_#C0JRUURGU,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#C0JRUURGU,Cris,J,V,1,,,0,,1,sin señal de otro clan
+T_34_S_01_#C8Q0C88UL,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#C8Q0C88UL,ᴳ乂ᵀ ⚜️S C Λ R Ξ,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_34_S_01_#P8Y0CQ9VR,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_01_#Q2GR9JVQL,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#Q2GR9JVQL,TT DIEGO B),J,V,1,,,0,,1,sin señal de otro clan
+T_34_S_01_#RR8CRJPUV,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_34_S_01_#U9P0PYQQ2,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#U9P0PYQQ2,ᴳ乂ᵀ ⚜️ Andre,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_01_#UCVP89PJQ,Se conserva,34,1,GrupoXTerna™2,#GYCU9YRG,#UCVP89PJQ,亗 ＭＡＴＨ ϟ ＡＳ 么,J,V,2,,,0,,2,sin señal de otro clan
+T_34_S_03_#GYU0R0V29,Se conserva,34,3,GrupoXTerna™3,#GQQPPJGR,#GYU0R0V29,Love--Adri<3,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_03_#8YCLY8CRU,Se conserva,34,3,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_03_#P8Y0CQ9VR,Se conserva,34,3,GrupoXTerna™2,#GYCU9YRG,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_03_#RR8CRJPUV,Se conserva,34,3,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_03_#UYU0PGUYJ,Se conserva,34,3,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,J,V,12,,,0,,12,sin señal de otro clan
+T_34_S_04_#UL2L8R9UQ,Se conserva,34,4,GrupoXTerna™2,#GYCU9YRG,#UL2L8R9UQ,J3$H_❤️,"J, V",S,1,,,0,,1,sin señal de otro clan
+T_34_S_04_#UQJU0JRG2,Se conserva,34,4,GrupoXTerna™2,#GYCU9YRG,#UQJU0JRG2,ivzn,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_35_S_01_#VP2GYQGQ8,Se conserva,35,1,GrupoXTerna™3,#GQQPPJGR,#VP2GYQGQ8,espinozaxd,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_35_S_01_#JJ9VVRCYG,Se conserva,35,1,GrupoXTerna™2,#GYCU9YRG,#JJ9VVRCYG,shamir el crak,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_35_S_02_#JCUPQ88J,Se conserva,35,2,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,J,V,12,,,0,,12,sin señal de otro clan
+T_35_S_02_#UQPU20P09,Se conserva,35,2,Grupo乂Terna™,#GCRG8L00,#UQPU20P09,Drago zr,"J, V, S",S,2,,,0,,2,sin señal de otro clan
+T_35_S_02_#Y8CVG9VYL,Se conserva,35,2,Grupo乂Terna™,#GCRG8L00,#Y8CVG9VYL,,J,V,12,,,0,,12,sin señal de otro clan
+T_35_S_03_#VLQ8JUYJG,Se conserva,35,3,,#G009V80C,#VLQ8JUYJG,#VLQ8JUYJG,"J, V, S",D,1,,,0,,15,sin señal de otro clan
+T_35_S_03_#2C982888C,Se conserva,35,3,Grupo乂Terna™,#GCRG8L00,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_35_S_03_#JCUPQ88J,Se conserva,35,3,Grupo乂Terna™,#GCRG8L00,#JCUPQ88J,,J,V,12,,,0,,12,sin señal de otro clan
+T_35_S_03_#JLU999JRU,Se conserva,35,3,Grupo乂Terna™,#GCRG8L00,#JLU999JRU,RASHFORD,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_35_S_03_#RCC99YVGR,Se conserva,35,3,Grupo乂Terna™,#GCRG8L00,#RCC99YVGR,#RCC99YVGR,"J, V",S,5,,,0,,5,sin señal de otro clan
+T_35_S_03_#20RQ8U9VPC,Se conserva,35,3,Mini乂Ternas™,#GG99LCJY,#20RQ8U9VPC,LEVIATAN,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_35_S_03_#20YYVQV8V0,Se conserva,35,3,Mini乂Ternas™,#GG99LCJY,#20YYVQV8V0,an,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_35_S_03_#V8R88QJYG,Se conserva,35,3,Mini乂Ternas™,#GG99LCJY,#V8R88QJYG,percy,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_35_S_03_#VJLQU2CGV,Se conserva,35,3,Mini乂Ternas™,#GG99LCJY,#VJLQU2CGV,#VJLQU2CGV,"J, V, S",D,1,,,0,,1,sin señal de otro clan
+T_35_S_03_#90QYJQRQ8,Se conserva,35,3,GrupoXTerna™3,#GQQPPJGR,#90QYJQRQ8,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_35_S_03_#GYU0R0V29,Se conserva,35,3,GrupoXTerna™3,#GQQPPJGR,#GYU0R0V29,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_35_S_03_#R8LY88C9Q,Se conserva,35,3,GrupoXTerna™3,#GQQPPJGR,#R8LY88C9Q,,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_35_S_03_#2Q8GJVR8V,Se conserva,35,3,GrupoXTerna™2,#GYCU9YRG,#2Q8GJVR8V,arturo,J,V,12,,,0,,12,sin señal de otro clan
+T_35_S_03_#8CRPQ0UL2,Se conserva,35,3,GrupoXTerna™2,#GYCU9YRG,#8CRPQ0UL2,LUISITO.,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_35_S_03_#JVVG9YUG0,Se conserva,35,3,GrupoXTerna™2,#GYCU9YRG,#JVVG9YUG0,,J,V,12,,,0,,12,sin señal de otro clan
+T_35_S_03_#LRQ8YJRCU,Se conserva,35,3,GrupoXTerna™2,#GYCU9YRG,#LRQ8YJRCU,,J,V,12,,,0,,12,sin señal de otro clan
+T_35_S_03_#QPV2QQRRQ,Se conserva,35,3,GrupoXTerna™2,#GYCU9YRG,#QPV2QQRRQ,,J,V,12,,,0,,12,sin señal de otro clan
+T_35_S_03_#20JVQURRUG,Se conserva,35,3,,#R8989G8Y,#20JVQURRUG,F4Jack,"J, V",S,7,,,0,,8,sin señal de otro clan
+T_36_S_01_#JVVG9YUG0,Se conserva,36,1,GrupoXTerna™2,#GYCU9YRG,#JVVG9YUG0,Fiorela.,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_36_S_02_#PPJVG29UV,Se conserva,36,2,Grupo乂Terna™,#GCRG8L00,#PPJVG29UV,FLS £V∆°,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_36_S_02_#R8QGGR0Q9,Se conserva,36,2,GrupoXTerna™3,#GQQPPJGR,#R8QGGR0Q9,GT▕ㅤFERNANDO,J,V,4,,,0,,4,sin señal de otro clan
+T_36_S_02_#V09PQYJ89,Se conserva,36,2,GrupoXTerna™3,#GQQPPJGR,#V09PQYJ89,tu maestro,J,V,1,,,0,,1,sin señal de otro clan
+T_36_S_02_#2Q8GJVR8V,Se conserva,36,2,GrupoXTerna™2,#GYCU9YRG,#2Q8GJVR8V,arturo,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_36_S_02_#8YYYPP8LY,Se conserva,36,2,GrupoXTerna™2,#GYCU9YRG,#8YYYPP8LY,⏩Masecher⏪,J,V,3,,,0,,3,sin señal de otro clan
+T_36_S_02_#JLU999JRU,Se conserva,36,2,GrupoXTerna™2,#GYCU9YRG,#JLU999JRU,RASHFORD,"J, V",S,1,,,0,,1,sin señal de otro clan
+T_36_S_02_#LRQ8YJRCU,Se conserva,36,2,GrupoXTerna™2,#GYCU9YRG,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,J,V,7,,,0,,7,sin señal de otro clan
+T_36_S_02_#RR8CRJPUV,Se conserva,36,2,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,V,8,,,0,,8,sin señal de otro clan
+T_36_S_02_#UYU0PGUYJ,Se conserva,36,2,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,J,V,8,,,0,,8,sin señal de otro clan
+T_36_S_02_#YVYRLUPQJ,Se conserva,36,2,GrupoXTerna™2,#GYCU9YRG,#YVYRLUPQJ,Yisus3107,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_36_S_03_#GYU0R0V29,Se conserva,36,3,Mini乂Ternas™,#GG99LCJY,#GYU0R0V29,Love--Adri<3,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_36_S_03_#CJCY20J9C,Se conserva,36,3,GrupoXTerna™2,#GYCU9YRG,#CJCY20J9C,,J,V,12,,,0,,12,sin señal de otro clan
+T_36_S_03_#GJPJC9C2V,Se conserva,36,3,GrupoXTerna™2,#GYCU9YRG,#GJPJC9C2V,Alex Sander,J,V,0,,,0,,0,sin señal de otro clan
+T_36_S_03_#JCQL2092,Se conserva,36,3,GrupoXTerna™2,#GYCU9YRG,#JCQL2092,davidledger,J,V,0,,,0,,0,sin señal de otro clan
+T_36_S_03_#LQJCJRRJU,Se conserva,36,3,GrupoXTerna™2,#GYCU9YRG,#LQJCJRRJU,Axel,J,V,2,,,0,,2,sin señal de otro clan
+T_36_S_03_#Q9J8ULV0,Se conserva,36,3,GrupoXTerna™2,#GYCU9YRG,#Q9J8ULV0,AlexX,J,V,12,,,0,,12,sin señal de otro clan
+T_36_S_03_#RR8CRJPUV,Se conserva,36,3,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_36_S_03_#U9LQJLQUG,Se conserva,36,3,GrupoXTerna™2,#GYCU9YRG,#U9LQJLQUG,,J,V,12,,,0,,12,sin señal de otro clan
+T_36_S_03_#UYU0PGUYJ,Se conserva,36,3,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,J,V,12,,,0,,12,sin señal de otro clan
+T_36_S_04_#20LPQU9P28,Se conserva,36,4,GrupoXTerna™3,#GQQPPJGR,#20LPQU9P28,Piero ^⁠_⁠^,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_36_S_04_#2Q8GJVR8V,Se conserva,36,4,GrupoXTerna™2,#GYCU9YRG,#2Q8GJVR8V,arturo,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_36_S_04_#GUJUVUVUR,Se conserva,36,4,GrupoXTerna™2,#GYCU9YRG,#GUJUVUVUR,pepe lucho,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_36_S_04_#LRQ8YJRCU,Se conserva,36,4,GrupoXTerna™2,#GYCU9YRG,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_36_S_04_#RR8CRJPUV,Se conserva,36,4,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_36_S_04_#VVL89YGGR,Se conserva,36,4,GrupoXTerna™2,#GYCU9YRG,#VVL89YGGR,chox,J,V,12,,,0,,12,sin señal de otro clan
+T_36_S_05_#8008CRLJU,Se conserva,36,5,Grupo乂Terna™,#GCRG8L00,#8008CRLJU,JP_(S)wordmaN,J,V,3,,,0,,3,sin señal de otro clan
+T_36_S_05_#2Q8GJVR8V,Se conserva,36,5,GrupoXTerna™2,#GYCU9YRG,#2Q8GJVR8V,arturo,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_36_S_05_#800QGCGRC,Se conserva,36,5,GrupoXTerna™2,#GYCU9YRG,#800QGCGRC,EFRAIN SALAZAR,J,V,0,,,0,,0,sin señal de otro clan
+T_36_S_05_#LRQ8YJRCU,Se conserva,36,5,GrupoXTerna™2,#GYCU9YRG,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#P8Y0CQ9VR,Se conserva,37,1,Grupo乂Terna™,#GCRG8L00,#P8Y0CQ9VR,ᴳ乂ᵀ ⚜️ ＳＫＹＳＥＲ,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_01_#ULVJU8229,Se conserva,37,1,Grupo乂Terna™,#GCRG8L00,#ULVJU8229,CÉSAR,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#20080J8GRY,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#20080J8GRY,ᴳ乂ᵀ⚜️MiniCandre,J,V,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#202G2URC8U,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#202G2URC8U,ELSEBSAL18,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#2098PGRCPC,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#2098PGRCPC,ᴳ乂ᵀ ⚜️ ムＮＤＲＥ,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#20LUCQG0LJ,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#20LUCQG0LJ,ᴳ乂ᵀ ⚜️ Cali,J,V,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#20P80C9229,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#20P80C9229,ᴳ乂ᵀ ⚜️ Ramirez☻,J,V,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#LYVJU9UJJ,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#LYVJU9UJJ,fggij09,J,V,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#URRG2QG20,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#URRG2QG20,ᴳ乂ᵀ ⚜️ Calito,J,V,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#V08RQP2JL,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#V08RQP2JL,$Mohamed-Light$,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#V0J90R2V2,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#V0J90R2V2,ᴳ乂ᵀ ⚜️ Αντρέ¹⁸,J,V,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#V8LPC909C,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#V8LPC909C,ᴳ乂ᵀ ⚜️ Cᴀʀʟɪᴛᴏꜱ,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#VJQLY8JV8,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#VJQLY8JV8,ᴳ乂ᵀ ⚜️ ＰムＰＩ,J,V,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#VRVCV0QR8,Se conserva,37,1,Mini乂Ternas™,#GG99LCJY,#VRVCV0QR8,ᴳ乂ᵀ ⚜️ Carlinho,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_37_S_01_#2PUYLPPRG,Se conserva,37,1,GrupoXTerna™3,#GQQPPJGR,#2PUYLPPRG,COSCU06,J,V,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#UJY0PGPUV,Se conserva,37,1,GrupoXTerna™3,#GQQPPJGR,#UJY0PGPUV,ᴳ乂ᵀ ⚜️ кυякү 亗,J,V,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#VR2UPPUCC,Se conserva,37,1,GrupoXTerna™3,#GQQPPJGR,#VR2UPPUCC,Fabiano,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#8YCLY8CRU,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_01_#G2JGLLUP,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#G2JGLLUP,VITOCHO ELPOCHO,J,V,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#JR9J0JCQ9,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#JR9J0JCQ9,LUCKY,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_01_#JVVG9YUG0,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#JVVG9YUG0,Fiorela.,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_01_#LRQ8YJRCU,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_01_#R0LJVG8,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#R0LJVG8,SERBERO,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_37_S_01_#RR8CRJPUV,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,V,11,,,0,,11,sin señal de otro clan
+T_37_S_01_#UYU0PGUYJ,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#UYU0PGUYJ,ᴳ乂ᵀ ⚜️ ＲＡＭＩ,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_01_#V92LYUJJ9,Se conserva,37,1,GrupoXTerna™2,#GYCU9YRG,#V92LYUJJ9,_bxz crisant4,"J, V",S,2,,,0,,2,sin señal de otro clan
+T_37_S_02_#800VVC9VC,Se conserva,37,2,Grupo乂Terna™,#GCRG8L00,#800VVC9VC,[MG] Sebhas Leo,J,V,3,,,0,,3,sin señal de otro clan
+T_37_S_02_#GRPYUV8R9,Se conserva,37,2,Grupo乂Terna™,#GCRG8L00,#GRPYUV8R9,tu ex,J,V,8,,,0,,8,sin señal de otro clan
+T_37_S_02_#JGC9PC09,Se conserva,37,2,Grupo乂Terna™,#GCRG8L00,#JGC9PC09,Cless YT-YOUTUB,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_37_S_02_#RVG29QC2C,Se conserva,37,2,Grupo乂Terna™,#GCRG8L00,#RVG29QC2C,black 333,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_37_S_02_#V8PYCGPU,Se conserva,37,2,Grupo乂Terna™,#GCRG8L00,#V8PYCGPU,deedeeneytiri,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_37_S_02_#VU2RRUCQU,Se conserva,37,2,Grupo乂Terna™,#GCRG8L00,#VU2RRUCQU,«C.L.27»,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_37_S_02_#CRCCR2LY9,Se conserva,37,2,GrupoXTerna™2,#GYCU9YRG,#CRCCR2LY9,Romaamor,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_02_#PCV8GV8Y0,Se conserva,37,2,GrupoXTerna™2,#GYCU9YRG,#PCV8GV8Y0,"LT KURO ""}",J,V,3,,,0,,3,sin señal de otro clan
+T_37_S_02_#V9L9V9YV0,Se conserva,37,2,GrupoXTerna™2,#GYCU9YRG,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,J,V,4,,,0,,4,sin señal de otro clan
+T_37_S_02_#VCQ8GJUP8,Se conserva,37,2,GrupoXTerna™2,#GYCU9YRG,#VCQ8GJUP8,ChamoSkWolf,J,V,5,,,0,,5,sin señal de otro clan
+T_37_S_03_#CQCR0R99C,Se conserva,37,3,Grupo乂Terna™,#GCRG8L00,#CQCR0R99C,Angel,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_37_S_03_#VPQPCJLY8,Se conserva,37,3,GrupoXTerna™3,#GQQPPJGR,#VPQPCJLY8,sa turi,J,V,0,,,0,,0,sin señal de otro clan
+T_37_S_03_#VJGG0G2CC,Se conserva,37,3,GrupoXTerna™2,#GYCU9YRG,#VJGG0G2CC,semusa,J,V,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#2QC2C2VU8,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#2QC2C2VU8,AngEL,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#2RCRUR9LG,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#2RCRUR9LG,⚡️KING I JAAL⚡️,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_37_S_04_#8V9PCPL8Q,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#8V9PCPL8Q,hulk,J,V,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#8YG88UVPR,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#8YG88UVPR,Paul,J,V,9,,,0,,9,sin señal de otro clan
+T_37_S_04_#999GQUGUY,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#999GQUGUY,fabricio,J,V,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#9UQVC8J89,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#9UQVC8J89,Caballero,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#GPQ0UGPR,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#GPQ0UGPR,Seru,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_37_S_04_#JJU0088P9,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#JJU0088P9,-DAVID-,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#JVVCV8JVU,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#JVVCV8JVU,alexizzz,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_37_S_04_#P9UQ2QVLV,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#P9UQ2QVLV,franklin,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_04_#V8020QG8U,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#V8020QG8U,RL I gonzalo,"J, V",S,1,,,0,,1,sin señal de otro clan
+T_37_S_04_#V8R980YL8,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#V8R980YL8,alinllerbronco,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_04_#VCQGUQLJL,Se conserva,37,4,Grupo乂Terna™,#GCRG8L00,#VCQGUQLJL,ᴬᵁᴿᴬ REYES ⚡ひどい,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#20YJL20Y09,Se conserva,37,4,GrupoXTerna™3,#GQQPPJGR,#20YJL20Y09,novato 750,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#9RUQQCJJ2,Se conserva,37,4,GrupoXTerna™3,#GQQPPJGR,#9RUQQCJJ2,zack henry,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#8YCLY8CRU,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_04_#G2JPV9GJU,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#G2JPV9GJU,adi fk,J,V,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#J00L0YV9V,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#J00L0YV9V,cristhian ronal,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_37_S_04_#J2U8JPPYJ,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#J2U8JPPYJ,⭐ANGHELO⭐,"J, V",S,3,,,0,,3,sin señal de otro clan
+T_37_S_04_#JR9CPYJU2,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#JR9CPYJU2,Bleith145,"J, V",S,7,,,0,,7,sin señal de otro clan
+T_37_S_04_#JR9J0JCQ9,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#JR9J0JCQ9,LUCKY,J,V,12,,,0,,12,sin señal de otro clan
+T_37_S_04_#PPRVURPYQ,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#PPRVURPYQ,Emerson VP,"J, V",S,2,,,0,,2,sin señal de otro clan
+T_37_S_04_#RL9LJ8G00,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#RL9LJ8G00,2Ly ×,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_37_S_04_#URL0GG8PJ,Se conserva,37,4,GrupoXTerna™2,#GYCU9YRG,#URL0GG8PJ,adrii,"J, V",S,1,,,0,,1,sin señal de otro clan
+T_38_S_01_#GGPRGCUCQ,Se conserva,38,1,Grupo乂Terna™,#GCRG8L00,#GGPRGCUCQ,YAHIR,J,V,12,,,0,,12,sin señal de otro clan
+T_38_S_01_#P0J8Q02CP,Se conserva,38,1,Grupo乂Terna™,#GCRG8L00,#P0J8Q02CP,坦率⭐₣Ɽ₳₦₭₴ł₮Ø™⭐ヅ,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_38_S_01_#VLGCGP8GG,Se conserva,38,1,Grupo乂Terna™,#GCRG8L00,#VLGCGP8GG,I'M. renzo,J,V,12,,,0,,12,sin señal de otro clan
+T_38_S_01_#900PCRQ2R,Se conserva,38,1,GrupoXTerna™3,#GQQPPJGR,#900PCRQ2R,ᴳ乂ᵀ ⚜️ アンドレ,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_38_S_01_#V9P20U8RC,Se conserva,38,1,GrupoXTerna™3,#GQQPPJGR,#V9P20U8RC,kayserleandro,J,V,12,,,0,,12,sin señal de otro clan
+T_38_S_01_#229L8LYPR,Se conserva,38,1,GrupoXTerna™2,#GYCU9YRG,#229L8LYPR,#ByJefferyVIP~~,J,V,1,,,0,,1,sin señal de otro clan
+T_38_S_01_#2Q8GJVR8V,Se conserva,38,1,GrupoXTerna™2,#GYCU9YRG,#2Q8GJVR8V,arturo,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_38_S_01_#LRQ8YJRCU,Se conserva,38,1,GrupoXTerna™2,#GYCU9YRG,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,"J, V, S",D,3,,,0,,3,sin señal de otro clan
+T_38_S_01_#RG2G9LVRP,Se conserva,38,1,GrupoXTerna™2,#GYCU9YRG,#RG2G9LVRP,LuchO ^-^,J,V,8,,,0,,8,sin señal de otro clan
+T_38_S_01_#RYYLL0J8G,Se conserva,38,1,GrupoXTerna™2,#GYCU9YRG,#RYYLL0J8G,Jhan⚡️,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_38_S_01_#VCQ8GJUP8,Se conserva,38,1,GrupoXTerna™2,#GYCU9YRG,#VCQ8GJUP8,ChamoSkWolf,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_38_S_02_#92G8CUYVL,Se conserva,38,2,Grupo乂Terna™,#GCRG8L00,#92G8CUYVL,Rodrizzx! ⭐,"J, V",S,2,,,0,,2,sin señal de otro clan
+T_38_S_02_#92YUYPUJQ,Se conserva,38,2,Grupo乂Terna™,#GCRG8L00,#92YUYPUJQ,SEKAI NI ITAMIO,"J, V",S,4,,,0,,4,sin señal de otro clan
+T_38_S_02_#9PP002929,Se conserva,38,2,Grupo乂Terna™,#GCRG8L00,#9PP002929,DeadPool,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_38_S_02_#GUP2UJ2C9,Se conserva,38,2,Grupo乂Terna™,#GCRG8L00,#GUP2UJ2C9,Loyal Kou,J,V,4,,,0,,4,sin señal de otro clan
+T_38_S_02_#GYU0R0V29,Se conserva,38,2,Grupo乂Terna™,#GCRG8L00,#GYU0R0V29,Love--Adri<3,"J, V",S,6,,,0,,6,sin señal de otro clan
+T_38_S_02_#P2UUY99LG,Se conserva,38,2,Grupo乂Terna™,#GCRG8L00,#P2UUY99LG,xXCHisusXX,J,V,4,,,0,,4,sin señal de otro clan
+T_38_S_02_#82GYVVLQR,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#82GYVVLQR,renzoxd,"J, V",S,0,,,0,,0,sin señal de otro clan
+T_38_S_02_#8CLP8R8G2,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#8CLP8R8G2,#_KalefGamer_#,"J, V, S",D,4,,,0,,4,sin señal de otro clan
+T_38_S_02_#8YCLY8CRU,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#8YCLY8CRU,ᴳ乂ᵀ ⚜️ Ｃａｒｓｙｒ ☬,J,V,8,,,0,,8,sin señal de otro clan
+T_38_S_02_#8YGLJY2QG,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#8YGLJY2QG,V[Furion]V,"J, V, S",D,0,,,0,,0,sin señal de otro clan
+T_38_S_02_#9PQ90PUVJ,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#9PQ90PUVJ,DELYAM,J,V,0,,,0,,0,sin señal de otro clan
+T_38_S_02_#JGGPP0G99,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#JGGPP0G99,Charly,J,V,12,,,0,,12,sin señal de otro clan
+T_38_S_02_#JR9J0JCQ9,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#JR9J0JCQ9,LUCKY,J,V,8,,,0,,8,sin señal de otro clan
+T_38_S_02_#LJUP920C9,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#LJUP920C9,GUILLERMO_07,"J, V, S",D,2,,,0,,2,sin señal de otro clan
+T_38_S_02_#YLJYLR0G0,Se conserva,38,2,GrupoXTerna™2,#GYCU9YRG,#YLJYLR0G0,Teo.Oliv12,J,V,8,,,0,,8,sin señal de otro clan
+T_38_S_03_#LRQ8YJRCU,Se conserva,38,3,GrupoXTerna™2,#GYCU9YRG,#LRQ8YJRCU,ᴳ乂ᵀ ⚜️ PEDRI,"J, V",S,8,,,0,,8,sin señal de otro clan
+T_38_S_03_#RR8CRJPUV,Se conserva,38,3,GrupoXTerna™2,#GYCU9YRG,#RR8CRJPUV,ᴳ乂ᵀ ⚜️ Ｈｉｘａｃｏｔｉ,J,V,4,,,0,,4,sin señal de otro clan
