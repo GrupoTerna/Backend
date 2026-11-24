@@ -87,6 +87,9 @@ var NUEVOS_RESTORE_PRESUPUESTO_MS = 90 * 1000; // 1m30s
 // PF311 parte A (31-oct-2026): de 10 a 5. El 30-oct a las 11:19 p. m. un sub-lote de 10 candidatos pasó de 107 s sin terminar y la ejecución se cortó a los 361 s; con 5 cada sub-lote dura la mitad y el paso reparte el resto en la tanda siguiente.
 var NUEVOS_RESTORE_LOTE_MAX = 5;
 
+// §PF575 (24-nov-2026): tope de miembros nuevos del Directorio que _sembrarNuevosDesdeDirectorio_() agrega a «Nuevos» en UNA corrida. Cada candidato nuevo cuesta como uno del botón de Nuevos (decenas de segundos por lote de 8, §PF311); lo que pasa del tope queda para la corrida siguiente.
+var NUEVOS_SEMBRAR_MAX_POR_CORRIDA = 8;
+
 // ===== PARTE 1 — Funciones que se corren a mano =====
 
 // ----- Reordenar la hoja y reparar el formato de los encabezados -----
@@ -486,6 +489,70 @@ function _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado() {
       Logger.log('[Nuevos-RoyaleAPI] _restaurarNuevosDesdeCsvDebug() falló: ' + eRestore.message);
     }
   }
+
+  // §PF575 (24-nov-2026): los ingresos recientes del Directorio que todavía no tienen fila en «Nuevos» se agregan aquí, sin esperar a Tampermonkey. No se siembra mientras una restauración desde el CSV siga a medias. Un fallo no corta el refresco.
+  try {
+    if (!_hayRestauracionNuevosPendiente()) _sembrarNuevosDesdeDirectorio_(dirData);
+  } catch (eSembrar) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: _sembrarNuevosDesdeDirectorio_() falló (' + (eSembrar.message || eSembrar) + '). El refresco de «Nuevos» continúa.');
+  }
+}
+
+/**
+ * _sembrarNuevosDesdeDirectorio_(dirData) (§PF575, 24-nov-2026; sin probar en Apps Script real)
+ * Agrega a la hoja «Nuevos» una fila vacía (solo columnas fijas del Directorio y semana en curso desde Guerra; sin historial de RoyaleAPI) por cada
+ * miembro del Directorio que cuenta como ingreso reciente y todavía no tiene fila. El historial lo llena después el botón de Nuevos o el de
+ * Corrección de Guerra de Tampermonkey: la fila ya existe y la lista de candidatos la marca yaEnNuevos.
+ * Criterio (el mismo del panel «Ingresos recientes» de la web, _tagIngresoRecienteDeFilaDir_(): Activo, en un clan Terna por TAG y V. Guerra vacío
+ * o Fecha_ing de hace 7 días o menos) más el de la lista de candidatos de Nuevos: rango Miembro y sin Admin. Se saltan los que ya tienen
+ * 3+ semanas de guerra en Terna (los mismos que _purgarNuevosEstablecidos() borraría enseguida). Tope por corrida: NUEVOS_SEMBRAR_MAX_POR_CORRIDA.
+ * Escribe con _aplicarImportacionNuevos() con registros vacíos y sin snapshot de depuración, solo para tags SIN fila: con registros vacíos esa
+ * función borra la cuadrícula de la fila, así que nunca se le pasa un tag que ya está en la hoja.
+ * dirData: filas del Directorio en formato DC (las que Paso1 ya leyó). Devuelve { candidatos, establecidos, sembrados, pendientes }.
+ */
+function _sembrarNuevosDesdeDirectorio_(dirData) {
+  var res = { candidatos: 0, establecidos: 0, sembrados: 0, pendientes: 0 };
+  if (!dirData || !dirData.length) return res;
+  var ss = _getSs();
+  if (!ss.getSheetByName(CFG.SHEETS.NUEVOS)) return res;
+
+  var tagsEnHoja = _obtenerTagsEnHojaNuevos(ss);
+  var hoy = new Date();
+  var faltan = [];
+  var vistos = {};
+  for (var i = 0; i < dirData.length; i++) {
+    var fila = dirData[i];
+    var tagReciente = _tagIngresoRecienteDeFilaDir_(fila, hoy);
+    if (!tagReciente) continue;
+    if (String(fila[DC.RANGO - 1] || '').trim() !== 'Miembro') continue;
+    if (String(fila[DC.ADMIN - 1] || '').trim() === 'Sí') continue;
+    var clave = String(tagReciente).trim().toUpperCase();
+    if (!clave || vistos[clave] || tagsEnHoja[clave] === true) continue;
+    vistos[clave] = true;
+    faltan.push(clave);
+  }
+  res.candidatos = faltan.length;
+  if (!faltan.length) return res;
+
+  var mapaSemanas = _construirMapaSemanasGuerraTerna();
+  var aSembrar = faltan.filter(function (tg) {
+    return _contarSemanasGuerraTerna(tg, mapaSemanas) < SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS;
+  });
+  res.establecidos = faltan.length - aSembrar.length;
+  if (!aSembrar.length) return res;
+
+  var lote = aSembrar.slice(0, NUEVOS_SEMBRAR_MAX_POR_CORRIDA);
+  res.pendientes = aSembrar.length - lote.length;
+  var r = _aplicarImportacionNuevos(lote.map(function (tg) { return { tag: tg, registros: [] }; }), { sinSnapshot: true });
+  if (!r || !r.ok) {
+    Logger.log('[Nuevos-RoyaleAPI] _sembrarNuevosDesdeDirectorio_(): no se pudo escribir en «Nuevos» (' + ((r && r.error) || 'respuesta inválida') + ').');
+    return res;
+  }
+  res.sembrados = r.filasNuevas || 0;
+  Logger.log('[Nuevos-RoyaleAPI] _sembrarNuevosDesdeDirectorio_(): ' + faltan.length + ' ingreso(s) reciente(s) sin fila, ' + res.establecidos +
+    ' ya establecido(s), ' + res.sembrados + ' fila(s) agregada(s)' + (res.pendientes ? ', ' + res.pendientes + ' para la próxima corrida' : '') +
+    (r.errores && r.errores.length ? ', ' + r.errores.length + ' error(es) individual(es)' : '') + '.');
+  return res;
 }
 
 function _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas() {
@@ -2134,13 +2201,14 @@ function _alimentarNuevosDesdeCorrecciones_(correcciones) {
 /**
  * _aplicarImportacionNuevos(candidatosPayload) [→ Contexto_Base_Web.md §14B073]
  */
-function _aplicarImportacionNuevos(candidatosPayload) {
+function _aplicarImportacionNuevos(candidatosPayload, opciones) {
   if (!candidatosPayload || !candidatosPayload.length) {
     return { ok: false, error: 'Sin candidatos en el payload.', procesados: 0 };
   }
 
   // FIX (06-ago-2026, puntos 4 y 5 del pedido): respaldo crudo de cada [→ Contexto_Base_Web.md §14B040]
-  _guardarSnapshotDebugImportacionNuevos(candidatosPayload);
+  // §PF575 (24-nov-2026): opciones.sinSnapshot lo pone _sembrarNuevosDesdeDirectorio_(): sus filas nacen sin registros de RoyaleAPI y no deben quedar en el respaldo crudo (Correcciones_Nuevos.csv / ClanSystem_Debug_ImportNuevos.json). El resto de los llamadores no pasa opciones y todo sigue igual.
+  if (!(opciones && opciones.sinSnapshot)) _guardarSnapshotDebugImportacionNuevos(candidatosPayload);
 
   var ss = _getSs();
   var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
