@@ -33,6 +33,7 @@ Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el códig
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
 
 - [ ] `PF569` — Decidir si se borran 15 de las 70 filas de A2: 7 que el propio Historial contradice (ingreso posterior dentro de la semana) y 8 con ataque del jugador en otro clan ese mismo día; sus N° están en `§PF569`. Las otras 55 quedan: 49 probablemente reales y 6 no concluyentes. Hoy no hay función de borrado con lista fija de N° (`§PF569` punto 5).
+- [ ] `PF571` — Decidir qué hacer con las series que el informe de `§PF571` marca como «Probable error» (75) y «Revisar» (15), con el `Backup_Guerra.csv` del 24-nov-2026: tienen ceros reconstruidos antes de la primera fila real y señal de otro clan (otra serie de la hoja con dato real esos días, o ataques en otro clan en el JSON); ni el Historial (`§PF568`) ni la revisión de A2 (`§PF569`) las cubren. Las 1 080 «Se conserva» no tienen señal y no se tocan. Hoy no hay función de borrado para ellas.
 
 ### A3. Nuevos, reenumeración y migraciones
 
@@ -103,6 +104,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
+- [ ] `PF571` — Correr `seriesCerosInicialesInforme()` (proyecto **Base**, archivo `59_Verificar_CRR_vs_Backup.gs`) y comprobar que el registro dice 1 170 series de 206 jugadores (75 «Probable error», 15 «Revisar», 1 080 «Se conserva», 75 con otra serie en la hoja) con el `Backup_Guerra.csv` del 24-nov-2026 00:20 (las cifras cambian si el CSV ya cambió); revisar el CSV «Cruce_CerosIniciales_vs_JSON …» en `Informes/Cruce_Meta`.
 
 ### B6. Clanes externos, infiltrados e índices
 
