@@ -4735,7 +4735,7 @@ function _filasManualesGuerraPlan_(filas, lista) {
       var f = filas[i];
       if (celda(f, GC.TAG).toUpperCase() !== String(it.tag).toUpperCase()) continue;
       if (celda(f, GC.TEMPORADA) !== it.temporada || celda(f, GC.SEMANA) !== it.semana || celda(f, GC.PERIOD_IDX) !== it.periodIndex) continue;
-      if ((celda(f, GC.CLAN) !== '') !== it.conClan) continue;
+      if ((celda(f, GC.CLAN) !== '') !== it.conClan) continue; // clan-por-nombre-ok: solo se mira si la columna Clan está vacía, no se compara ningún nombre
       cand.push(i);
     }
     if (cand.length !== 1) { resumen.noExiste++; detalle.push([cand.length ? 'AMBIGUA (' + cand.length + ' filas; no se toca)' : 'NO EXISTE LA FILA', '', it.tag, fila, '', '', '', '']); return; }
