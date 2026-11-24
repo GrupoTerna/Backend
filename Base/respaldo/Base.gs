@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 00:15:50 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 00:34:23 */
 
 
 
@@ -82745,6 +82745,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
  *   verificarCrrVsBackupOlvidarVerificados() -> vacía el registro de JSON verificados: la próxima corrida vuelve a leer todos los JSON.
  *   descartarFilasClanEquivocadoInforme()  -> (§PF339) SOLO INFORMA qué filas de VCRR_FILAS_DESCARTAR se quitarían de Backup_Guerra.csv.
  *   descartarFilasClanEquivocadoAplicar()  -> (§PF339) QUITA esas filas (clan equivocado, decisión de la usuaria), con respaldo previo y verificación. Es la única función del módulo que borra filas.
+ *   seriesCerosInicialesInforme()          -> (§PF571) SOLO INFORMA qué series de Backup_Guerra.csv empiezan con días reconstruidos en cero antes de la primera fila real y si hay señal de que el jugador estaba en otro clan esos días. No toca nada.
  * REGISTRO DE JSON VERIFICADOS (Cruce_CRR_JSON_Verificados.csv): por cada JSON leído guarda clan, semana, día, nombre, fecha de modificación,
  * tamaño, cuándo se verificó y su resultado (ok o el motivo del descarte). La corrida siguiente lista los archivos de cada semana (sin leerlos) y
  * solo vuelve a leer las semanas cuyos JSON cambiaron, son nuevos o faltan, o si cambió VCRR_VERSION_REGLAS: sigue desde donde se quedó.
@@ -82759,6 +82760,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
 //  Parte 1 — Funciones que se corren a mano
 //    - Verificar CurrentRiverRace contra Backup_Guerra.csv: informe, aplicar, reinicio y olvidar verificados (cada principal seguida de su continuación)
 //    - Descartar filas de un clan equivocado en Backup_Guerra.csv: informe y aplicar (§PF339; se corren ANTES de verificarCrrVsBackupAplicar)
+//    - Series con ceros reconstruidos antes de la primera fila real: informe de solo lectura (§PF571; sirve para decidir antes de descartar nada)
 //    - Revertir lo que «Aplicar» subió y dejó un día imposible: informe y aplicar (§PF446)
 //    - Corregir filas por lista con valores que RoyaleAPI y el JSON contradicen: informe y aplicar (§PF450)
 //    - Crear filas por lista (días que faltan en Backup_Guerra.csv) y ajustar lo que las rodea: informe y aplicar (§PF450)
@@ -82771,6 +82773,7 @@ function _adminDocAplicarFamilia_(body, equipo, clanNombre) {
 //    - Verificar CRR, paso 3: comparar contra el CSV y registrar hallazgos
 //    - Verificar CRR, paso 4: escribir en el CSV (solo Aplicar)
 //    - Descartar filas de un clan equivocado (motor, plan, hoja Guerra y verificación)
+//    - Series con ceros reconstruidos antes de la primera fila real (motor, series, cruce con los JSON y clasificación; §PF571)
 //    - Corregir filas por lista (motor, plan y verificación; §PF450)
 //    - Crear filas por lista (motor, plan y verificación; §PF450)
 //    - Rangos de un jugador para otras cadenas (corrección de guerra y cierre del día)
@@ -82790,6 +82793,9 @@ var VCRR_VERSION_REGLAS = 9;                           // súbela cuando cambie 
 var VCRR_ORIGEN_CREADA = 'Reconstruido - CurrentRiverRace (mínimo)';
 var VCRR_ORIGEN_SUBIDA = 'Corregido - CurrentRiverRace (mínimo)';
 var VCRR_DIAS = 'JVSD';                                // desplazamiento 0..3 = jueves a domingo
+var VCRR_CI_PROBABLE_ERROR = 'Probable error';         // §PF571: hay señal de que el jugador estaba en otro clan esos días (los ceros serían «no estaba», no «estuvo y no atacó»)
+var VCRR_CI_REVISAR = 'Revisar';                       // §PF571: hay otro clan esa semana, pero la señal no alcanza para decidir
+var VCRR_CI_SE_CONSERVA = 'Se conserva';               // §PF571: sin señal de otro clan: el cero se mantiene (sin evidencia no se asume que no estaba; §PF563 punto 5c)
 var _vcrrFameLimites_ = null;                          // caché de _vcrrFameLimitesPorAtaques_()
 var _VCRR_CACHE_RAPI_ = null;                          // caché por ejecución del índice de RoyaleAPI (_vcrrIndiceRapiDeDrive_)
 var _VCRR_CACHE_TAGCLAN_ = {};                         // caché por ejecución de _vcrrTagDeClan_(): nombre de clan -> Tag del clan ('' si no se resuelve) (§PF445 punto 12)
@@ -83074,6 +83080,16 @@ function descartarFilasClanEquivocadoInforme() { _vcrrDescartarFilas_(false); }
  * próxima sincronización de la hoja Guerra lo hace. Después de correrla, corre verificarCrrVsBackupAplicar() para que cree con el piso del JSON las filas correctas de los clanes que se conservan.
  */
 function descartarFilasClanEquivocadoAplicar() { _vcrrDescartarFilas_(true); }
+
+// ----- Series con ceros reconstruidos antes de la primera fila real: informe (§PF571) -----
+
+/**
+ * Solo informa (no toca Backup_Guerra.csv ni la hoja Guerra). Lista las series (jugador, temporada, semana y clan) de Backup_Guerra.csv que empiezan con días reconstruidos en cero
+ * antes de la primera fila real y dice, para cada una, si hay señal de que el jugador estaba en OTRO clan esos días («Probable error»), si hay que mirarla a mano («Revisar») o si no hay
+ * señal y el cero se conserva («Se conserva»). La señal sale de las demás series del jugador en la hoja y de sus JSON individuales de RoyaleAPI (también los clanes externos).
+ * Deja el detalle en «Cruce_CerosIniciales_vs_JSON <fecha> (informe).csv». Si la lectura de los JSON no alcanza en una corrida, guarda el avance: vuelve a correrla para seguir.
+ */
+function seriesCerosInicialesInforme() { _vcrrCerosIniciales_(); }
 
 // ----- Revertir lo que «Aplicar» subió y dejó un día imposible (§PF446) -----
 
@@ -84638,6 +84654,174 @@ function _vcrrVerificarDescarte_(filasAntes, filasDespues, plan, idsHoja) {
   var otra = _vcrrPlanDescartar_(filasDespues, aplicadas, idsHoja);
   if (otra.quitar.length) problemas.push('siguen ' + otra.quitar.length + ' fila(s) por quitar');
   return problemas;
+}
+
+// ----- Series con ceros reconstruidos antes de la primera fila real (§PF571): motor, series, cruce con los JSON y clasificación -----
+
+/**
+ * Motor de seriesCerosInicialesInforme(). Solo lee: Backup_Guerra.csv y los JSON individuales de RoyaleAPI de los jugadores de esas series; escribe únicamente el CSV del informe.
+ * No hace nada si no se pudieron leer todos los JSON (el informe parcial engañaría: una serie sin JSON leído parecería «sin señal de otro clan»).
+ */
+function _vcrrCerosIniciales_() {
+  if (!_adquirirLockEjecucion('seriesCerosInicialesInforme')) return;
+  try {
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var bk = _vcrrLeerBackupGuerra_();
+    if (!bk) { Logger.log('[VCRR ceros iniciales] No se encontró Backup_Guerra.csv o está vacío.'); return; }
+    var series = _vcrrCerosInicialesSeries_(bk.filas);
+    if (!series.length) { Logger.log('[VCRR ceros iniciales] Ninguna serie de Backup_Guerra.csv empieza con días reconstruidos en cero antes de la primera fila real.'); return; }
+    var tagsSet = {};
+    series.forEach(function (s) { tagsSet[s.tag] = true; });
+    var lectura = _cdjCargarRegistrosJsonDrive_(tagsSet, VCRR_PRESUPUESTO_MS);
+    if (!lectura.ok) {
+      Logger.log('[VCRR ceros iniciales] Se acabó el tiempo de esta corrida leyendo los JSON individuales de RoyaleAPI (' + lectura.archivos + ' archivos leídos en total). ' +
+        (lectura.avanceGuardado ? 'El avance quedó guardado: vuelve a correr seriesCerosInicialesInforme() para continuar.' : 'No se pudo guardar el avance: la próxima corrida empieza de cero.') + ' No se escribió ningún informe.');
+      return;
+    }
+    var resultados = series.map(function (s) { return { serie: s, cls: _vcrrCerosInicialesClasificar_(s, lectura.porTag[s.tag]) }; });
+    var prioridad = {};
+    prioridad[VCRR_CI_PROBABLE_ERROR] = 0; prioridad[VCRR_CI_REVISAR] = 1; prioridad[VCRR_CI_SE_CONSERVA] = 2;
+    resultados.sort(function (a, b) {
+      return (prioridad[a.cls.veredicto] - prioridad[b.cls.veredicto]) || (a.serie.temporada - b.serie.temporada) || (a.serie.semana - b.serie.semana) ||
+        (a.serie.clanId < b.serie.clanId ? -1 : (a.serie.clanId > b.serie.clanId ? 1 : 0)) || (a.serie.tag < b.serie.tag ? -1 : (a.serie.tag > b.serie.tag ? 1 : 0));
+    });
+    var detalle = [['Veredicto', 'Temporada', 'Semana', 'Clan', 'Clan_Tag', 'Tag', 'Nombre', 'Días en cero', 'Primer día con dato', 'Ataques de la semana en la hoja',
+      'Otras series del jugador esa semana (hoja)', 'Días con dato real en otro clan (hoja)', 'Ataques en otros clanes (JSON)', 'Otros clanes (JSON)', 'Ataques en este clan (JSON)', 'Motivo']];
+    var conteo = {}, conteoConOtra = {}, nConOtra = 0;
+    resultados.forEach(function (x) {
+      var s = x.serie, c = x.cls;
+      detalle.push([c.veredicto, s.temporada, s.semana, s.clan, s.clanTag, s.tag, s.nombre, _vcrrLetrasDias_(s.diasCero), VCRR_DIAS.charAt(s.primerDia), s.ataquesSemana,
+        s.otras.map(function (o) { return o.clan; }).join('; '), _vcrrLetrasDias_(c.diasDatoOtroClan), c.ataquesOtrosJson, c.otrosJson, c.ataquesEsteClanJson === null ? '' : c.ataquesEsteClanJson, c.motivo]);
+      conteo[c.veredicto] = (conteo[c.veredicto] || 0) + 1;
+      if (s.otras.length) { nConOtra++; conteoConOtra[c.veredicto] = (conteoConOtra[c.veredicto] || 0) + 1; }
+    });
+    _saveCSVToDrive('Cruce_CerosIniciales_vs_JSON ' + marca + ' (informe).csv', _encodeCSVInforme(detalle));
+    var texto = function (o) { return [VCRR_CI_PROBABLE_ERROR, VCRR_CI_REVISAR, VCRR_CI_SE_CONSERVA].map(function (v) { return v + ': ' + (o[v] || 0); }).join(', '); };
+    Logger.log('[VCRR ceros iniciales] ' + resultados.length + ' serie(s) de ' + Object.keys(tagsSet).length + ' jugador(es) empiezan con ceros reconstruidos antes de la primera fila real (' + lectura.archivos + ' JSON leídos). ' + texto(conteo) + '.');
+    Logger.log('[VCRR ceros iniciales] ' + nConOtra + ' de ellas tienen otra serie del mismo jugador y semana en otro clan en la hoja (' + texto(conteoConOtra) + '). No se quitó nada: «Probable error» y «Revisar» son para decidir con la usuaria.');
+  } finally {
+    _liberarLockEjecucion();
+  }
+}
+
+/**
+ * Función pura. De las filas de Backup_Guerra.csv devuelve las series (jugador, temporada, semana y clan) que EMPIEZAN con días reconstruidos en cero antes de la primera fila real. Una fila es un
+ * cero reconstruido si no es dato real (sin ataques ni fame y con origen «Reconstruido…»; _rsFilaEsDatoReal_) y tampoco trae barcos. La serie cuenta si, ordenados sus días de jueves a domingo, empieza con
+ * uno o más ceros reconstruidos y después tiene alguna fila que no lo es (esa es «la primera fila real»; si todas son ceros reconstruidos no hay fila real y la serie no entra). Solo filas de la etapa Guerra.
+ * Cada serie trae { tag, nombre, temporada, semana, clan, clanTag, clanId, diasCero: [0..3], primerDia: 0..3, ataquesSemana, otras: [{ clan, clanTag, clanId, filas: [{ off, fila }] }] }; `otras` son las series del
+ * MISMO jugador y semana en otro clan (el clan se identifica por Tag y solo si falta por nombre, como _rsClaveSerie_; clanId es el Tag o «N:<nombre>»).
+ */
+function _vcrrCerosInicialesSeries_(filas) {
+  var semanas = {}, orden = [];
+  for (var i = 0; i < filas.length; i++) {
+    var f = filas[i];
+    if (String(f[GC.ETAPA - 1] || '').trim() !== 'Guerra') continue;
+    var off = (_excDiasNum(f[GC.PERIOD_IDX - 1]) % 7) - 3;
+    var tag = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+    if (off < 0 || off > 3 || !tag) continue;
+    var temporada = _excDiasNum(f[GC.TEMPORADA - 1]), semana = _excDiasNum(f[GC.SEMANA - 1]);
+    var ks = tag + '|' + temporada + '|' + semana;
+    if (!semanas[ks]) { semanas[ks] = { tag: tag, temporada: temporada, semana: semana, clanes: {}, ordenClanes: [] }; orden.push(ks); }
+    var sem = semanas[ks];
+    var ct = _rsTagDeClanSerie_(f[GC.CLAN_TAG - 1], f[GC.CLAN - 1]);
+    var nombreClan = tot_clan_(f[GC.CLAN - 1]);
+    var clanId = ct ? _clanTagNorm_(ct) : 'N:' + nombreClan;
+    if (!sem.clanes[clanId]) { sem.clanes[clanId] = { clan: nombreClan, clanTag: ct ? _clanTagNorm_(ct) : '', clanId: clanId, nombre: '', filas: [] }; sem.ordenClanes.push(clanId); }
+    sem.clanes[clanId].filas.push({ off: off, fila: f });
+    sem.clanes[clanId].nombre = String(f[GC.NOMBRE - 1] || '');
+  }
+  var series = [];
+  orden.forEach(function (ks) {
+    var sem = semanas[ks];
+    sem.ordenClanes.forEach(function (clanId) {
+      var g = sem.clanes[clanId];
+      var dias = g.filas.slice().sort(function (a, b) { return a.off - b.off; });
+      var diasCero = [], primerDia = -1;
+      for (var d = 0; d < dias.length; d++) {
+        if (!_rsFilaEsDatoReal_(dias[d].fila) && _excDiasNum(dias[d].fila[GC.BARCOS - 1]) === 0) { if (diasCero.indexOf(dias[d].off) < 0) diasCero.push(dias[d].off); }
+        else { primerDia = dias[d].off; break; }
+      }
+      if (!diasCero.length || primerDia < 0) return;
+      var ataquesSemana = 0;
+      dias.forEach(function (x) { var a = _excDiasNum(x.fila[GC.ATAQUES_SEM - 1]); if (a > ataquesSemana) ataquesSemana = a; });
+      var otras = [];
+      sem.ordenClanes.forEach(function (otroId) { if (otroId !== clanId) otras.push(sem.clanes[otroId]); });
+      series.push({ tag: sem.tag, nombre: g.nombre, temporada: sem.temporada, semana: sem.semana, clan: g.clan, clanTag: g.clanTag, clanId: clanId,
+        diasCero: diasCero, primerDia: primerDia, ataquesSemana: ataquesSemana, otras: otras });
+    });
+  });
+  return series;
+}
+
+/**
+ * Función pura. Cruza los registros del JSON individual de RoyaleAPI de un jugador (`registros`; undefined o null si no tiene JSON) con una serie de _vcrrCerosInicialesSeries_() para esa temporada y semana.
+ * Los ataques de OTROS clanes se cuentan una vez por clan (el mayor de sus registros: el perfil, el log y el riverrace de una misma semana no se suman entre sí) e incluyen los clanes externos.
+ * El clan del registro se compara por Tag (el del registro o el que corresponde a su nombre) y solo por nombre si a alguno de los dos le falta el Tag; el nombre se corta en el primer salto de línea,
+ * porque en los perfiles a veces trae basura de rascado (una fecha). Devuelve { hayJson, total, otros: [{ clan, ataques, externa }], esteClan: ataques del propio clan o null }.
+ */
+function _vcrrOtrosClanesJson_(registros, serie) {
+  var tagSerie = serie.clanId.charAt(0) === '#' ? serie.clanId : '';
+  var porClan = {}, orden = [], esteClan = null;
+  (registros || []).forEach(function (r) {
+    if (!r || Number(r.temporadaInterna) !== serie.temporada || Number(r.semana) !== serie.semana) return;
+    var ataques = Number(r.ataques) > 0 ? Number(r.ataques) : 0;
+    var nombreReg = _cdjNormalizarClan_(r.clan);
+    var tagReg = _clanTagDeFilaORespaldo_(r.clanTag, nombreReg);
+    var mismo = (tagSerie && tagReg) ? tagSerie === tagReg : _vcrrClanNorm_(nombreReg) === _vcrrClanNorm_(serie.clan);   // clan-por-nombre-ok: respaldo cuando alguno de los dos clanes no tiene Tag
+    if (mismo) { if (esteClan === null || ataques > esteClan) esteClan = ataques; return; }
+    if (ataques <= 0) return;
+    var clave = tagReg || ('N:' + _vcrrClanNorm_(nombreReg));
+    if (!porClan[clave]) { porClan[clave] = { clan: nombreReg, ataques: 0, externa: false }; orden.push(clave); }
+    if (ataques > porClan[clave].ataques) porClan[clave].ataques = ataques;
+    if (r.externa === true) porClan[clave].externa = true;
+  });
+  var otros = orden.map(function (k) { return porClan[k]; }), total = 0;
+  otros.forEach(function (o) { total += o.ataques; });
+  return { hayJson: !!(registros && registros.length), total: total, otros: otros, esteClan: esteClan };
+}
+
+/**
+ * Función pura. Clasifica una serie de _vcrrCerosInicialesSeries_(). Los días anteriores al primer día con dato son `serie.primerDia` (0 a 3) y en ellos caben a lo más 4 ataques por día. Se mira, en este orden:
+ *  (1) Probable error: otro clan de la hoja tiene dato real (ataques, fame u origen que no sea «Reconstruido») en alguno de esos días, o el JSON trae ataques de esa semana en otro clan y caben en esos días
+ *      (la misma regla de _rsDiasAnterioresAlIngreso_(), §PF563).
+ *  (2) Revisar: el JSON trae ataques en otro clan y NO caben (más de 4 por día previo: pudo cambiar de clan más de una vez), o hay otra serie de la semana en otro clan en la hoja pero sin dato real esos
+ *      días y sin ese clan en el JSON.
+ *  (3) Se conserva: ninguna señal de otro clan; el cero se mantiene (sin evidencia no se asume que no estaba, §PF563 punto 5c).
+ * Devuelve { veredicto, motivo, diasDatoOtroClan, ataquesOtrosJson, otrosJson (texto), ataquesEsteClanJson }.
+ */
+function _vcrrCerosInicialesClasificar_(serie, registros) {
+  var previos = serie.primerDia;
+  var diasDato = [];
+  serie.otras.forEach(function (o) {
+    o.filas.forEach(function (x) { if (x.off < previos && _rsFilaEsDatoReal_(x.fila) && diasDato.indexOf(x.off) < 0) diasDato.push(x.off); });
+  });
+  diasDato.sort(function (a, b) { return a - b; });
+  var js = _vcrrOtrosClanesJson_(registros, serie);
+  var textoJson = js.otros.map(function (o) { return o.clan + (o.externa ? ' (externo)' : '') + ': ' + o.ataques; }).join('; ');
+  var cupo = 4 * previos;
+  var veredicto, motivo;
+  if (diasDato.length) {
+    veredicto = VCRR_CI_PROBABLE_ERROR;
+    motivo = 'otro clan de la hoja tiene dato real el ' + _vcrrLetrasDias_(diasDato) + '; ' + (js.total > 0 ? 'el JSON también trae ' + js.total + ' ataques en otro clan' : 'el JSON no trae otro clan esa semana');
+  } else if (js.total > 0 && js.total <= cupo) {
+    veredicto = VCRR_CI_PROBABLE_ERROR;
+    motivo = 'el JSON trae ' + js.total + ' ataques de esa semana en otro clan y caben en los ' + previos + ' día(s) anteriores al primer dato (hasta ' + cupo + ')';
+  } else if (js.total > cupo) {
+    veredicto = VCRR_CI_REVISAR;
+    motivo = 'el JSON trae ' + js.total + ' ataques en otro clan y no caben en los ' + previos + ' día(s) anteriores al primer dato (hasta ' + cupo + '): pudo cambiar de clan más de una vez';
+  } else if (serie.otras.length) {
+    veredicto = VCRR_CI_REVISAR;
+    motivo = 'hay otra serie de esa semana en otro clan en la hoja, pero sin dato real esos días, y el JSON no trae ese otro clan';
+  } else {
+    veredicto = VCRR_CI_SE_CONSERVA;
+    motivo = 'sin señal de otro clan' + (js.hayJson ? '' : ' (el jugador no tiene JSON individual)');
+  }
+  return { veredicto: veredicto, motivo: motivo, diasDatoOtroClan: diasDato, ataquesOtrosJson: js.total, otrosJson: textoJson, ataquesEsteClanJson: js.esteClan };
+}
+
+/** Letras de los días (0 a 3 = J, V, S, D) separadas por comas: [1, 2] → «V, S». */
+function _vcrrLetrasDias_(offs) {
+  return (offs || []).map(function (o) { return VCRR_DIAS.charAt(o); }).join(', ');
 }
 
 // ----- Revertir lo que «Aplicar» subió y dejó un día imposible (§PF446): motor -----
