@@ -101,7 +101,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
-- [ ] `PF566` — Probar en Apps Script real (proyecto **Base**, archivo `17_GuerraSheet.gs`) `borrarFilasSinClanEnCeroGuerraInforme()`: debe dar 161 filas a borrar de 161 candidatas. Si coincide, `borrarFilasSinClanEnCeroGuerraAplicar()` y después `generarGuerraDesglose()` (proyecto **Base**, archivo `18_CorreccionGuerra.gs`): «sin ClanTag» debe pasar de 161 a 0 (`§PF566`).
+- [ ] `PF566` — Correr `generarGuerraDesglose()` (proyecto **Base**, archivo `18_CorreccionGuerra.gs`) si aún no se corrió después del borrado de las 161 filas, y comprobar que el registro diga «0 sin ClanTag» (`§PF566` punto 5).
 
 ### B6. Clanes externos, infiltrados e índices
 
