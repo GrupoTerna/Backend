@@ -105,6 +105,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
 - [ ] `PF571` — Correr `seriesCerosInicialesInforme()` (proyecto **Base**, archivo `59_Verificar_CRR_vs_Backup.gs`) y comprobar que el registro dice 1 170 series de 206 jugadores (75 «Probable error», 15 «Revisar», 1 080 «Se conserva», 75 con otra serie en la hoja) con el `Backup_Guerra.csv` del 24-nov-2026 00:20 (las cifras cambian si el CSV ya cambió); revisar el CSV «Cruce_CerosIniciales_vs_JSON …» en `Informes/Cruce_Meta`.
+- [ ] `PF572` — Correr `aplicarTotalesSemanaDesdeHistorialInforme()` (proyecto **Base**, archivo `48_Herramientas_Debug.gs`) y comprobar que, en las series de `#2PUYLPPRG` y `#VJQLY8JV8` (temporadas 18 a 33), ya no omite días por «ataques en otro clan» cuando esos ataques son del propio clan del jugador.
 
 ### B6. Clanes externos, infiltrados e índices
 
