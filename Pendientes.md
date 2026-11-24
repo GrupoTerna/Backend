@@ -32,7 +32,7 @@ Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el códig
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
 
-- [ ] `PF569` — Decidir si se borran 15 de las 70 filas de A2: 7 que el propio Historial contradice (ingreso posterior dentro de la semana) y 8 con ataque del jugador en otro clan ese mismo día; sus N° están en `§PF569`. Las otras 55 quedan: 49 probablemente reales y 6 no concluyentes. Hoy no hay función de borrado con lista fija de N° (`§PF569` punto 5).
+- [ ] `PF570` — Corregir la lista fija de `borrarFilasA2ListaFijaGuerraAplicar()`: identifica las 15 filas de A2 por N° y el N° cambió tras el borrado de `§PF568`, así que en Apps Script real no borró ninguna (0 a borrar, 15 «NO SE BORRA»; `Backup_Guerra.csv` sigue en 39 814 filas). Las 15 siguen en el CSV y en 0, y se las halla por Tag + Clan_Tag + fecha; sus N° actuales están en `§PF570` punto 5. Las otras 55 de A2 quedan (`§PF569`).
 - [ ] `PF571` — Decidir qué hacer con las series que el informe de `§PF571` marca como «Probable error» (75) y «Revisar» (15), con el `Backup_Guerra.csv` del 24-nov-2026: tienen ceros reconstruidos antes de la primera fila real y señal de otro clan (otra serie de la hoja con dato real esos días, o ataques en otro clan en el JSON); ni el Historial (`§PF568`) ni la revisión de A2 (`§PF569`) las cubren. Las 1 080 «Se conserva» no tienen señal y no se tocan. Hoy no hay función de borrado para ellas.
 
 ### A3. Nuevos, reenumeración y migraciones
