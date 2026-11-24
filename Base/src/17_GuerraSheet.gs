@@ -4988,7 +4988,21 @@ function _filasEnCeroFueraDelClanPlan_(filas, historial) {
  * informeFilasEnCeroFueraDelClanGuerra() [→ Contexto_Base_Web.md §PF567]
  * SOLO INFORMA, no borra ni cambia nada: deja en Drive «Filas_En_Cero_Fuera_Del_Clan_Guerra <fecha> (informe).csv» con las filas «Reconstruido» en 0 y con clan que el Historial contradice (patrones A1, A2, B y C; ver _filasEnCeroFueraDelClanPlan_). Para decidir a mano si se borran.
  */
-function informeFilasEnCeroFueraDelClanGuerra() {
+function informeFilasEnCeroFueraDelClanGuerra() { _filasEnCeroFueraDelClanEjecutar_(false); }
+
+/**
+ * borrarFilasEnCeroFueraDelClanGuerraAplicar() [→ Contexto_Base_Web.md §PF568]
+ * Borra de Backup_Guerra.csv las filas de los patrones A1, B y C del informe (decisión de la usuaria del 23-nov-2026). NO borra las de A2 (la semana trae filas con datos u otro origen) ni las de la temporada más reciente del CSV (vive en la hoja Guerra y la sincronización volvería a crearlas).
+ * Respaldo previo «Backup_Guerra ANTES de borrar filas en cero fuera del clan <fecha>.csv», candado de script y tope de 1 700 filas (si salen más no borra nada). No renumera N° (quedan huecos hasta la siguiente sincronización). Deja «Filas_En_Cero_Fuera_Del_Clan_Guerra <fecha> (aplicado).csv».
+ */
+function borrarFilasEnCeroFueraDelClanGuerraAplicar() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[FilasEnCeroFueraDelClan] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try { _filasEnCeroFueraDelClanEjecutar_(true); } finally { lock.releaseLock(); }
+}
+
+function _filasEnCeroFueraDelClanEjecutar_(aplicar) {
+  var BORRAR_TOPE = 1700;
   var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
   var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
   if (!csvText) { Logger.log('[FilasEnCeroFueraDelClan] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
@@ -5014,14 +5028,28 @@ function informeFilasEnCeroFueraDelClanGuerra() {
   informe.push(['Resumen: no verificable, semana anterior al Historial (no se lista)', '', '', '', '', '', '', '', '', '', '', String(rs.antesHistorial)]);
   informe.push(['Resumen: no verificable, jugador sin movimientos en el Historial (no se lista)', '', '', '', '', '', '', '', '', '', '', String(rs.sinMovimientos)]);
   informe.push(['Resumen: filas Reconstruido en 0 con clan revisadas', '', '', '', '', '', '', '', '', '', '', String(rs.candidatas)]);
+  var maxTemp = 0;
+  filas.forEach(function (f) { var t = Number(String(f[GC.TEMPORADA - 1]).trim()); if (!isNaN(t) && t > maxTemp) maxTemp = t; });
+  var quitar = {}, aBorrar = 0, sinBorrarA2 = 0, sinBorrarEnCurso = 0;
   plan.detalle.forEach(function (d) {
     var f = filas[d[1]];
-    informe.push([d[0], f[GC.NUM - 1], f[GC.FECHA - 1], f[GC.DIA - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.PERIOD_IDX - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.CLAN_TAG - 1], d[2]]);
+    var estado = d[0];
+    if (aplicar) {
+      if (d[0] === 'A2') { sinBorrarA2++; estado = 'A2 (no se borra)'; }
+      else if (Number(String(f[GC.TEMPORADA - 1]).trim()) === maxTemp) { sinBorrarEnCurso++; estado = d[0] + ' (temporada en curso, no se borra)'; }
+      else { aBorrar++; quitar[d[1]] = true; estado = d[0] + ' (BORRAR)'; }
+    }
+    informe.push([estado, f[GC.NUM - 1], f[GC.FECHA - 1], f[GC.DIA - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.PERIOD_IDX - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], f[GC.CLAN - 1], f[GC.CLAN_TAG - 1], d[2]]);
   });
-  var nombreInforme = 'Filas_En_Cero_Fuera_Del_Clan_Guerra ' + marca + ' (informe).csv';
+  var excede = aBorrar > BORRAR_TOPE;
+  if (aplicar && aBorrar && !excede) {
+    _saveCSVToDrive('Backup_Guerra ANTES de borrar filas en cero fuera del clan ' + marca + '.csv', csvText);
+    _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas.filter(function (f, i) { return !quitar[i]; }))));
+  }
+  var nombreInforme = 'Filas_En_Cero_Fuera_Del_Clan_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
   _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
-  Logger.log('[FilasEnCeroFueraDelClan] SOLO INFORMAR. Filas revisadas: ' + rs.candidatas + '. A1: ' + rs.A1.filas + ' fila(s) en ' + rs.A1.semanas + ' semana(s); A2: ' + rs.A2.filas + ' en ' + rs.A2.semanas + '; B: ' + rs.B.filas + ' en ' + rs.B.semanas + '; C: ' + rs.C.filas + ' en ' + rs.C.semanas +
-    '. No verificables: antes del Historial ' + rs.antesHistorial + ', sin movimientos ' + rs.sinMovimientos + '. No se escribio nada en Backup_Guerra.csv. Detalle en Drive: ' + nombreInforme + '.');
+  Logger.log('[FilasEnCeroFueraDelClan] ' + (aplicar ? 'APLICAR (A1, B y C). A borrar: ' + aBorrar + (aBorrar && !excede ? ' (borradas)' : '') + '. No se borran: A2 ' + sinBorrarA2 + ', temporada en curso ' + sinBorrarEnCurso + '. ' + (excede ? 'NO SE BORRO NADA: salen mas de ' + BORRAR_TOPE + ' filas, revisar el informe. ' : '') : 'SOLO INFORMAR. ') + 'Filas revisadas: ' + rs.candidatas + '. A1: ' + rs.A1.filas + ' fila(s) en ' + rs.A1.semanas + ' semana(s); A2: ' + rs.A2.filas + ' en ' + rs.A2.semanas + '; B: ' + rs.B.filas + ' en ' + rs.B.semanas + '; C: ' + rs.C.filas + ' en ' + rs.C.semanas +
+    '. No verificables: antes del Historial ' + rs.antesHistorial + ', sin movimientos ' + rs.sinMovimientos + '. ' + (aplicar ? '' : 'No se escribio nada en Backup_Guerra.csv; para borrar A1, B y C correr borrarFilasEnCeroFueraDelClanGuerraAplicar(). ') + 'Detalle en Drive: ' + nombreInforme + '.');
 }
 
 /**
