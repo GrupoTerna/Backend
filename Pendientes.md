@@ -35,6 +35,8 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos 
 - [ ] `PF559` — Decidir qué hacer con las 225 filas de `Backup_Guerra.csv` que siguen sin `Clan_Tag` tras la aplicación del 22-nov-2026 (las 4 con ataques o fame se resuelven en `PF564`): 185 en conflicto (el perfil dice un clan y otras filas de la semana dicen otro) y 40 sin clan, todas sin ataques ni fame. Detalle y lista en `Completar_ClanTag_Guerra 2026-11-22 20.35.24 (aplicado).csv` (`§PF559` punto 7).
 - [ ] `PF563` — Decidir qué hacer con las otras series que empiezan con filas reconstruidas en cero antes del primer día real: 1 214 en `Backup_Guerra.csv` (23-nov-2026), 90 con otra serie de otro clan esa semana. No se sabe cuántas son «no estaba en el clan» sin cruzar con los JSON de todos los jugadores; hace falta una función informe (solo lectura) antes de quitar nada.
 
+- [ ] `PF564` / `PF449` — Decidir si se corre `repararClanVacioGuerraAplicar()` (proyecto **Base**, archivo `17_GuerraSheet.gs`). El informe del 23-nov-2026 (10:35 p. m.) dice: borrar 5 filas que son copias exactas de otra con clan, escribir el nombre de clan en 1 185 filas y el nombre de jugador en 2 522; las 9 «distintas» no se tocan. Cada paso ya se probó en Node (`§PF449`); falta tu decisión (`§PF564` punto 10).
+
 ### A3. Nuevos, reenumeración y migraciones
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de prueba (B7) o de vigilancia (D).
@@ -104,8 +106,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
-
-- [ ] `PF564` — Probar en Apps Script real (proyecto **Base**, archivo `17_GuerraSheet.gs`) `corregirFilasManualesGuerraInforme()`: debe dar 8 campos por cambiar (N° 32219, 32220, 32221, 32243, 32244, 32245 y 40292 de `Backup_Guerra`); si coincide, `corregirFilasManualesGuerraAplicar()`. La revisión de las otras 13 filas que confirmó la regla del mismo día ya está hecha (`§PF564` punto 6): solo la N° 32137 queda dudosa y no se toca.
 
 ### B6. Clanes externos, infiltrados e índices
 
