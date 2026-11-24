@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 23/11/2026 16:40:31 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 23/11/2026 22:25:52 */
 
 
 
@@ -28468,6 +28468,90 @@ function _completarClanTagGuerra_(aplicar) {
       '. A completar por nombre: ' + rs.completar + '. Confirmadas por otra fila del mismo dia: ' + rs.confirmada + '. Confirmadas por el Historial: ' + rs.confirmadaHistorial + '. Conflictos Historial/semana (no se aplican): ' + rs.conflictoHistorial + '. Confirmadas por el perfil de RoyaleAPI: ' + rs.confirmadaPerfil + '. Conflictos perfil/semana (no se aplican): ' + rs.conflictoPerfil + '. ' + perfilNota + ' Jugadores por confirmar con RoyaleAPI: ' + tagsRoyale.length + ' (lista en el informe). ' + historialNota + (aplicar ? ' (escritas en esta corrida: ' + aEscribir.length + ', tope ' + APLICAR_TOPE + ')' : '') +
       '. Probables (no se aplican): ' + rs.probable + '. Sin clan: ' + rs.sinClan + '. Ambiguas: ' + (rs.ambiguaDia + rs.ambiguo) + '. Nombre sin Tag: ' + rs.sinTag + '. Detalle en Drive: ' + nombreInforme + '.' +
       (aplicar ? (plan.cambios.length > APLICAR_TOPE ? ' Quedaron ' + (plan.cambios.length - APLICAR_TOPE) + ' por completar: correr completarClanTagGuerraAplicar() otra vez.' : '') : ' (No se escribio nada; correr completarClanTagGuerraAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * FILAS_MANUALES_GUERRA [→ Contexto_Base_Web.md §PF564]
+ * Correcciones puntuales de Backup_Guerra.csv dictadas por la usuaria (23-nov-2026), por N°. Cada una dice el Tag del jugador y, por columna, el valor que debe tener ANTES (se comprueba) y el que queda DESPUÉS.
+ * `#UJYULR99J` (vibpollo): el viernes 05/06 hizo 4 barcos de 125 (500) en el clan externo `#9J0YJGR9` (perfil de RoyaleAPI) y el domingo 07/06, en GrupoXTerna™3, un duelo de 3 mazos (250 + 100 + 100) y un PvP perdido (100): 4 ataques, 0 barcos, 550.
+ * `#JR0V99Y0U` (VALENTINITA_SK): 2 barcos el viernes en el clan externo `#QC0R9JQ9` (perfil de RoyaleAPI) y 2 el domingo en GrupoXTerna™2. Las filas del 07/06 con AtaquesHoy 0 solo arrastran lo acumulado del viernes, así que llevan el clan del viernes.
+ */
+var FILAS_MANUALES_GUERRA = [
+  { num: 32219, tag: '#JR0V99Y0U', campos: { CLAN_TAG: ['', '#QC0R9JQ9'] } },
+  { num: 32220, tag: '#JR0V99Y0U', campos: { CLAN_TAG: ['', '#QC0R9JQ9'] } },
+  { num: 32221, tag: '#JR0V99Y0U', campos: { CLAN_TAG: ['#GYCU9YRG', '#QC0R9JQ9'] } },
+  { num: 32243, tag: '#UJYULR99J', campos: { CLAN_TAG: ['', '#9J0YJGR9'] } },
+  { num: 32244, tag: '#UJYULR99J', campos: { CLAN_TAG: ['', '#9J0YJGR9'] } },
+  { num: 32245, tag: '#UJYULR99J', campos: { CLAN_TAG: ['#GQQPPJGR', '#9J0YJGR9'] } },
+  { num: 40292, tag: '#UJYULR99J', campos: { BARCOS: ['4', '0'], FAME: ['500', '550'] } }
+];
+
+/**
+ * _filasManualesGuerraPlan_(filas, lista) [→ Contexto_Base_Web.md §PF564]
+ * Función pura. filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado. lista: como FILAS_MANUALES_GUERRA.
+ * Para cada ítem busca la fila por N° y exige que el Tag coincida. Cada campo es «CAMBIAR» si hoy vale el valor de antes, «YA ESTA» si ya vale el de después y «NO COINCIDE» (no se toca) si vale otra cosa.
+ * Devuelve { cambios: [{ idx, col, antes, despues }], detalle: [[estado, num, tag, campo, hoy, antes, despues]], resumen: { cambiar, yaEsta, noCoincide, noExiste } }.
+ */
+function _filasManualesGuerraPlan_(filas, lista) {
+  var celda = function (f, col) { return String(f[col - 1] === undefined || f[col - 1] === null ? '' : f[col - 1]).trim(); };
+  var porNum = {};
+  for (var i = 0; i < filas.length; i++) porNum[celda(filas[i], GC.NUM)] = i;
+  var cambios = [], detalle = [], resumen = { cambiar: 0, yaEsta: 0, noCoincide: 0, noExiste: 0 };
+  lista.forEach(function (it) {
+    var idx = porNum[String(it.num)];
+    if (idx === undefined) { resumen.noExiste++; detalle.push(['NO EXISTE LA FILA', it.num, it.tag, '', '', '', '']); return; }
+    if (celda(filas[idx], GC.TAG).toUpperCase() !== String(it.tag).toUpperCase()) { resumen.noCoincide++; detalle.push(['NO COINCIDE EL TAG (no se toca)', it.num, it.tag, 'Tag', celda(filas[idx], GC.TAG), '', '']); return; }
+    Object.keys(it.campos).forEach(function (campo) {
+      var col = GC[campo], antes = it.campos[campo][0], despues = it.campos[campo][1], hoy = celda(filas[idx], col);
+      if (hoy === despues) { resumen.yaEsta++; detalle.push(['YA ESTA', it.num, it.tag, campo, hoy, antes, despues]); }
+      else if (hoy === antes) { resumen.cambiar++; cambios.push({ idx: idx, col: col, antes: antes, despues: despues }); detalle.push(['CAMBIAR', it.num, it.tag, campo, hoy, antes, despues]); }
+      else { resumen.noCoincide++; detalle.push(['NO COINCIDE (no se toca)', it.num, it.tag, campo, hoy, antes, despues]); }
+    });
+  });
+  return { cambios: cambios, detalle: detalle, resumen: resumen };
+}
+
+/**
+ * corregirFilasManualesGuerraInforme() [→ Contexto_Base_Web.md §PF564]
+ * SOLO INFORMA: deja en Drive «Corregir_Filas_Guerra <fecha> (informe).csv» con lo que cambiaría en las filas de FILAS_MANUALES_GUERRA. No escribe en Backup_Guerra.csv.
+ */
+function corregirFilasManualesGuerraInforme() { _corregirFilasManualesGuerra_(false); }
+
+/**
+ * corregirFilasManualesGuerraAplicar() [→ Contexto_Base_Web.md §PF564]
+ * Aplica solo los campos «CAMBIAR» (los que hoy valen lo esperado), con respaldo previo «Backup_Guerra ANTES de corregir filas <fecha>.csv». Es idempotente: una segunda corrida dice «YA ESTA».
+ */
+function corregirFilasManualesGuerraAplicar() { _corregirFilasManualesGuerra_(true); }
+
+function _corregirFilasManualesGuerra_(aplicar) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[FilasManualesGuerra] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[FilasManualesGuerra] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[FilasManualesGuerra] Backup_Guerra.csv no tiene filas de datos; no se hace nada.'); return; }
+    var encabezado = parsed[0], filas = parsed.slice(1);
+    if (String(encabezado[GC.NUM - 1] || '').trim() !== 'N°' || String(encabezado[GC.BARCOS - 1] || '').trim() !== 'Barcos' || String(encabezado[GC.FAME - 1] || '').trim() !== 'Fame' || String(encabezado[GC.CLAN_TAG - 1] || '').trim() !== 'Clan_Tag') {
+      Logger.log('[FilasManualesGuerra] El encabezado de Backup_Guerra.csv no tiene el orden actual de columnas (N° en la ' + GC.NUM + ', Barcos en la ' + GC.BARCOS + ', Fame en la ' + GC.FAME + ', Clan_Tag en la ' + GC.CLAN_TAG + '); no se toca nada.');
+      return;
+    }
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+    var plan = _filasManualesGuerraPlan_(filas, FILAS_MANUALES_GUERRA);
+    var informe = [['Estado', 'N°', 'Tag', 'Campo', 'Valor hoy', 'Esperado antes', 'Queda despues']].concat(plan.detalle);
+    var nombreInforme = 'Corregir_Filas_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+    if (aplicar && plan.cambios.length) {
+      _saveCSVToDrive('Backup_Guerra ANTES de corregir filas ' + marca + '.csv', csvText);
+      plan.cambios.forEach(function (c) { filas[c.idx][c.col - 1] = c.despues; });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas)));
+    }
+    var rs = plan.resumen;
+    Logger.log('[FilasManualesGuerra] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + '. Campos a cambiar: ' + rs.cambiar + '. Ya estaban: ' + rs.yaEsta + '. No coinciden (no se tocan): ' + rs.noCoincide + '. Filas que no existen: ' + rs.noExiste + '. Detalle en Drive: ' + nombreInforme + '.' + (aplicar ? '' : ' (No se escribio nada; correr corregirFilasManualesGuerraAplicar() para aplicar.)'));
   } finally {
     lock.releaseLock();
   }
