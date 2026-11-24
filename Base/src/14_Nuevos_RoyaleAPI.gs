@@ -539,7 +539,7 @@ function _sembrarNuevosDesdeDirectorio_(dirData) {
 
   var mapaSemanas = _construirMapaSemanasGuerraTerna();
   var aSembrar = faltan.filter(function (tg) {
-    return _contarSemanasGuerraTerna(tg, mapaSemanas) < SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS;
+    return !_esEstablecidoEnTerna_(tg, mapaSemanas);
   });
   res.establecidos = faltan.length - aSembrar.length;
   if (!aSembrar.length) return res;
@@ -690,7 +690,7 @@ function _restaurarNuevosDesdeCsvDebug() {
     if (!sigueActivoEnTerna) { tagsDescartadosPorMembresia[tag] = true; continue; }
 
     // Filtro de "ya establecido" -- mismo criterio que _purgarNuevosEstablecidos().
-    if (_contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) continue;
+    if (_esEstablecidoEnTerna_(tag, mapaSemanas)) continue;
 
     // Fecha_TS (numérico, epoch ms) -- ver docblock de esta función. [→ Contexto_Base_Web.md §14B113]
     var fechaTs = Number(f[3]);
@@ -891,7 +891,7 @@ function _purgarNuevosEstablecidos(sh) {
   for (var i = 0; i < numFilas; i++) {
     var tag = String(tags[i][0] || '').trim();
     if (!tag) continue;
-    if (_contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) {
+    if (_esEstablecidoEnTerna_(tag, mapaSemanas)) {
       filasABorrar.push(NUEVOS_FILA_DATOS_INICIO + i);
       tagsPurgados.push(tag);
     }
@@ -1003,6 +1003,18 @@ function _construirMapaSemanasGuerraTerna() {
     mapa[tag] = Object.keys(semanasPorTag[tag]).length;
   }
   return mapa;
+}
+
+/**
+ * _esEstablecidoEnTerna_(tag, mapaSemanas) (§PF578, 24-nov-2026; sin probar en Apps Script real)
+ * ÚNICA regla de «ya establecido» para la hoja «Nuevos»: true si el tag acumula SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS (3) o más semanas de guerra con al
+ * menos un ataque en un clan Terna (semanas distintas, seguidas o no, con la semana en curso). La usan la purga, la siembra, la lista de candidatos del
+ * botón de Tampermonkey, el filtro de _importarNuevosYPerfiles_ y la depuración del CSV. Antes la lista de candidatos usaba otra regla (las 3 últimas
+ * semanas cerradas con ataques y fame; _tagTieneParticipacionEstablecidaEnTerna()) y podía ofrecer a quien la purga acababa de borrar.
+ * mapaSemanas: el de _construirMapaSemanasGuerraTerna() (se arma una vez por corrida).
+ */
+function _esEstablecidoEnTerna_(tag, mapaSemanas) {
+  return _contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS;
 }
 
 /**
@@ -1705,12 +1717,9 @@ function _obtenerListaCandidatosNuevos() {
   var tagsEnNuevos = _obtenerTagsEnHojaNuevos(ss);
   var tTags = Date.now();
 
-  // FIX (29-ago-2026): mapa semanal por Tag construido SOLO desde [→ Contexto_Base_Web.md §14B084]
-  var mapaSemanalPorTag = _construirMapaSemanalPorTagDesdeSupercell();
+  // §PF578 (24-nov-2026): la lista usa la misma regla de «establecido» que la purga y la siembra (_esEstablecidoEnTerna_()), con un mapa de semanas armado una sola vez. Antes usaba el mapa de Backup_Guerra.csv y las 3 últimas semanas cerradas con ataques y fame (§14B084, §14B085, §14B089).
+  var mapaSemanasTerna = _construirMapaSemanasGuerraTerna();
   var tMapa = Date.now();
-
-  // FIX (16-sep-2026): contexto vigente (temporada + semana en curso), para [→ Contexto_Base_Web.md §14B085]
-  var ctx = _getCtx();
 
   for (var i = 0; i < dirData.length; i++) {
     var r = dirData[i];
@@ -1728,8 +1737,8 @@ function _obtenerListaCandidatosNuevos() {
     var tag = String(r[ix.tag] || '').trim();
     if (!tag) continue;
 
-    // FIX (29-ago-2026): ya tiene participación establecida en Terna [→ Contexto_Base_Web.md §14B086]
-    if (_tagTieneParticipacionEstablecidaEnTerna(tag, mapaSemanalPorTag, ctx)) continue;
+    // §PF578: ya establecido en Terna (3 o más semanas de guerra con ataques; misma regla que la purga) → no se envía a Tampermonkey. [→ Contexto_Base_Web.md §14B086]
+    if (_esEstablecidoEnTerna_(tag, mapaSemanasTerna)) continue;
 
     candidatos.push({
       tag: tag,
@@ -2456,7 +2465,7 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
     var mapaSemanas = _construirMapaSemanasGuerraTerna();
     var purgados = 0;
     for (var t in mapa) {
-      if (_contarSemanasGuerraTerna(t, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) {
+      if (_esEstablecidoEnTerna_(t, mapaSemanas)) {
         delete mapa[t];
         purgados++;
       }
