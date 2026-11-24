@@ -4794,6 +4794,103 @@ function _corregirFilasManualesGuerra_(aplicar) {
 }
 
 /**
+ * _filasFantasmaGuerraPlan_(filas, historial) [→ Contexto_Base_Web.md §PF565]
+ * Función pura (no toca Drive ni hojas). filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado. historial: resultado de _clanTagMovimientosHistorial_() (ingresos, reingresos y salidas con fecha).
+ * Candidata a «fantasma»: fila «Reconstruido» de la etapa Guerra, con Clan y Clan_Tag vacíos y AtaquesHoy, AtaquesSemana, Barcos y Fame en 0, de un día POSTERIOR al primer día del Historial. Se borra solo si el último movimiento del jugador en el Historial anterior a ese día es una Salida
+ * (la reconstrucción siguió generando días de guerra para un jugador que ya no estaba en ningún clan Terna) y ninguna otra fila del mismo jugador y periodo (Tag, Temporada, Semana, PeriodIndex) trae datos. Si el Historial no cubre el día, no hay movimiento previo o el último es un ingreso, NO se borra (criterio 10: no se adivina).
+ * Devuelve { borrar: [idx], detalle: [[estado, idx, texto]], resumen: { candidatas, borrar, antesHistorial, sinMovimiento, ultimoIngreso, hermanaConDatos, conDatos } }.
+ */
+function _filasFantasmaGuerraPlan_(filas, historial) {
+  var celda = function (f, col) { return String(f[col - 1] === undefined || f[col - 1] === null ? '' : f[col - 1]).trim(); };
+  var cero = function (f) { return [GC.ATAQUES_HOY, GC.ATAQUES_SEM, GC.BARCOS, GC.FAME].every(function (c) { var v = celda(f, c); return v === '' || Number(v) === 0; }); };
+  var out = { borrar: [], detalle: [], resumen: { candidatas: 0, borrar: 0, antesHistorial: 0, sinMovimiento: 0, ultimoIngreso: 0, hermanaConDatos: 0, conDatos: 0 } };
+  if (!historial || !historial.ok) return out;
+  var porClave = {};
+  for (var i = 0; i < filas.length; i++) {
+    var k = [celda(filas[i], GC.TAG).toUpperCase(), celda(filas[i], GC.TEMPORADA), celda(filas[i], GC.SEMANA), celda(filas[i], GC.PERIOD_IDX)].join('|');
+    (porClave[k] || (porClave[k] = [])).push(i);
+  }
+  for (var j = 0; j < filas.length; j++) {
+    var f = filas[j];
+    if (celda(f, GC.CLAN) || celda(f, GC.CLAN_TAG) || celda(f, GC.ORIGEN) !== 'Reconstruido' || celda(f, GC.ETAPA) !== 'Guerra') continue;
+    var rs = out.resumen;
+    if (!cero(f)) { rs.conDatos++; continue; }
+    rs.candidatas++;
+    var dia = _clanTagDiaNum_(celda(f, GC.FECHA));
+    if (!dia || dia <= historial.desde) { rs.antesHistorial++; continue; }
+    var jug = celda(f, GC.TAG).toUpperCase(), movs = historial.porJugador[jug] || [], ult = null;
+    for (var m = 0; m < movs.length; m++) { if (movs[m].dia < dia) ult = movs[m]; }
+    if (!ult) { rs.sinMovimiento++; continue; }
+    if (ult.tipo !== 'S') { rs.ultimoIngreso++; continue; }
+    var hermanas = porClave[[jug, celda(f, GC.TEMPORADA), celda(f, GC.SEMANA), celda(f, GC.PERIOD_IDX)].join('|')] || [];
+    var conDatos = hermanas.some(function (h) { return h !== j && !cero(filas[h]); });
+    if (conDatos) { rs.hermanaConDatos++; continue; }
+    rs.borrar++; out.borrar.push(j);
+    out.detalle.push(['BORRAR', j, 'Salida de ' + ult.clan + ' el ' + ult.dia + ' (antes de este dia)']);
+  }
+  return out;
+}
+
+/**
+ * borrarFilasFantasmaGuerraInforme() [→ Contexto_Base_Web.md §PF565]
+ * SOLO INFORMA: deja en Drive «Borrar_Filas_Fantasma_Guerra <fecha> (informe).csv» con las filas de Backup_Guerra.csv que se borrarían. No escribe en Backup_Guerra.csv.
+ */
+function borrarFilasFantasmaGuerraInforme() { _borrarFilasFantasmaGuerra_(false); }
+
+/**
+ * borrarFilasFantasmaGuerraAplicar() [→ Contexto_Base_Web.md §PF565]
+ * Borra las filas «BORRAR» con respaldo previo «Backup_Guerra ANTES de borrar filas fantasma <fecha>.csv». Si salen más de 120 candidatas no borra nada. No renumera N° (quedan huecos hasta la siguiente sincronización).
+ */
+function borrarFilasFantasmaGuerraAplicar() { _borrarFilasFantasmaGuerra_(true); }
+
+function _borrarFilasFantasmaGuerra_(aplicar) {
+  var BORRAR_TOPE = 120;
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[FilasFantasmaGuerra] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try {
+    var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+    var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+    if (!csvText) { Logger.log('[FilasFantasmaGuerra] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+    var parsed = _parseCSV(csvText);
+    if (!parsed || parsed.length < 2) { Logger.log('[FilasFantasmaGuerra] Backup_Guerra.csv no tiene filas de datos; no se hace nada.'); return; }
+    var encabezado = parsed[0], filas = parsed.slice(1);
+    if (String(encabezado[GC.TAG - 1] || '').trim() !== 'Tag' || String(encabezado[GC.ORIGEN - 1] || '').trim() !== 'Origen' || String(encabezado[GC.CLAN_TAG - 1] || '').trim() !== 'Clan_Tag' || String(encabezado[GC.ETAPA - 1] || '').trim() !== 'Etapa') {
+      Logger.log('[FilasFantasmaGuerra] El encabezado de Backup_Guerra.csv no tiene el orden actual de columnas; no se toca nada.');
+      return;
+    }
+    for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+    var txtHist = _loadCSVFromDrive('Backup_Historial_I-S.csv');
+    var pHist = txtHist ? _parseCSV(txtHist) : null;
+    var historial = (pHist && pHist.length > 1) ? _clanTagMovimientosHistorial_(pHist) : null;
+    if (!historial || !historial.ok) { Logger.log('[FilasFantasmaGuerra] Backup_Historial_I-S.csv no existe, esta vacio o no tiene las columnas Fecha, Tag, Movimiento y ClanTag; no se hace nada.'); return; }
+    var plan = _filasFantasmaGuerraPlan_(filas, historial);
+    var rs = plan.resumen;
+    var informe = [['Estado', 'N°', 'Fecha', 'Dia', 'Temporada', 'Semana', 'PeriodIndex', 'Tag', 'Nombre', 'Detalle']];
+    [['Resumen: candidatas (Reconstruido, sin clan, todo en 0)', rs.candidatas], ['Resumen: a borrar (el jugador ya habia salido segun el Historial)', rs.borrar], ['Resumen: no se borran, el dia es anterior al Historial', rs.antesHistorial],
+      ['Resumen: no se borran, sin movimiento previo en el Historial', rs.sinMovimiento], ['Resumen: no se borran, el ultimo movimiento previo es un ingreso', rs.ultimoIngreso], ['Resumen: no se borran, otra fila del mismo periodo trae datos', rs.hermanaConDatos],
+      ['Resumen: filas sin clan con datos (no son candidatas)', rs.conDatos]].forEach(function (x) { informe.push([x[0], '', '', '', '', '', '', '', '', String(x[1])]); });
+    plan.detalle.forEach(function (d) {
+      var f = filas[d[1]];
+      informe.push([d[0], f[GC.NUM - 1], f[GC.FECHA - 1], f[GC.DIA - 1], f[GC.TEMPORADA - 1], f[GC.SEMANA - 1], f[GC.PERIOD_IDX - 1], f[GC.TAG - 1], f[GC.NOMBRE - 1], d[2]]);
+    });
+    var nombreInforme = 'Borrar_Filas_Fantasma_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+    _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+    var excede = plan.borrar.length > BORRAR_TOPE;
+    if (aplicar && plan.borrar.length && !excede) {
+      _saveCSVToDrive('Backup_Guerra ANTES de borrar filas fantasma ' + marca + '.csv', csvText);
+      var quitar = {};
+      plan.borrar.forEach(function (i) { quitar[i] = true; });
+      _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas.filter(function (f, i) { return !quitar[i]; }))));
+    }
+    Logger.log('[FilasFantasmaGuerra] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + '. Filas: ' + filas.length + '. Candidatas: ' + rs.candidatas + '. A borrar: ' + rs.borrar + (aplicar && rs.borrar && !excede ? ' (borradas)' : '') +
+      '. No se borran: antes del Historial ' + rs.antesHistorial + ', sin movimiento previo ' + rs.sinMovimiento + ', ultimo movimiento ingreso ' + rs.ultimoIngreso + ', otra fila con datos ' + rs.hermanaConDatos + '. ' +
+      (excede ? 'NO SE BORRO NADA: salen mas de ' + BORRAR_TOPE + ' candidatas, revisar el informe. ' : '') + 'Detalle en Drive: ' + nombreInforme + '.' + (aplicar ? '' : ' (No se escribio nada; correr borrarFilasFantasmaGuerraAplicar() para aplicar.)'));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * _clanTagPlanInactivos_(inact, fuentes) [→ Contexto_Base_Web.md §PF423]
  * Función pura (no toca Drive ni hojas). inact: filas parseadas de Backup_Inactivos.csv CON encabezado. fuentes: [{ nombre, filas }], cada una con encabezado y con columnas Tag y ClanTag (o Clan_Tag).
  * Una fila de Inactivos entra al plan solo si trae Clan y ClanTag vacíos. «Confirmada»: dos o más fuentes distintas coinciden en UN solo Tag. «Probable» (no se aplicaría): una sola fuente con UN Tag.
