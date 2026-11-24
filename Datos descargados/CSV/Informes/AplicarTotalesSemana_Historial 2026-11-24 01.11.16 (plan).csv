@@ -1,0 +1,725 @@
+ID,Temporada,Semana,Tag,Nombre,Clan,Clase,Dia,PeriodIndex,Accion,AtaquesHoy anterior,AtaquesHoy nuevo,AtaquesSemana anterior (acumulado),AtaquesSemana nueva (acumulado),Fame del dia anterior,Fame del dia nueva,Fame anterior (acumulado),Fame nueva (acumulado),Barcos del dia anterior,Barcos del dia nuevo,Barcos anterior (acumulado),Barcos nuevo (acumulado),Origen anterior,Origen nuevo,Solucion
+T_36_S_05_#2C982888C,36,5,#2C982888C,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2C982888C,36,5,#2C982888C,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2C982888C,36,5,#2C982888C,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2C982888C,36,5,#2C982888C,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2Q8GJVR8V,36,5,#2Q8GJVR8V,arturo,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2Q8GJVR8V,36,5,#2Q8GJVR8V,arturo,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2Q8GJVR8V,36,5,#2Q8GJVR8V,arturo,GrupoXTerna™2,unica,S,33,Sin cambio,4,4,4,4,500,500,500,500,0,0,0,0,Corregido,Corregido,unica
+T_36_S_05_#2Q8GJVR8V,36,5,#2Q8GJVR8V,arturo,GrupoXTerna™2,unica,D,34,Sin cambio,0,0,4,4,0,0,500,500,0,0,0,0,Original,Original,unica
+T_36_S_05_#88008ULUG,36,5,#88008ULUG,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#88008ULUG,36,5,#88008ULUG,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#88008ULUG,36,5,#88008ULUG,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#88008ULUG,36,5,#88008ULUG,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#8UG89UQ2R,36,5,#8UG89UQ2R,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#8UG89UQ2R,36,5,#8UG89UQ2R,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#8UG89UQ2R,36,5,#8UG89UQ2R,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#8UG89UQ2R,36,5,#8UG89UQ2R,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#9PQ2V88V9,36,5,#9PQ2V88V9,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#9PQ2V88V9,36,5,#9PQ2V88V9,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#9PQ2V88V9,36,5,#9PQ2V88V9,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#9PQ2V88V9,36,5,#9PQ2V88V9,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#C2LGUYL2L,36,5,#C2LGUYL2L,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#C2LGUYL2L,36,5,#C2LGUYL2L,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#C2LGUYL2L,36,5,#C2LGUYL2L,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#C2LGUYL2L,36,5,#C2LGUYL2L,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CC22UL0LJ,36,5,#CC22UL0LJ,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CC22UL0LJ,36,5,#CC22UL0LJ,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CC22UL0LJ,36,5,#CC22UL0LJ,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CC22UL0LJ,36,5,#CC22UL0LJ,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CJUYYGL0R,36,5,#CJUYYGL0R,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CJUYYGL0R,36,5,#CJUYYGL0R,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CJUYYGL0R,36,5,#CJUYYGL0R,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CJUYYGL0R,36,5,#CJUYYGL0R,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CYYV9JCPU,36,5,#CYYV9JCPU,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CYYV9JCPU,36,5,#CYYV9JCPU,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CYYV9JCPU,36,5,#CYYV9JCPU,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#CYYV9JCPU,36,5,#CYYV9JCPU,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#G0QCC2VQC,36,5,#G0QCC2VQC,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#G0QCC2VQC,36,5,#G0QCC2VQC,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#G0QCC2VQC,36,5,#G0QCC2VQC,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#G0QCC2VQC,36,5,#G0QCC2VQC,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#J2LCPR0V2,36,5,#J2LCPR0V2,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#J2LCPR0V2,36,5,#J2LCPR0V2,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#J2LCPR0V2,36,5,#J2LCPR0V2,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#J2LCPR0V2,36,5,#J2LCPR0V2,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JCUPQ88J,36,5,#JCUPQ88J,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JCUPQ88J,36,5,#JCUPQ88J,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JCUPQ88J,36,5,#JCUPQ88J,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JCUPQ88J,36,5,#JCUPQ88J,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JLU999JRU,36,5,#JLU999JRU,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JLU999JRU,36,5,#JLU999JRU,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JLU999JRU,36,5,#JLU999JRU,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JLU999JRU,36,5,#JLU999JRU,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JVVG9YUG0,36,5,#JVVG9YUG0,Fiorela.,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JVVG9YUG0,36,5,#JVVG9YUG0,Fiorela.,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JVVG9YUG0,36,5,#JVVG9YUG0,Fiorela.,GrupoXTerna™2,unica,S,33,Sin cambio,4,4,4,4,400,400,400,400,0,0,0,0,Corregido,Corregido,unica
+T_36_S_05_#JVVG9YUG0,36,5,#JVVG9YUG0,Fiorela.,GrupoXTerna™2,unica,D,34,Sin cambio,0,0,4,4,0,0,400,400,0,0,0,0,Original,Original,unica
+T_36_S_05_#LLUURU990,36,5,#LLUURU990,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LLUURU990,36,5,#LLUURU990,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LLUURU990,36,5,#LLUURU990,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LLUURU990,36,5,#LLUURU990,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LP9P20QG8,36,5,#LP9P20QG8,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LP9P20QG8,36,5,#LP9P20QG8,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LP9P20QG8,36,5,#LP9P20QG8,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LP9P20QG8,36,5,#LP9P20QG8,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#P0V98CV90,36,5,#P0V98CV90,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#P0V98CV90,36,5,#P0V98CV90,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#P0V98CV90,36,5,#P0V98CV90,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#P0V98CV90,36,5,#P0V98CV90,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#PV8RVPRJV,36,5,#PV8RVPRJV,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#PV8RVPRJV,36,5,#PV8RVPRJV,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#PV8RVPRJV,36,5,#PV8RVPRJV,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#PV8RVPRJV,36,5,#PV8RVPRJV,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#U8G8J8PYP,36,5,#U8G8J8PYP,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#U8G8J8PYP,36,5,#U8G8J8PYP,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#U8G8J8PYP,36,5,#U8G8J8PYP,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#U8G8J8PYP,36,5,#U8G8J8PYP,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#U98RJ28PG,36,5,#U98RJ28PG,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#U98RJ28PG,36,5,#U98RJ28PG,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#U98RJ28PG,36,5,#U98RJ28PG,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#U98RJ28PG,36,5,#U98RJ28PG,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UJYP2GYCY,36,5,#UJYP2GYCY,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UJYP2GYCY,36,5,#UJYP2GYCY,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UJYP2GYCY,36,5,#UJYP2GYCY,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UJYP2GYCY,36,5,#UJYP2GYCY,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#ULCLY8U8R,36,5,#ULCLY8U8R,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#ULCLY8U8R,36,5,#ULCLY8U8R,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#ULCLY8U8R,36,5,#ULCLY8U8R,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#ULCLY8U8R,36,5,#ULCLY8U8R,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UQJJ288YU,36,5,#UQJJ288YU,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UQJJ288YU,36,5,#UQJJ288YU,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UQJJ288YU,36,5,#UQJJ288YU,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UQJJ288YU,36,5,#UQJJ288YU,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UY8UJ28CQ,36,5,#UY8UJ28CQ,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UY8UJ28CQ,36,5,#UY8UJ28CQ,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UY8UJ28CQ,36,5,#UY8UJ28CQ,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UY8UJ28CQ,36,5,#UY8UJ28CQ,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V8U2G9C8J,36,5,#V8U2G9C8J,Olivera8,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V8U2G9C8J,36,5,#V8U2G9C8J,Olivera8,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V8U2G9C8J,36,5,#V8U2G9C8J,Olivera8,GrupoXTerna™2,unica,S,33,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,Corregido,Corregido,unica
+T_36_S_05_#V8U2G9C8J,36,5,#V8U2G9C8J,Olivera8,GrupoXTerna™2,unica,D,34,Sin cambio,4,4,8,8,600,600,1200,1200,0,0,0,0,Original,Original,unica
+T_36_S_05_#V92LYUJJ9,36,5,#V92LYUJJ9,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V92LYUJJ9,36,5,#V92LYUJJ9,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V92LYUJJ9,36,5,#V92LYUJJ9,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V92LYUJJ9,36,5,#V92LYUJJ9,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VUVC9P8VL,36,5,#VUVC9P8VL,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VUVC9P8VL,36,5,#VUVC9P8VL,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VUVC9P8VL,36,5,#VUVC9P8VL,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VUVC9P8VL,36,5,#VUVC9P8VL,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#YVYRLUPQJ,36,5,#YVYRLUPQJ,,GrupoXTerna™2,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#YVYRLUPQJ,36,5,#YVYRLUPQJ,,GrupoXTerna™2,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#YVYRLUPQJ,36,5,#YVYRLUPQJ,,GrupoXTerna™2,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#YVYRLUPQJ,36,5,#YVYRLUPQJ,,GrupoXTerna™2,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JPPJ9J8GP,36,5,#JPPJ9J8GP,,GrupoXTerna™3,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JPPJ9J8GP,36,5,#JPPJ9J8GP,,GrupoXTerna™3,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JPPJ9J8GP,36,5,#JPPJ9J8GP,,GrupoXTerna™3,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JPPJ9J8GP,36,5,#JPPJ9J8GP,,GrupoXTerna™3,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V9V9RQY9C,36,5,#V9V9RQY9C,,GrupoXTerna™3,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V9V9RQY9C,36,5,#V9V9RQY9C,,GrupoXTerna™3,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V9V9RQY9C,36,5,#V9V9RQY9C,,GrupoXTerna™3,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#V9V9RQY9C,36,5,#V9V9RQY9C,,GrupoXTerna™3,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VPRRYY9VU,36,5,#VPRRYY9VU,,GrupoXTerna™3,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VPRRYY9VU,36,5,#VPRRYY9VU,,GrupoXTerna™3,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VPRRYY9VU,36,5,#VPRRYY9VU,,GrupoXTerna™3,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VPRRYY9VU,36,5,#VPRRYY9VU,,GrupoXTerna™3,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VQQQG98R0,36,5,#VQQQG98R0,,GrupoXTerna™3,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VQQQG98R0,36,5,#VQQQG98R0,,GrupoXTerna™3,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VQQQG98R0,36,5,#VQQQG98R0,,GrupoXTerna™3,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VQQQG98R0,36,5,#VQQQG98R0,,GrupoXTerna™3,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VRUY9LPUG,36,5,#VRUY9LPUG,,GrupoXTerna™3,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VRUY9LPUG,36,5,#VRUY9LPUG,,GrupoXTerna™3,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VRUY9LPUG,36,5,#VRUY9LPUG,,GrupoXTerna™3,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VRUY9LPUG,36,5,#VRUY9LPUG,,GrupoXTerna™3,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2C982888C,36,5,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,unica,J,31,Sin cambio,4,4,4,4,500,500,500,500,0,0,0,0,Corregido,Corregido,unica
+T_36_S_05_#2C982888C,36,5,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,unica,V,32,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2C982888C,36,5,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,unica,S,33,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#2C982888C,36,5,#2C982888C,ᴳ乂ᵀ ⚜️ Ⓜ.ⓈⒺⒷⒶⓈ⚡,Grupo乂Terna™,unica,D,34,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#GLPC8YQGV,36,5,#GLPC8YQGV,,Grupo乂Terna™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#GLPC8YQGV,36,5,#GLPC8YQGV,,Grupo乂Terna™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#GLPC8YQGV,36,5,#GLPC8YQGV,,Grupo乂Terna™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#GLPC8YQGV,36,5,#GLPC8YQGV,,Grupo乂Terna™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JGLV98Q9V,36,5,#JGLV98Q9V,,Grupo乂Terna™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JGLV98Q9V,36,5,#JGLV98Q9V,,Grupo乂Terna™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JGLV98Q9V,36,5,#JGLV98Q9V,,Grupo乂Terna™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JGLV98Q9V,36,5,#JGLV98Q9V,,Grupo乂Terna™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JV2CCCP28,36,5,#JV2CCCP28,,Grupo乂Terna™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JV2CCCP28,36,5,#JV2CCCP28,,Grupo乂Terna™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JV2CCCP28,36,5,#JV2CCCP28,,Grupo乂Terna™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JV2CCCP28,36,5,#JV2CCCP28,,Grupo乂Terna™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JVVG9YUG0,36,5,#JVVG9YUG0,,Grupo乂Terna™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JVVG9YUG0,36,5,#JVVG9YUG0,,Grupo乂Terna™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JVVG9YUG0,36,5,#JVVG9YUG0,,Grupo乂Terna™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#JVVG9YUG0,36,5,#JVVG9YUG0,,Grupo乂Terna™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LJUP920C9,36,5,#LJUP920C9,,Grupo乂Terna™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LJUP920C9,36,5,#LJUP920C9,,Grupo乂Terna™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LJUP920C9,36,5,#LJUP920C9,,Grupo乂Terna™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#LJUP920C9,36,5,#LJUP920C9,,Grupo乂Terna™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#202LLCYPRC,36,5,#202LLCYPRC,,Mini乂Ternas™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#202LLCYPRC,36,5,#202LLCYPRC,,Mini乂Ternas™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#202LLCYPRC,36,5,#202LLCYPRC,,Mini乂Ternas™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#202LLCYPRC,36,5,#202LLCYPRC,,Mini乂Ternas™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#229R0GP2YQ,36,5,#229R0GP2YQ,,Mini乂Ternas™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#229R0GP2YQ,36,5,#229R0GP2YQ,,Mini乂Ternas™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#229R0GP2YQ,36,5,#229R0GP2YQ,,Mini乂Ternas™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#229R0GP2YQ,36,5,#229R0GP2YQ,,Mini乂Ternas™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UJY0PGPUV,36,5,#UJY0PGPUV,,Mini乂Ternas™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UJY0PGPUV,36,5,#UJY0PGPUV,,Mini乂Ternas™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UJY0PGPUV,36,5,#UJY0PGPUV,,Mini乂Ternas™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UJY0PGPUV,36,5,#UJY0PGPUV,,Mini乂Ternas™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UR8CU0CYR,36,5,#UR8CU0CYR,,Mini乂Ternas™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UR8CU0CYR,36,5,#UR8CU0CYR,,Mini乂Ternas™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UR8CU0CYR,36,5,#UR8CU0CYR,,Mini乂Ternas™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#UR8CU0CYR,36,5,#UR8CU0CYR,,Mini乂Ternas™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VGQPU9CRG,36,5,#VGQPU9CRG,,Mini乂Ternas™,unica,J,31,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VGQPU9CRG,36,5,#VGQPU9CRG,,Mini乂Ternas™,unica,V,32,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VGQPU9CRG,36,5,#VGQPU9CRG,,Mini乂Ternas™,unica,S,33,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_36_S_05_#VGQPU9CRG,36,5,#VGQPU9CRG,,Mini乂Ternas™,unica,D,34,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#2Q8GJVR8V,37,1,#2Q8GJVR8V,,GrupoXTerna™2,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#2Q8GJVR8V,37,1,#2Q8GJVR8V,,GrupoXTerna™2,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#2Q8GJVR8V,37,1,#2Q8GJVR8V,,GrupoXTerna™2,unica,S,5,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#2Q8GJVR8V,37,1,#2Q8GJVR8V,,GrupoXTerna™2,unica,D,6,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#ULJVRUJLG,37,1,#ULJVRUJLG,Papi Chulo,GrupoXTerna™2,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#ULJVRUJLG,37,1,#ULJVRUJLG,Papi Chulo,GrupoXTerna™2,unica,V,4,Sin cambio,4,4,4,4,900,900,900,900,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_01_#ULJVRUJLG,37,1,#ULJVRUJLG,Papi Chulo,GrupoXTerna™2,unica,S,5,Sin cambio,4,4,8,8,500,500,1400,1400,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_01_#ULJVRUJLG,37,1,#ULJVRUJLG,Papi Chulo,GrupoXTerna™2,unica,D,6,Sin cambio,4,4,12,12,800,800,2200,2200,0,0,0,0,Reconstruido,Reconstruido,unica
+T_37_S_01_#UYJCRLRUV,37,1,#UYJCRLRUV,[kr]sanz,GrupoXTerna™2,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#UYJCRLRUV,37,1,#UYJCRLRUV,[kr]sanz,GrupoXTerna™2,unica,V,4,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_37_S_01_#UYJCRLRUV,37,1,#UYJCRLRUV,[kr]sanz,GrupoXTerna™2,unica,S,5,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_01_#UYJCRLRUV,37,1,#UYJCRLRUV,[kr]sanz,GrupoXTerna™2,unica,D,6,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_01_#209Y2UU2G8,37,1,#209Y2UU2G8,Txz Cr1s,Grupo乂Terna™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#209Y2UU2G8,37,1,#209Y2UU2G8,Txz Cr1s,Grupo乂Terna™,unica,V,4,Sin cambio,4,4,4,4,700,700,700,700,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_01_#209Y2UU2G8,37,1,#209Y2UU2G8,Txz Cr1s,Grupo乂Terna™,unica,S,5,Sin cambio,4,4,8,8,500,500,1200,1200,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_01_#209Y2UU2G8,37,1,#209Y2UU2G8,Txz Cr1s,Grupo乂Terna™,unica,D,6,Sin cambio,4,4,12,12,500,500,1700,1700,0,0,0,0,Reconstruido,Reconstruido,unica
+T_37_S_01_#8YCLY8CRU,37,1,#8YCLY8CRU,,Grupo乂Terna™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#8YCLY8CRU,37,1,#8YCLY8CRU,,Grupo乂Terna™,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#8YCLY8CRU,37,1,#8YCLY8CRU,,Grupo乂Terna™,unica,S,5,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#8YCLY8CRU,37,1,#8YCLY8CRU,,Grupo乂Terna™,unica,D,6,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#V2RUQ9LUG,37,1,#V2RUQ9LUG,,Grupo乂Terna™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#V2RUQ9LUG,37,1,#V2RUQ9LUG,,Grupo乂Terna™,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#V2RUQ9LUG,37,1,#V2RUQ9LUG,,Grupo乂Terna™,unica,S,5,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#V2RUQ9LUG,37,1,#V2RUQ9LUG,,Grupo乂Terna™,unica,D,6,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#VGRYG8YVP,37,1,#VGRYG8YVP,Pávlov_Cc,Grupo乂Terna™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#VGRYG8YVP,37,1,#VGRYG8YVP,Pávlov_Cc,Grupo乂Terna™,unica,V,4,Sin cambio,4,4,4,4,700,700,700,700,0,0,0,0,Original,Original,unica
+T_37_S_01_#VGRYG8YVP,37,1,#VGRYG8YVP,Pávlov_Cc,Grupo乂Terna™,unica,S,5,Sin cambio,4,4,8,8,550,550,1250,1250,0,0,0,0,Corregido,Corregido,unica
+T_37_S_01_#VGRYG8YVP,37,1,#VGRYG8YVP,Pávlov_Cc,Grupo乂Terna™,unica,D,6,Sin cambio,0,0,8,8,0,0,1250,1250,0,0,0,0,Original,Original,unica
+T_37_S_01_#Y990VL9LL,37,1,#Y990VL9LL,♿️ l mayin,Grupo乂Terna™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_01_#Y990VL9LL,37,1,#Y990VL9LL,♿️ l mayin,Grupo乂Terna™,unica,V,4,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_01_#Y990VL9LL,37,1,#Y990VL9LL,♿️ l mayin,Grupo乂Terna™,unica,S,5,Sin cambio,4,4,8,8,500,500,1100,1100,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_01_#Y990VL9LL,37,1,#Y990VL9LL,♿️ l mayin,Grupo乂Terna™,unica,D,6,Sin cambio,4,4,12,12,800,800,1900,1900,0,0,0,0,Reconstruido,Reconstruido,unica
+T_37_S_02_#2Q8GJVR8V,37,2,#2Q8GJVR8V,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#2Q8GJVR8V,37,2,#2Q8GJVR8V,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#2Q8GJVR8V,37,2,#2Q8GJVR8V,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#2Q8GJVR8V,37,2,#2Q8GJVR8V,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#GC2GRLRJL,37,2,#GC2GRLRJL,Fino :),GrupoXTerna™2,unica,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_37_S_02_#GC2GRLRJL,37,2,#GC2GRLRJL,Fino :),GrupoXTerna™2,unica,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_37_S_02_#GC2GRLRJL,37,2,#GC2GRLRJL,Fino :),GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#GC2GRLRJL,37,2,#GC2GRLRJL,Fino :),GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#LCYCCGGPR,37,2,#LCYCCGGPR,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#LCYCCGGPR,37,2,#LCYCCGGPR,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#LCYCCGGPR,37,2,#LCYCCGGPR,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#LCYCCGGPR,37,2,#LCYCCGGPR,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V92LYUJJ9,37,2,#V92LYUJJ9,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V92LYUJJ9,37,2,#V92LYUJJ9,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V92LYUJJ9,37,2,#V92LYUJJ9,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V92LYUJJ9,37,2,#V92LYUJJ9,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#VUVC9P8VL,37,2,#VUVC9P8VL,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#VUVC9P8VL,37,2,#VUVC9P8VL,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#VUVC9P8VL,37,2,#VUVC9P8VL,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#VUVC9P8VL,37,2,#VUVC9P8VL,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V9L9V9YV0,37,2,#V9L9V9YV0,,GrupoXTerna™3,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V9L9V9YV0,37,2,#V9L9V9YV0,,GrupoXTerna™3,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V9L9V9YV0,37,2,#V9L9V9YV0,,GrupoXTerna™3,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V9L9V9YV0,37,2,#V9L9V9YV0,,GrupoXTerna™3,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#8YCLY8CRU,37,2,#8YCLY8CRU,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#8YCLY8CRU,37,2,#8YCLY8CRU,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#8YCLY8CRU,37,2,#8YCLY8CRU,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#8YCLY8CRU,37,2,#8YCLY8CRU,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#JGY090GGP,37,2,#JGY090GGP,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#JGY090GGP,37,2,#JGY090GGP,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#JGY090GGP,37,2,#JGY090GGP,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#JGY090GGP,37,2,#JGY090GGP,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#P8Y0CQ9VR,37,2,#P8Y0CQ9VR,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#P8Y0CQ9VR,37,2,#P8Y0CQ9VR,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#P8Y0CQ9VR,37,2,#P8Y0CQ9VR,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#P8Y0CQ9VR,37,2,#P8Y0CQ9VR,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V2RUQ9LUG,37,2,#V2RUQ9LUG,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V2RUQ9LUG,37,2,#V2RUQ9LUG,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V2RUQ9LUG,37,2,#V2RUQ9LUG,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_02_#V2RUQ9LUG,37,2,#V2RUQ9LUG,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#GC2GRLRJL,37,3,#GC2GRLRJL,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#GC2GRLRJL,37,3,#GC2GRLRJL,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#GC2GRLRJL,37,3,#GC2GRLRJL,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#GC2GRLRJL,37,3,#GC2GRLRJL,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#LCYCCGGPR,37,3,#LCYCCGGPR,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#LCYCCGGPR,37,3,#LCYCCGGPR,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#LCYCCGGPR,37,3,#LCYCCGGPR,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#LCYCCGGPR,37,3,#LCYCCGGPR,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V92LYUJJ9,37,3,#V92LYUJJ9,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V92LYUJJ9,37,3,#V92LYUJJ9,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V92LYUJJ9,37,3,#V92LYUJJ9,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V92LYUJJ9,37,3,#V92LYUJJ9,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V9L9V9YV0,37,3,#V9L9V9YV0,,GrupoXTerna™3,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V9L9V9YV0,37,3,#V9L9V9YV0,,GrupoXTerna™3,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V9L9V9YV0,37,3,#V9L9V9YV0,,GrupoXTerna™3,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V9L9V9YV0,37,3,#V9L9V9YV0,,GrupoXTerna™3,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#8J9PL92GU,37,3,#8J9PL92GU,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#8J9PL92GU,37,3,#8J9PL92GU,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#8J9PL92GU,37,3,#8J9PL92GU,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#8J9PL92GU,37,3,#8J9PL92GU,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#8YCLY8CRU,37,3,#8YCLY8CRU,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#8YCLY8CRU,37,3,#8YCLY8CRU,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#8YCLY8CRU,37,3,#8YCLY8CRU,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#8YCLY8CRU,37,3,#8YCLY8CRU,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#JGY090GGP,37,3,#JGY090GGP,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#JGY090GGP,37,3,#JGY090GGP,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#JGY090GGP,37,3,#JGY090GGP,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#JGY090GGP,37,3,#JGY090GGP,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V2RUQ9LUG,37,3,#V2RUQ9LUG,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V2RUQ9LUG,37,3,#V2RUQ9LUG,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V2RUQ9LUG,37,3,#V2RUQ9LUG,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_03_#V2RUQ9LUG,37,3,#V2RUQ9LUG,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#2Q8GJVR8V,37,4,#2Q8GJVR8V,,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#2Q8GJVR8V,37,4,#2Q8GJVR8V,,GrupoXTerna™2,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#2Q8GJVR8V,37,4,#2Q8GJVR8V,,GrupoXTerna™2,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#2Q8GJVR8V,37,4,#2Q8GJVR8V,,GrupoXTerna™2,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#GC2GRLRJL,37,4,#GC2GRLRJL,,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#GC2GRLRJL,37,4,#GC2GRLRJL,,GrupoXTerna™2,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#GC2GRLRJL,37,4,#GC2GRLRJL,,GrupoXTerna™2,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#GC2GRLRJL,37,4,#GC2GRLRJL,,GrupoXTerna™2,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#JVVG9YUG0,37,4,#JVVG9YUG0,,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#JVVG9YUG0,37,4,#JVVG9YUG0,,GrupoXTerna™2,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#JVVG9YUG0,37,4,#JVVG9YUG0,,GrupoXTerna™2,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#JVVG9YUG0,37,4,#JVVG9YUG0,,GrupoXTerna™2,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#LCYCCGGPR,37,4,#LCYCCGGPR,,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#LCYCCGGPR,37,4,#LCYCCGGPR,,GrupoXTerna™2,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#LCYCCGGPR,37,4,#LCYCCGGPR,,GrupoXTerna™2,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#LCYCCGGPR,37,4,#LCYCCGGPR,,GrupoXTerna™2,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#LRQ8YJRCU,37,4,#LRQ8YJRCU,,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#LRQ8YJRCU,37,4,#LRQ8YJRCU,,GrupoXTerna™2,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#LRQ8YJRCU,37,4,#LRQ8YJRCU,,GrupoXTerna™2,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#LRQ8YJRCU,37,4,#LRQ8YJRCU,,GrupoXTerna™2,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V92LYUJJ9,37,4,#V92LYUJJ9,,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V92LYUJJ9,37,4,#V92LYUJJ9,,GrupoXTerna™2,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V92LYUJJ9,37,4,#V92LYUJJ9,,GrupoXTerna™2,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V92LYUJJ9,37,4,#V92LYUJJ9,,GrupoXTerna™2,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#VUVC9P8VL,37,4,#VUVC9P8VL,,GrupoXTerna™2,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#VUVC9P8VL,37,4,#VUVC9P8VL,,GrupoXTerna™2,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#VUVC9P8VL,37,4,#VUVC9P8VL,,GrupoXTerna™2,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#VUVC9P8VL,37,4,#VUVC9P8VL,,GrupoXTerna™2,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V9L9V9YV0,37,4,#V9L9V9YV0,,GrupoXTerna™3,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V9L9V9YV0,37,4,#V9L9V9YV0,,GrupoXTerna™3,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V9L9V9YV0,37,4,#V9L9V9YV0,,GrupoXTerna™3,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V9L9V9YV0,37,4,#V9L9V9YV0,,GrupoXTerna™3,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#8J9PL92GU,37,4,#8J9PL92GU,,Grupo乂Terna™,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#8J9PL92GU,37,4,#8J9PL92GU,,Grupo乂Terna™,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#8J9PL92GU,37,4,#8J9PL92GU,,Grupo乂Terna™,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#8J9PL92GU,37,4,#8J9PL92GU,,Grupo乂Terna™,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#8YCLY8CRU,37,4,#8YCLY8CRU,,Grupo乂Terna™,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#8YCLY8CRU,37,4,#8YCLY8CRU,,Grupo乂Terna™,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#8YCLY8CRU,37,4,#8YCLY8CRU,,Grupo乂Terna™,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#8YCLY8CRU,37,4,#8YCLY8CRU,,Grupo乂Terna™,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#JGY090GGP,37,4,#JGY090GGP,,Grupo乂Terna™,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#JGY090GGP,37,4,#JGY090GGP,,Grupo乂Terna™,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#JGY090GGP,37,4,#JGY090GGP,,Grupo乂Terna™,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#JGY090GGP,37,4,#JGY090GGP,,Grupo乂Terna™,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V2RUQ9LUG,37,4,#V2RUQ9LUG,,Grupo乂Terna™,unica,J,24,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V2RUQ9LUG,37,4,#V2RUQ9LUG,,Grupo乂Terna™,unica,V,25,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V2RUQ9LUG,37,4,#V2RUQ9LUG,,Grupo乂Terna™,unica,S,26,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_37_S_04_#V2RUQ9LUG,37,4,#V2RUQ9LUG,,Grupo乂Terna™,unica,D,27,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#CUVG2G2LR,38,1,#CUVG2G2LR,• Aaron CR •,GrupoXTerna™2,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#CUVG2G2LR,38,1,#CUVG2G2LR,• Aaron CR •,GrupoXTerna™2,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#CUVG2G2LR,38,1,#CUVG2G2LR,• Aaron CR •,GrupoXTerna™2,unica,S,5,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,Original,Original,unica
+T_38_S_01_#CUVG2G2LR,38,1,#CUVG2G2LR,• Aaron CR •,GrupoXTerna™2,unica,D,6,Sin cambio,4,4,8,8,700,700,1300,1300,0,0,0,0,Original,Original,unica
+T_38_S_01_#82QCRUYYG,38,1,#82QCRUYYG,Brayan R'a,Grupo乂Terna™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#82QCRUYYG,38,1,#82QCRUYYG,Brayan R'a,Grupo乂Terna™,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#82QCRUYYG,38,1,#82QCRUYYG,Brayan R'a,Grupo乂Terna™,unica,S,5,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#82QCRUYYG,38,1,#82QCRUYYG,Brayan R'a,Grupo乂Terna™,unica,D,6,Sin cambio,4,4,4,4,800,800,800,800,0,0,0,0,Original,Original,unica
+T_38_S_01_#8CQLU9QLJ,38,1,#8CQLU9QLJ,Gheiner,Grupo乂Terna™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#8CQLU9QLJ,38,1,#8CQLU9QLJ,Gheiner,Grupo乂Terna™,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#8CQLU9QLJ,38,1,#8CQLU9QLJ,Gheiner,Grupo乂Terna™,unica,S,5,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#8CQLU9QLJ,38,1,#8CQLU9QLJ,Gheiner,Grupo乂Terna™,unica,D,6,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_01_#PRQUC982Y,38,1,#PRQUC982Y,fernann,Grupo乂Terna™,unica,J,3,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#PRQUC982Y,38,1,#PRQUC982Y,fernann,Grupo乂Terna™,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#PRQUC982Y,38,1,#PRQUC982Y,fernann,Grupo乂Terna™,unica,S,5,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#PRQUC982Y,38,1,#PRQUC982Y,fernann,Grupo乂Terna™,unica,D,6,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_01_#V22JPRY89,38,1,#V22JPRY89,Cvs EmersonX,Grupo乂Terna™,unica,J,3,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_01_#V22JPRY89,38,1,#V22JPRY89,Cvs EmersonX,Grupo乂Terna™,unica,V,4,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#V22JPRY89,38,1,#V22JPRY89,Cvs EmersonX,Grupo乂Terna™,unica,S,5,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_01_#V22JPRY89,38,1,#V22JPRY89,Cvs EmersonX,Grupo乂Terna™,unica,D,6,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#229L8LYPR,38,2,#229L8LYPR,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#229L8LYPR,38,2,#229L8LYPR,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#229L8LYPR,38,2,#229L8LYPR,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#229L8LYPR,38,2,#229L8LYPR,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#2Q8GJVR8V,38,2,#2Q8GJVR8V,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#2Q8GJVR8V,38,2,#2Q8GJVR8V,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#2Q8GJVR8V,38,2,#2Q8GJVR8V,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#2Q8GJVR8V,38,2,#2Q8GJVR8V,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#J00L0YV9V,38,2,#J00L0YV9V,cristhian ronal,GrupoXTerna™2,unica,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#J00L0YV9V,38,2,#J00L0YV9V,cristhian ronal,GrupoXTerna™2,unica,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#J00L0YV9V,38,2,#J00L0YV9V,cristhian ronal,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#J00L0YV9V,38,2,#J00L0YV9V,cristhian ronal,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JJ222RYRG,38,2,#JJ222RYRG,china,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JJ222RYRG,38,2,#JJ222RYRG,china,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JJ222RYRG,38,2,#JJ222RYRG,china,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JJ222RYRG,38,2,#JJ222RYRG,china,GrupoXTerna™2,unica,D,13,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,Original,Original,unica
+T_38_S_02_#JP8RPVYPY,38,2,#JP8RPVYPY,Dxvid dripps,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JP8RPVYPY,38,2,#JP8RPVYPY,Dxvid dripps,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JP8RPVYPY,38,2,#JP8RPVYPY,Dxvid dripps,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JP8RPVYPY,38,2,#JP8RPVYPY,Dxvid dripps,GrupoXTerna™2,unica,D,13,Sin cambio,4,4,4,4,400,400,400,400,4,4,4,4,Original,Original,unica
+T_38_S_02_#L28JYY2J,38,2,#L28JYY2J,Gamer,GrupoXTerna™2,unica,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#L28JYY2J,38,2,#L28JYY2J,Gamer,GrupoXTerna™2,unica,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#L28JYY2J,38,2,#L28JYY2J,Gamer,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#L28JYY2J,38,2,#L28JYY2J,Gamer,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#LRQ8YJRCU,38,2,#LRQ8YJRCU,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#LRQ8YJRCU,38,2,#LRQ8YJRCU,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#LRQ8YJRCU,38,2,#LRQ8YJRCU,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#LRQ8YJRCU,38,2,#LRQ8YJRCU,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#P8Y0CQ9VR,38,2,#P8Y0CQ9VR,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#P8Y0CQ9VR,38,2,#P8Y0CQ9VR,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#P8Y0CQ9VR,38,2,#P8Y0CQ9VR,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#P8Y0CQ9VR,38,2,#P8Y0CQ9VR,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#RJQRC0RJ,38,2,#RJQRC0RJ,SHAQ,GrupoXTerna™2,unica,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#RJQRC0RJ,38,2,#RJQRC0RJ,SHAQ,GrupoXTerna™2,unica,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#RJQRC0RJ,38,2,#RJQRC0RJ,SHAQ,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#RJQRC0RJ,38,2,#RJQRC0RJ,SHAQ,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#RR8CRJPUV,38,2,#RR8CRJPUV,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#RR8CRJPUV,38,2,#RR8CRJPUV,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#RR8CRJPUV,38,2,#RR8CRJPUV,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#RR8CRJPUV,38,2,#RR8CRJPUV,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#U9L000CVL,38,2,#U9L000CVL,RJ,GrupoXTerna™2,unica,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#U9L000CVL,38,2,#U9L000CVL,RJ,GrupoXTerna™2,unica,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#U9L000CVL,38,2,#U9L000CVL,RJ,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#U9L000CVL,38,2,#U9L000CVL,RJ,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#UY9Q2QC9P,38,2,#UY9Q2QC9P,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#UY9Q2QC9P,38,2,#UY9Q2QC9P,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#UY9Q2QC9P,38,2,#UY9Q2QC9P,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#UY9Q2QC9P,38,2,#UY9Q2QC9P,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V0YP0V80,38,2,#V0YP0V80,jeancito,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V0YP0V80,38,2,#V0YP0V80,jeancito,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V0YP0V80,38,2,#V0YP0V80,jeancito,GrupoXTerna™2,unica,S,12,Sin cambio,4,4,4,4,700,700,700,700,0,0,0,0,Original,Original,unica
+T_38_S_02_#V0YP0V80,38,2,#V0YP0V80,jeancito,GrupoXTerna™2,unica,D,13,Sin cambio,0,0,4,4,0,0,700,700,0,0,0,0,Original,Original,unica
+T_38_S_02_#V9L9V9YV0,38,2,#V9L9V9YV0,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V9L9V9YV0,38,2,#V9L9V9YV0,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V9L9V9YV0,38,2,#V9L9V9YV0,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V9L9V9YV0,38,2,#V9L9V9YV0,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#VUVC9P8VL,38,2,#VUVC9P8VL,,GrupoXTerna™2,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#VUVC9P8VL,38,2,#VUVC9P8VL,,GrupoXTerna™2,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#VUVC9P8VL,38,2,#VUVC9P8VL,,GrupoXTerna™2,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#VUVC9P8VL,38,2,#VUVC9P8VL,,GrupoXTerna™2,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#98VY80RGV,38,2,#98VY80RGV,Papit4,GrupoXTerna™3,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#98VY80RGV,38,2,#98VY80RGV,Papit4,GrupoXTerna™3,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#98VY80RGV,38,2,#98VY80RGV,Papit4,GrupoXTerna™3,unica,S,12,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#98VY80RGV,38,2,#98VY80RGV,Papit4,GrupoXTerna™3,unica,D,13,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#2098CCQUCU,38,2,#2098CCQUCU,§K ¦ 安迪 ™,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#2098CCQUCU,38,2,#2098CCQUCU,§K ¦ 安迪 ™,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#2098CCQUCU,38,2,#2098CCQUCU,§K ¦ 安迪 ™,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#2098CCQUCU,38,2,#2098CCQUCU,§K ¦ 安迪 ™,Grupo乂Terna™,unica,D,13,Sin cambio,4,4,4,4,700,700,700,700,0,0,0,0,Original,Original,unica
+T_38_S_02_#8CQLU9QLJ,38,2,#8CQLU9QLJ,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8CQLU9QLJ,38,2,#8CQLU9QLJ,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8CQLU9QLJ,38,2,#8CQLU9QLJ,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8CQLU9QLJ,38,2,#8CQLU9QLJ,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8GYJ2LURP,38,2,#8GYJ2LURP,CarLin Garcia21,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8GYJ2LURP,38,2,#8GYJ2LURP,CarLin Garcia21,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8GYJ2LURP,38,2,#8GYJ2LURP,CarLin Garcia21,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8GYJ2LURP,38,2,#8GYJ2LURP,CarLin Garcia21,Grupo乂Terna™,unica,D,13,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#8YCLY8CRU,38,2,#8YCLY8CRU,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8YCLY8CRU,38,2,#8YCLY8CRU,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8YCLY8CRU,38,2,#8YCLY8CRU,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#8YCLY8CRU,38,2,#8YCLY8CRU,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#989YYV0PU,38,2,#989YYV0PU,✨HIP♨HOP✨,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#989YYV0PU,38,2,#989YYV0PU,✨HIP♨HOP✨,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#989YYV0PU,38,2,#989YYV0PU,✨HIP♨HOP✨,Grupo乂Terna™,unica,S,12,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#989YYV0PU,38,2,#989YYV0PU,✨HIP♨HOP✨,Grupo乂Terna™,unica,D,13,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Reconstruido - Solución única,Reconstruido - Solución única,unica
+T_38_S_02_#C8YUPURCU,38,2,#C8YUPURCU,★†Park-Seory†★,Grupo乂Terna™,unica,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#C8YUPURCU,38,2,#C8YUPURCU,★†Park-Seory†★,Grupo乂Terna™,unica,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#C8YUPURCU,38,2,#C8YUPURCU,★†Park-Seory†★,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#C8YUPURCU,38,2,#C8YUPURCU,★†Park-Seory†★,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#CJGU820UU,38,2,#CJGU820UU,Steven x17,Grupo乂Terna™,unica,J,10,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#CJGU820UU,38,2,#CJGU820UU,Steven x17,Grupo乂Terna™,unica,V,11,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#CJGU820UU,38,2,#CJGU820UU,Steven x17,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#CJGU820UU,38,2,#CJGU820UU,Steven x17,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#CLG282UYQ,38,2,#CLG282UYQ,aderjehu,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#CLG282UYQ,38,2,#CLG282UYQ,aderjehu,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#CLG282UYQ,38,2,#CLG282UYQ,aderjehu,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#CLG282UYQ,38,2,#CLG282UYQ,aderjehu,Grupo乂Terna™,unica,D,13,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_02_#GGPRGCUCQ,38,2,#GGPRGCUCQ,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#GGPRGCUCQ,38,2,#GGPRGCUCQ,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#GGPRGCUCQ,38,2,#GGPRGCUCQ,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#GGPRGCUCQ,38,2,#GGPRGCUCQ,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JR9J0JCQ9,38,2,#JR9J0JCQ9,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JR9J0JCQ9,38,2,#JR9J0JCQ9,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JR9J0JCQ9,38,2,#JR9J0JCQ9,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#JR9J0JCQ9,38,2,#JR9J0JCQ9,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#PRQUC982Y,38,2,#PRQUC982Y,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#PRQUC982Y,38,2,#PRQUC982Y,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#PRQUC982Y,38,2,#PRQUC982Y,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#PRQUC982Y,38,2,#PRQUC982Y,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#U2G0800JL,38,2,#U2G0800JL,thor,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#U2G0800JL,38,2,#U2G0800JL,thor,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#U2G0800JL,38,2,#U2G0800JL,thor,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#U2G0800JL,38,2,#U2G0800JL,thor,Grupo乂Terna™,unica,D,13,Sin cambio,4,4,4,4,700,700,700,700,0,0,0,0,Original,Original,unica
+T_38_S_02_#V22JPRY89,38,2,#V22JPRY89,,Grupo乂Terna™,unica,J,10,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V22JPRY89,38,2,#V22JPRY89,,Grupo乂Terna™,unica,V,11,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V22JPRY89,38,2,#V22JPRY89,,Grupo乂Terna™,unica,S,12,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_02_#V22JPRY89,38,2,#V22JPRY89,,Grupo乂Terna™,unica,D,13,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#20YGL98CQ9,38,3,#20YGL98CQ9,I am ...,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#20YGL98CQ9,38,3,#20YGL98CQ9,I am ...,GrupoXTerna™2,unica,V,18,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#20YGL98CQ9,38,3,#20YGL98CQ9,I am ...,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#20YGL98CQ9,38,3,#20YGL98CQ9,I am ...,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#229L8LYPR,38,3,#229L8LYPR,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#229L8LYPR,38,3,#229L8LYPR,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#229L8LYPR,38,3,#229L8LYPR,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#229L8LYPR,38,3,#229L8LYPR,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#2G0R2JJPG,38,3,#2G0R2JJPG,jair,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#2G0R2JJPG,38,3,#2G0R2JJPG,jair,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#2G0R2JJPG,38,3,#2G0R2JJPG,jair,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#2G0R2JJPG,38,3,#2G0R2JJPG,jair,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#2Q8GJVR8V,38,3,#2Q8GJVR8V,arturo,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#2Q8GJVR8V,38,3,#2Q8GJVR8V,arturo,GrupoXTerna™2,unica,V,18,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#2Q8GJVR8V,38,3,#2Q8GJVR8V,arturo,GrupoXTerna™2,unica,S,19,Sin cambio,4,4,4,4,400,400,400,400,0,0,0,0,Original,Original,unica
+T_38_S_03_#2Q8GJVR8V,38,3,#2Q8GJVR8V,arturo,GrupoXTerna™2,unica,D,20,Sin cambio,0,0,4,4,0,0,400,400,0,0,0,0,Original,Original,unica
+T_38_S_03_#8CY9QYPRU,38,3,#8CY9QYPRU,Kevin Jr,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8CY9QYPRU,38,3,#8CY9QYPRU,Kevin Jr,GrupoXTerna™2,unica,V,18,Sin cambio,2,2,2,2,250,250,250,250,2,2,2,2,Original,Original,unica
+T_38_S_03_#8CY9QYPRU,38,3,#8CY9QYPRU,Kevin Jr,GrupoXTerna™2,unica,S,19,Crear,,0,,2,,0,,250,,0,,2,,Reconstruido - Solución única,unica
+T_38_S_03_#8CY9QYPRU,38,3,#8CY9QYPRU,Kevin Jr,GrupoXTerna™2,unica,D,20,Crear,,0,,2,,0,,250,,0,,2,,Reconstruido - Solución única,unica
+T_38_S_03_#8QGUVJ08G,38,3,#8QGUVJ08G,Linkrez,GrupoXTerna™2,unica,J,17,Sin cambio,4,4,4,4,800,800,800,800,0,0,0,0,Original,Original,unica
+T_38_S_03_#8QGUVJ08G,38,3,#8QGUVJ08G,Linkrez,GrupoXTerna™2,unica,V,18,Sin cambio,0,0,4,4,0,0,800,800,0,0,0,0,Original,Original,unica
+T_38_S_03_#8QGUVJ08G,38,3,#8QGUVJ08G,Linkrez,GrupoXTerna™2,unica,S,19,Crear,,0,,4,,0,,800,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8QGUVJ08G,38,3,#8QGUVJ08G,Linkrez,GrupoXTerna™2,unica,D,20,Crear,,0,,4,,0,,800,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8YGLJY2QG,38,3,#8YGLJY2QG,V[Furion]V,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#8YGLJY2QG,38,3,#8YGLJY2QG,V[Furion]V,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8YGLJY2QG,38,3,#8YGLJY2QG,V[Furion]V,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8YGLJY2QG,38,3,#8YGLJY2QG,V[Furion]V,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#9VPVQRGPU,38,3,#9VPVQRGPU,keybyyi7,GrupoXTerna™2,unica,J,17,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,Original,Original,unica
+T_38_S_03_#9VPVQRGPU,38,3,#9VPVQRGPU,keybyyi7,GrupoXTerna™2,unica,V,18,Sin cambio,3,3,7,7,400,400,1000,1000,0,0,0,0,Original,Original,unica
+T_38_S_03_#9VPVQRGPU,38,3,#9VPVQRGPU,keybyyi7,GrupoXTerna™2,unica,S,19,Crear,,0,,7,,0,,1000,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#9VPVQRGPU,38,3,#9VPVQRGPU,keybyyi7,GrupoXTerna™2,unica,D,20,Crear,,0,,7,,0,,1000,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#C22PL8JYY,38,3,#C22PL8JYY,Beniju.exe,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#C22PL8JYY,38,3,#C22PL8JYY,Beniju.exe,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#C22PL8JYY,38,3,#C22PL8JYY,Beniju.exe,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#C22PL8JYY,38,3,#C22PL8JYY,Beniju.exe,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#C8GPVLVJL,38,3,#C8GPVLVJL,~$VNThONY$~,GrupoXTerna™2,unica,J,17,Sin cambio,4,4,4,4,900,900,900,900,0,0,0,0,Original,Original,unica
+T_38_S_03_#C8GPVLVJL,38,3,#C8GPVLVJL,~$VNThONY$~,GrupoXTerna™2,unica,V,18,Sin cambio,0,0,4,4,0,0,900,900,0,0,0,0,Original,Original,unica
+T_38_S_03_#C8GPVLVJL,38,3,#C8GPVLVJL,~$VNThONY$~,GrupoXTerna™2,unica,S,19,Crear,,0,,4,,0,,900,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#C8GPVLVJL,38,3,#C8GPVLVJL,~$VNThONY$~,GrupoXTerna™2,unica,D,20,Crear,,0,,4,,0,,900,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CPYUPLLPC,38,3,#CPYUPLLPC,henry,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CPYUPLLPC,38,3,#CPYUPLLPC,henry,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CPYUPLLPC,38,3,#CPYUPLLPC,henry,GrupoXTerna™2,unica,S,19,Sin cambio,4,4,4,4,700,700,700,700,0,0,0,0,Original,Original,unica
+T_38_S_03_#CPYUPLLPC,38,3,#CPYUPLLPC,henry,GrupoXTerna™2,unica,D,20,Sin cambio,0,0,4,4,0,0,700,700,0,0,0,0,Original,Original,unica
+T_38_S_03_#CVPG829RL,38,3,#CVPG829RL,DarkMart,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CVPG829RL,38,3,#CVPG829RL,DarkMart,GrupoXTerna™2,unica,V,18,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#CVPG829RL,38,3,#CVPG829RL,DarkMart,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CVPG829RL,38,3,#CVPG829RL,DarkMart,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J00L0YV9V,38,3,#J00L0YV9V,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J00L0YV9V,38,3,#J00L0YV9V,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J00L0YV9V,38,3,#J00L0YV9V,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J00L0YV9V,38,3,#J00L0YV9V,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J2J88V20L,38,3,#J2J88V20L,TheLastRising,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#J2J88V20L,38,3,#J2J88V20L,TheLastRising,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J2J88V20L,38,3,#J2J88V20L,TheLastRising,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J2J88V20L,38,3,#J2J88V20L,TheLastRising,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J8UQ9GLGV,38,3,#J8UQ9GLGV,Eduardo,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#J8UQ9GLGV,38,3,#J8UQ9GLGV,Eduardo,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J8UQ9GLGV,38,3,#J8UQ9GLGV,Eduardo,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#J8UQ9GLGV,38,3,#J8UQ9GLGV,Eduardo,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JGGPP0G99,38,3,#JGGPP0G99,Charly,GrupoXTerna™2,unica,J,17,Sin cambio,4,4,4,4,800,800,800,800,0,0,0,0,Original,Original,unica
+T_38_S_03_#JGGPP0G99,38,3,#JGGPP0G99,Charly,GrupoXTerna™2,unica,V,18,Sin cambio,4,4,8,8,800,800,1600,1600,0,0,0,0,Original,Original,unica
+T_38_S_03_#JGGPP0G99,38,3,#JGGPP0G99,Charly,GrupoXTerna™2,unica,S,19,Sin cambio,0,0,8,8,0,0,1600,1600,0,0,0,0,Original,Original,unica
+T_38_S_03_#JGGPP0G99,38,3,#JGGPP0G99,Charly,GrupoXTerna™2,unica,D,20,Crear,,0,,8,,0,,1600,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JGYRJU9LY,38,3,#JGYRJU9LY,Daniel,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#JGYRJU9LY,38,3,#JGYRJU9LY,Daniel,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JGYRJU9LY,38,3,#JGYRJU9LY,Daniel,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JGYRJU9LY,38,3,#JGYRJU9LY,Daniel,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JLU999JRU,38,3,#JLU999JRU,RASHFORD,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JLU999JRU,38,3,#JLU999JRU,RASHFORD,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JLU999JRU,38,3,#JLU999JRU,RASHFORD,GrupoXTerna™2,unica,S,19,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#JLU999JRU,38,3,#JLU999JRU,RASHFORD,GrupoXTerna™2,unica,D,20,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#JU2RG82Y0,38,3,#JU2RG82Y0,KONJA MB,GrupoXTerna™2,unica,J,17,Sin cambio,2,2,2,2,200,200,200,200,0,0,0,0,Original,Original,unica
+T_38_S_03_#JU2RG82Y0,38,3,#JU2RG82Y0,KONJA MB,GrupoXTerna™2,unica,V,18,Crear,,0,,2,,0,,200,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JU2RG82Y0,38,3,#JU2RG82Y0,KONJA MB,GrupoXTerna™2,unica,S,19,Crear,,0,,2,,0,,200,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#JU2RG82Y0,38,3,#JU2RG82Y0,KONJA MB,GrupoXTerna™2,unica,D,20,Crear,,0,,2,,0,,200,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#L28JYY2J,38,3,#L28JYY2J,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#L28JYY2J,38,3,#L28JYY2J,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#L28JYY2J,38,3,#L28JYY2J,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#L28JYY2J,38,3,#L28JYY2J,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PVJ0JRY8L,38,3,#PVJ0JRY8L,Ferxxo ツ,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#PVJ0JRY8L,38,3,#PVJ0JRY8L,Ferxxo ツ,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PVJ0JRY8L,38,3,#PVJ0JRY8L,Ferxxo ツ,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PVJ0JRY8L,38,3,#PVJ0JRY8L,Ferxxo ツ,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PVQJG2CGP,38,3,#PVQJG2CGP,jhordan,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#PVQJG2CGP,38,3,#PVQJG2CGP,jhordan,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PVQJG2CGP,38,3,#PVQJG2CGP,jhordan,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PVQJG2CGP,38,3,#PVQJG2CGP,jhordan,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RGCL8LGJC,38,3,#RGCL8LGJC,Alex♡Dmr,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RGCL8LGJC,38,3,#RGCL8LGJC,Alex♡Dmr,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RGCL8LGJC,38,3,#RGCL8LGJC,Alex♡Dmr,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RGCL8LGJC,38,3,#RGCL8LGJC,Alex♡Dmr,GrupoXTerna™2,unica,D,20,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,Original,Original,unica
+T_38_S_03_#RJQRC0RJ,38,3,#RJQRC0RJ,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RJQRC0RJ,38,3,#RJQRC0RJ,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RJQRC0RJ,38,3,#RJQRC0RJ,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RJQRC0RJ,38,3,#RJQRC0RJ,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U2QL9PYUU,38,3,#U2QL9PYUU,El mejor,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#U2QL9PYUU,38,3,#U2QL9PYUU,El mejor,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U2QL9PYUU,38,3,#U2QL9PYUU,El mejor,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U2QL9PYUU,38,3,#U2QL9PYUU,El mejor,GrupoXTerna™2,unica,D,20,Sin cambio,4,4,4,4,650,650,650,650,0,0,0,0,Original,Original,unica
+T_38_S_03_#U9L000CVL,38,3,#U9L000CVL,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U9L000CVL,38,3,#U9L000CVL,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U9L000CVL,38,3,#U9L000CVL,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U9L000CVL,38,3,#U9L000CVL,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UG8LQYPPQ,38,3,#UG8LQYPPQ,Lui$29,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UG8LQYPPQ,38,3,#UG8LQYPPQ,Lui$29,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UG8LQYPPQ,38,3,#UG8LQYPPQ,Lui$29,GrupoXTerna™2,unica,S,19,Sin cambio,4,4,4,4,550,550,550,550,0,0,0,0,Original,Original,unica
+T_38_S_03_#UG8LQYPPQ,38,3,#UG8LQYPPQ,Lui$29,GrupoXTerna™2,unica,D,20,Sin cambio,4,4,8,8,800,800,1350,1350,0,0,0,0,Original,Original,unica
+T_38_S_03_#ULP8PQCCQ,38,3,#ULP8PQCCQ,James,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#ULP8PQCCQ,38,3,#ULP8PQCCQ,James,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#ULP8PQCCQ,38,3,#ULP8PQCCQ,James,GrupoXTerna™2,unica,S,19,Sin cambio,4,4,4,4,650,650,650,650,0,0,0,0,Original,Original,unica
+T_38_S_03_#ULP8PQCCQ,38,3,#ULP8PQCCQ,James,GrupoXTerna™2,unica,D,20,Sin cambio,4,4,8,8,500,500,1150,1150,0,0,0,0,Original,Original,unica
+T_38_S_03_#UQJV229CL,38,3,#UQJV229CL,Kevinthegoat123,GrupoXTerna™2,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#UQJV229CL,38,3,#UQJV229CL,Kevinthegoat123,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UQJV229CL,38,3,#UQJV229CL,Kevinthegoat123,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UQJV229CL,38,3,#UQJV229CL,Kevinthegoat123,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UQQGLCUGQ,38,3,#UQQGLCUGQ,luis,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UQQGLCUGQ,38,3,#UQQGLCUGQ,luis,GrupoXTerna™2,unica,V,18,Sin cambio,4,4,4,4,400,400,400,400,0,0,0,0,Original,Original,unica
+T_38_S_03_#UQQGLCUGQ,38,3,#UQQGLCUGQ,luis,GrupoXTerna™2,unica,S,19,Sin cambio,4,4,8,8,700,700,1100,1100,0,0,0,0,Original,Original,unica
+T_38_S_03_#UQQGLCUGQ,38,3,#UQQGLCUGQ,luis,GrupoXTerna™2,unica,D,20,Sin cambio,4,4,12,12,500,500,1600,1600,0,0,0,0,Original,Original,unica
+T_38_S_03_#UR902UV8L,38,3,#UR902UV8L,hola,GrupoXTerna™2,unica,J,17,Sin cambio,2,2,2,2,300,300,300,300,0,0,0,0,Original,Original,unica
+T_38_S_03_#UR902UV8L,38,3,#UR902UV8L,hola,GrupoXTerna™2,unica,V,18,Sin cambio,2,2,4,4,200,200,500,500,0,0,0,0,Original,Original,unica
+T_38_S_03_#UR902UV8L,38,3,#UR902UV8L,hola,GrupoXTerna™2,unica,S,19,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UR902UV8L,38,3,#UR902UV8L,hola,GrupoXTerna™2,unica,D,20,Crear,,0,,4,,0,,500,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UY9Q2QC9P,38,3,#UY9Q2QC9P,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UY9Q2QC9P,38,3,#UY9Q2QC9P,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UY9Q2QC9P,38,3,#UY9Q2QC9P,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#UY9Q2QC9P,38,3,#UY9Q2QC9P,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V8UVP29LV,38,3,#V8UVP29LV,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V8UVP29LV,38,3,#V8UVP29LV,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V8UVP29LV,38,3,#V8UVP29LV,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V8UVP29LV,38,3,#V8UVP29LV,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V9L9V9YV0,38,3,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V9L9V9YV0,38,3,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,GrupoXTerna™2,unica,V,18,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#V9L9V9YV0,38,3,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,GrupoXTerna™2,unica,S,19,Sin cambio,4,4,4,4,800,800,800,800,0,0,0,0,Original,Original,unica
+T_38_S_03_#V9L9V9YV0,38,3,#V9L9V9YV0,ᴳ乂ᵀ ⚜️ Xarxos,GrupoXTerna™2,unica,D,20,Sin cambio,0,0,4,4,0,0,800,800,0,0,0,0,Original,Original,unica
+T_38_S_03_#VCQ8GJUP8,38,3,#VCQ8GJUP8,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#VCQ8GJUP8,38,3,#VCQ8GJUP8,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#VCQ8GJUP8,38,3,#VCQ8GJUP8,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#VCQ8GJUP8,38,3,#VCQ8GJUP8,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#VQLULCJCV,38,3,#VQLULCJCV,ckja,GrupoXTerna™2,unica,J,17,Sin cambio,4,4,4,4,500,500,500,500,0,0,0,0,Original,Original,unica
+T_38_S_03_#VQLULCJCV,38,3,#VQLULCJCV,ckja,GrupoXTerna™2,unica,V,18,Sin cambio,3,3,7,7,600,600,1100,1100,0,0,0,0,Original,Original,unica
+T_38_S_03_#VQLULCJCV,38,3,#VQLULCJCV,ckja,GrupoXTerna™2,unica,S,19,Crear,,0,,7,,0,,1100,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#VQLULCJCV,38,3,#VQLULCJCV,ckja,GrupoXTerna™2,unica,D,20,Crear,,0,,7,,0,,1100,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#Y2JLYRJL9,38,3,#Y2JLYRJL9,julio,GrupoXTerna™2,unica,J,17,Sin cambio,4,4,4,4,400,400,400,400,4,4,4,4,Original,Original,unica
+T_38_S_03_#Y2JLYRJL9,38,3,#Y2JLYRJL9,julio,GrupoXTerna™2,unica,V,18,Sin cambio,0,0,4,4,0,0,400,400,0,0,4,4,Original,Original,unica
+T_38_S_03_#Y2JLYRJL9,38,3,#Y2JLYRJL9,julio,GrupoXTerna™2,unica,S,19,Crear,,0,,4,,0,,400,,0,,4,,Reconstruido - Solución única,unica
+T_38_S_03_#Y2JLYRJL9,38,3,#Y2JLYRJL9,julio,GrupoXTerna™2,unica,D,20,Crear,,0,,4,,0,,400,,0,,4,,Reconstruido - Solución única,unica
+T_38_S_03_#YLJYLR0G0,38,3,#YLJYLR0G0,,GrupoXTerna™2,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#YLJYLR0G0,38,3,#YLJYLR0G0,,GrupoXTerna™2,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#YLJYLR0G0,38,3,#YLJYLR0G0,,GrupoXTerna™2,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#YLJYLR0G0,38,3,#YLJYLR0G0,,GrupoXTerna™2,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#20P2UP80UY,38,3,#20P2UP80UY,,GrupoXTerna™3,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#20P2UP80UY,38,3,#20P2UP80UY,,GrupoXTerna™3,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#20P2UP80UY,38,3,#20P2UP80UY,,GrupoXTerna™3,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#20P2UP80UY,38,3,#20P2UP80UY,,GrupoXTerna™3,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8VU0Y9LJ0,38,3,#8VU0Y9LJ0,,GrupoXTerna™3,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8VU0Y9LJ0,38,3,#8VU0Y9LJ0,,GrupoXTerna™3,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8VU0Y9LJ0,38,3,#8VU0Y9LJ0,,GrupoXTerna™3,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8VU0Y9LJ0,38,3,#8VU0Y9LJ0,,GrupoXTerna™3,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V0UJ0RPVP,38,3,#V0UJ0RPVP,ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ,GrupoXTerna™3,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#V0UJ0RPVP,38,3,#V0UJ0RPVP,ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ,GrupoXTerna™3,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V0UJ0RPVP,38,3,#V0UJ0RPVP,ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ,GrupoXTerna™3,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V0UJ0RPVP,38,3,#V0UJ0RPVP,ᴳ乂ᵀ ⚜️ᴍᴀꜱꜱɪᴍᴏ,GrupoXTerna™3,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V9P20U8RC,38,3,#V9P20U8RC,,GrupoXTerna™3,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V9P20U8RC,38,3,#V9P20U8RC,,GrupoXTerna™3,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V9P20U8RC,38,3,#V9P20U8RC,,GrupoXTerna™3,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V9P20U8RC,38,3,#V9P20U8RC,,GrupoXTerna™3,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#2098CCQUCU,38,3,#2098CCQUCU,§K ¦ 安迪 ™,Grupo乂Terna™,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#2098CCQUCU,38,3,#2098CCQUCU,§K ¦ 安迪 ™,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#2098CCQUCU,38,3,#2098CCQUCU,§K ¦ 安迪 ™,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#2098CCQUCU,38,3,#2098CCQUCU,§K ¦ 安迪 ™,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#82GCLPGJR,38,3,#82GCLPGJR,Diego 7u7r,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#82GCLPGJR,38,3,#82GCLPGJR,Diego 7u7r,Grupo乂Terna™,unica,V,18,Sin cambio,4,4,4,4,800,800,800,800,0,0,0,0,Original,Original,unica
+T_38_S_03_#82GCLPGJR,38,3,#82GCLPGJR,Diego 7u7r,Grupo乂Terna™,unica,S,19,Sin cambio,4,4,8,8,800,800,1600,1600,0,0,0,0,Corregido,Corregido,unica
+T_38_S_03_#82GCLPGJR,38,3,#82GCLPGJR,Diego 7u7r,Grupo乂Terna™,unica,D,20,Sin cambio,4,4,12,12,650,650,2250,2250,0,0,0,0,Original,Original,unica
+T_38_S_03_#899C2YL2Q,38,3,#899C2YL2Q,Efren Miranda,Grupo乂Terna™,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#899C2YL2Q,38,3,#899C2YL2Q,Efren Miranda,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#899C2YL2Q,38,3,#899C2YL2Q,Efren Miranda,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#899C2YL2Q,38,3,#899C2YL2Q,Efren Miranda,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8C0PQ9PR9,38,3,#8C0PQ9PR9,Sieh,Grupo乂Terna™,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#8C0PQ9PR9,38,3,#8C0PQ9PR9,Sieh,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8C0PQ9PR9,38,3,#8C0PQ9PR9,Sieh,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8C0PQ9PR9,38,3,#8C0PQ9PR9,Sieh,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8CQLU9QLJ,38,3,#8CQLU9QLJ,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8CQLU9QLJ,38,3,#8CQLU9QLJ,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8CQLU9QLJ,38,3,#8CQLU9QLJ,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8CQLU9QLJ,38,3,#8CQLU9QLJ,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8J892C02C,38,3,#8J892C02C,Diego Shelby,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8J892C02C,38,3,#8J892C02C,Diego Shelby,Grupo乂Terna™,unica,V,18,Sin cambio,4,4,4,4,550,550,550,550,0,0,0,0,Original,Original,unica
+T_38_S_03_#8J892C02C,38,3,#8J892C02C,Diego Shelby,Grupo乂Terna™,unica,S,19,Sin cambio,4,4,8,8,800,800,1350,1350,0,0,0,0,Corregido,Corregido,unica
+T_38_S_03_#8J892C02C,38,3,#8J892C02C,Diego Shelby,Grupo乂Terna™,unica,D,20,Sin cambio,4,4,12,12,550,550,1900,1900,0,0,0,0,Original,Original,unica
+T_38_S_03_#8YCLY8CRU,38,3,#8YCLY8CRU,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8YCLY8CRU,38,3,#8YCLY8CRU,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8YCLY8CRU,38,3,#8YCLY8CRU,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#8YCLY8CRU,38,3,#8YCLY8CRU,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#9PGVLQVGG,38,3,#9PGVLQVGG,ᴳ乂ᵀ ⚜️nachodufu,Grupo乂Terna™,unica,J,17,Sin cambio,4,4,4,4,500,500,500,500,0,0,0,0,Original,Original,unica
+T_38_S_03_#9PGVLQVGG,38,3,#9PGVLQVGG,ᴳ乂ᵀ ⚜️nachodufu,Grupo乂Terna™,unica,V,18,Sin cambio,4,4,8,8,800,800,1300,1300,0,0,0,0,Original,Original,unica
+T_38_S_03_#9PGVLQVGG,38,3,#9PGVLQVGG,ᴳ乂ᵀ ⚜️nachodufu,Grupo乂Terna™,unica,S,19,Sin cambio,0,0,8,8,0,0,1300,1300,0,0,0,0,Original,Original,unica
+T_38_S_03_#9PGVLQVGG,38,3,#9PGVLQVGG,ᴳ乂ᵀ ⚜️nachodufu,Grupo乂Terna™,unica,D,20,Crear,,0,,8,,0,,1300,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#9YC08RJC8,38,3,#9YC08RJC8,Mini Diego :),Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#9YC08RJC8,38,3,#9YC08RJC8,Mini Diego :),Grupo乂Terna™,unica,V,18,Sin cambio,4,4,4,4,550,550,550,550,0,0,0,0,Original,Original,unica
+T_38_S_03_#9YC08RJC8,38,3,#9YC08RJC8,Mini Diego :),Grupo乂Terna™,unica,S,19,Sin cambio,4,4,8,8,800,800,1350,1350,0,0,0,0,Corregido,Corregido,unica
+T_38_S_03_#9YC08RJC8,38,3,#9YC08RJC8,Mini Diego :),Grupo乂Terna™,unica,D,20,Sin cambio,4,4,12,12,400,400,1750,1750,0,0,0,0,Original,Original,unica
+T_38_S_03_#C8YUPURCU,38,3,#C8YUPURCU,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#C8YUPURCU,38,3,#C8YUPURCU,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#C8YUPURCU,38,3,#C8YUPURCU,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#C8YUPURCU,38,3,#C8YUPURCU,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CJGU820UU,38,3,#CJGU820UU,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CJGU820UU,38,3,#CJGU820UU,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CJGU820UU,38,3,#CJGU820UU,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CJGU820UU,38,3,#CJGU820UU,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CQCR0R99C,38,3,#CQCR0R99C,Angel,Grupo乂Terna™,unica,J,17,Sin cambio,2,2,2,2,300,300,300,300,0,0,0,0,Original,Original,unica
+T_38_S_03_#CQCR0R99C,38,3,#CQCR0R99C,Angel,Grupo乂Terna™,unica,V,18,Crear,,0,,2,,0,,300,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CQCR0R99C,38,3,#CQCR0R99C,Angel,Grupo乂Terna™,unica,S,19,Crear,,0,,2,,0,,300,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#CQCR0R99C,38,3,#CQCR0R99C,Angel,Grupo乂Terna™,unica,D,20,Crear,,0,,2,,0,,300,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#GGPRGCUCQ,38,3,#GGPRGCUCQ,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#GGPRGCUCQ,38,3,#GGPRGCUCQ,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#GGPRGCUCQ,38,3,#GGPRGCUCQ,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#GGPRGCUCQ,38,3,#GGPRGCUCQ,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#GPQ0UGPR,38,3,#GPQ0UGPR,Seru,Grupo乂Terna™,unica,J,17,Sin cambio,4,4,4,4,550,550,550,550,0,0,0,0,Original,Original,unica
+T_38_S_03_#GPQ0UGPR,38,3,#GPQ0UGPR,Seru,Grupo乂Terna™,unica,V,18,Sin cambio,1,1,5,5,100,100,650,650,0,0,0,0,Original,Original,unica
+T_38_S_03_#GPQ0UGPR,38,3,#GPQ0UGPR,Seru,Grupo乂Terna™,unica,S,19,Crear,,0,,5,,0,,650,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#GPQ0UGPR,38,3,#GPQ0UGPR,Seru,Grupo乂Terna™,unica,D,20,Crear,,0,,5,,0,,650,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#P2UUY99LG,38,3,#P2UUY99LG,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#P2UUY99LG,38,3,#P2UUY99LG,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#P2UUY99LG,38,3,#P2UUY99LG,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#P2UUY99LG,38,3,#P2UUY99LG,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PRQUC982Y,38,3,#PRQUC982Y,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PRQUC982Y,38,3,#PRQUC982Y,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PRQUC982Y,38,3,#PRQUC982Y,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#PRQUC982Y,38,3,#PRQUC982Y,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RJQL8U2P,38,3,#RJQL8U2P,wisman35,Grupo乂Terna™,unica,J,17,Sin cambio,4,4,4,4,600,600,600,600,0,0,0,0,Original,Original,unica
+T_38_S_03_#RJQL8U2P,38,3,#RJQL8U2P,wisman35,Grupo乂Terna™,unica,V,18,Sin cambio,0,0,4,4,0,0,600,600,0,0,0,0,Original,Original,unica
+T_38_S_03_#RJQL8U2P,38,3,#RJQL8U2P,wisman35,Grupo乂Terna™,unica,S,19,Crear,,0,,4,,0,,600,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#RJQL8U2P,38,3,#RJQL8U2P,wisman35,Grupo乂Terna™,unica,D,20,Crear,,0,,4,,0,,600,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U20YY029J,38,3,#U20YY029J,4L0N50TUPAPI,Grupo乂Terna™,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#U20YY029J,38,3,#U20YY029J,4L0N50TUPAPI,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U20YY029J,38,3,#U20YY029J,4L0N50TUPAPI,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U20YY029J,38,3,#U20YY029J,4L0N50TUPAPI,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U2G0800JL,38,3,#U2G0800JL,thor,Grupo乂Terna™,unica,J,17,Sin cambio,0,0,0,0,0,0,0,0,0,0,0,0,Original,Original,unica
+T_38_S_03_#U2G0800JL,38,3,#U2G0800JL,thor,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U2G0800JL,38,3,#U2G0800JL,thor,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#U2G0800JL,38,3,#U2G0800JL,thor,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#ULVYRY8VQ,38,3,#ULVYRY8VQ,Kevin,Grupo乂Terna™,unica,J,17,Sin cambio,4,4,4,4,700,700,700,700,0,0,0,0,Original,Original,unica
+T_38_S_03_#ULVYRY8VQ,38,3,#ULVYRY8VQ,Kevin,Grupo乂Terna™,unica,V,18,Sin cambio,4,4,8,8,600,600,1300,1300,0,0,0,0,Original,Original,unica
+T_38_S_03_#ULVYRY8VQ,38,3,#ULVYRY8VQ,Kevin,Grupo乂Terna™,unica,S,19,Sin cambio,0,0,8,8,0,0,1300,1300,0,0,0,0,Original,Original,unica
+T_38_S_03_#ULVYRY8VQ,38,3,#ULVYRY8VQ,Kevin,Grupo乂Terna™,unica,D,20,Crear,,0,,8,,0,,1300,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V22JPRY89,38,3,#V22JPRY89,,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V22JPRY89,38,3,#V22JPRY89,,Grupo乂Terna™,unica,V,18,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V22JPRY89,38,3,#V22JPRY89,,Grupo乂Terna™,unica,S,19,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#V22JPRY89,38,3,#V22JPRY89,,Grupo乂Terna™,unica,D,20,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#VVLUYCGYC,38,3,#VVLUYCGYC,Ari,Grupo乂Terna™,unica,J,17,Crear,,0,,0,,0,,0,,0,,0,,Reconstruido - Solución única,unica
+T_38_S_03_#VVLUYCGYC,38,3,#VVLUYCGYC,Ari,Grupo乂Terna™,unica,V,18,Sin cambio,4,4,4,4,800,800,800,800,0,0,0,0,Original,Original,unica
+T_38_S_03_#VVLUYCGYC,38,3,#VVLUYCGYC,Ari,Grupo乂Terna™,unica,S,19,Sin cambio,4,4,8,8,500,500,1300,1300,0,0,0,0,Corregido,Corregido,unica
+T_38_S_03_#VVLUYCGYC,38,3,#VVLUYCGYC,Ari,Grupo乂Terna™,unica,D,20,Sin cambio,4,4,12,12,700,700,2000,2000,0,0,0,0,Original,Original,unica
+T_38_S_03_#YLU0JYUL,38,3,#YLU0JYUL,‼DANIETTO‼,Grupo乂Terna™,unica,J,17,Sin cambio,4,4,4,4,400,400,400,400,0,0,0,0,Original,Original,unica
+T_38_S_03_#YLU0JYUL,38,3,#YLU0JYUL,‼DANIETTO‼,Grupo乂Terna™,unica,V,18,Sin cambio,4,4,8,8,400,400,800,800,0,0,0,0,Original,Original,unica
+T_38_S_03_#YLU0JYUL,38,3,#YLU0JYUL,‼DANIETTO‼,Grupo乂Terna™,unica,S,19,Sin cambio,4,4,12,12,400,400,1200,1200,0,0,0,0,Original,Original,unica
+T_38_S_03_#YLU0JYUL,38,3,#YLU0JYUL,‼DANIETTO‼,Grupo乂Terna™,unica,D,20,Crear,,0,,12,,0,,1200,,0,,0,,Reconstruido - Solución única,unica
