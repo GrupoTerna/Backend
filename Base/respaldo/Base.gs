@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 18:23:09 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 18:46:51 */
 
 
 
@@ -18856,7 +18856,7 @@ function _sembrarNuevosDesdeDirectorio_(dirData) {
 
   var mapaSemanas = _construirMapaSemanasGuerraTerna();
   var aSembrar = faltan.filter(function (tg) {
-    return _contarSemanasGuerraTerna(tg, mapaSemanas) < SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS;
+    return !_esEstablecidoEnTerna_(tg, mapaSemanas);
   });
   res.establecidos = faltan.length - aSembrar.length;
   if (!aSembrar.length) return res;
@@ -19007,7 +19007,7 @@ function _restaurarNuevosDesdeCsvDebug() {
     if (!sigueActivoEnTerna) { tagsDescartadosPorMembresia[tag] = true; continue; }
 
     // Filtro de "ya establecido" -- mismo criterio que _purgarNuevosEstablecidos().
-    if (_contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) continue;
+    if (_esEstablecidoEnTerna_(tag, mapaSemanas)) continue;
 
     // Fecha_TS (numérico, epoch ms) -- ver docblock de esta función. [→ Contexto_Base_Web.md §14B113]
     var fechaTs = Number(f[3]);
@@ -19208,7 +19208,7 @@ function _purgarNuevosEstablecidos(sh) {
   for (var i = 0; i < numFilas; i++) {
     var tag = String(tags[i][0] || '').trim();
     if (!tag) continue;
-    if (_contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) {
+    if (_esEstablecidoEnTerna_(tag, mapaSemanas)) {
       filasABorrar.push(NUEVOS_FILA_DATOS_INICIO + i);
       tagsPurgados.push(tag);
     }
@@ -19292,34 +19292,99 @@ function _renumerarNuevos(sh) {
 function _construirMapaSemanasGuerraTerna() {
   var mapa = {};
   var ss = _getSs();
-  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
-  if (!sh || sh.getLastRow() < 2) return mapa;
-
   var nombresTerna = _getNombresClanesTernaOrdenados();
-  var lastRow = sh.getLastRow();
-  var data = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
 
   var semanasPorTag = {}; // TAG -> { 'temporada-semana': true, ... }
-  for (var i = 0; i < data.length; i++) {
-    var r = data[i];
-    var tg = String(r[GC.TAG - 1] || '').trim().toUpperCase();
-    if (!tg) continue;
 
-    var clanNombre = String(r[GC.CLAN - 1] || '').trim();
-    if (nombresTerna.indexOf(clanNombre) < 0) continue;
+  // 1) Hoja Guerra (fuente de siempre).
+  var sh = ss.getSheetByName(CFG.SHEETS.GUERRA);
+  if (sh && sh.getLastRow() >= 2) {
+    var lastRow = sh.getLastRow();
+    var data = sh.getRange(2, 1, lastRow - 1, GUERRA_TOTAL_COLS).getValues();
+    for (var i = 0; i < data.length; i++) {
+      var r = data[i];
+      var tg = String(r[GC.TAG - 1] || '').trim().toUpperCase();
+      if (!tg) continue;
 
-    var ataques = Number(r[GC.ATAQUES_SEM - 1]) || 0;
-    if (ataques <= 0) continue;
+      var clanNombre = String(r[GC.CLAN - 1] || '').trim();
+      if (nombresTerna.indexOf(clanNombre) < 0) continue;
 
-    var clave = String(r[GC.TEMPORADA - 1]) + '-' + String(r[GC.SEMANA - 1]);
-    if (!semanasPorTag[tg]) semanasPorTag[tg] = {};
-    semanasPorTag[tg][clave] = true;
+      var ataques = Number(r[GC.ATAQUES_SEM - 1]) || 0;
+      if (ataques <= 0) continue;
+
+      var clave = String(r[GC.TEMPORADA - 1]) + '-' + String(r[GC.SEMANA - 1]);
+      if (!semanasPorTag[tg]) semanasPorTag[tg] = {};
+      semanasPorTag[tg][clave] = true;
+    }
+  }
+
+  // 2) §PF579 (24-nov-2026, pedido de la usuaria): también Backup_Guerra.csv, por si la hoja Guerra todavía no se actualizó o le faltan filas. Se unen las semanas de las dos fuentes (una semana cuenta una sola vez aunque salga en las dos).
+  var semanasCsv = _semanasGuerraTernaDesdeCsv_(nombresTerna);
+  for (var tgC in semanasCsv) {
+    if (!semanasPorTag[tgC]) semanasPorTag[tgC] = {};
+    for (var claveC in semanasCsv[tgC]) semanasPorTag[tgC][claveC] = true;
   }
 
   for (var tag in semanasPorTag) {
     mapa[tag] = Object.keys(semanasPorTag[tag]).length;
   }
   return mapa;
+}
+
+// §PF579: caché de las semanas leídas de Backup_Guerra.csv dentro de una misma ejecución (la purga, la siembra y la lista piden el mapa una tras otra; leer y analizar el CSV cada vez sería lento). Vence a los 2 minutos.
+var _CACHE_SEMANAS_CSV_ = null;
+var CACHE_SEMANAS_CSV_TTL_MS = 120000;
+
+/**
+ * _semanasGuerraTernaDesdeCsv_(nombresTerna) (§PF579, 24-nov-2026; sin probar en Apps Script real)
+ * Lee Backup_Guerra.csv (mismo formato de columnas que la hoja Guerra) y devuelve { TAG: { 'temporada-semana': true } } con las semanas en que el
+ * jugador hizo al menos un ataque (AtaquesHoy o AtaquesSemana mayor que 0) en un clan Terna. El clan se identifica por su Tag (ClanTag); solo si la
+ * fila no lo trae (filas viejas, anteriores al 7-nov-2026) se compara el nombre. Si el archivo no existe o no se puede leer devuelve {} y deja un aviso
+ * en el registro: el mapa sigue saliendo de la hoja Guerra. Usa una caché de 2 minutos.
+ */
+function _semanasGuerraTernaDesdeCsv_(nombresTerna) {
+  var ahora = Date.now();
+  if (_CACHE_SEMANAS_CSV_ && (ahora - _CACHE_SEMANAS_CSV_.ts) < CACHE_SEMANAS_CSV_TTL_MS) return _CACHE_SEMANAS_CSV_.datos;
+  var out = {};
+  try {
+    var texto = _loadCSVFromDrive('Backup_Guerra.csv');
+    var filas = texto ? _parseCSV(texto) : null;
+    if (filas && filas.length >= 2) {
+      for (var i = 1; i < filas.length; i++) {
+        var f = filas[i];
+        var tg = String(f[GC.TAG - 1] || '').trim().toUpperCase();
+        if (!tg) continue;
+        var tagClan = String(f[GC.CLAN_TAG - 1] || '').trim().toUpperCase();
+        var esTerna = tagClan
+          ? (CFG.TERNA_TAGS.indexOf(tagClan) >= 0)
+          : (nombresTerna.indexOf(String(f[GC.CLAN - 1] || '').trim()) >= 0); // clan-por-nombre-ok: filas anteriores al 7-nov-2026 sin ClanTag
+        if (!esTerna) continue;
+        if ((Number(f[GC.ATAQUES_HOY - 1]) || 0) <= 0 && (Number(f[GC.ATAQUES_SEM - 1]) || 0) <= 0) continue;
+        var temporada = String(f[GC.TEMPORADA - 1] || '').trim();
+        var semana = String(f[GC.SEMANA - 1] || '').trim();
+        if (!temporada || !semana) continue;
+        if (!out[tg]) out[tg] = {};
+        out[tg][temporada + '-' + semana] = true;
+      }
+    }
+  } catch (e) {
+    Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo leer Backup_Guerra.csv para contar semanas (' + (e.message || e) + '). Se usa solo la hoja Guerra.');
+    out = {};
+  }
+  _CACHE_SEMANAS_CSV_ = { ts: Date.now(), datos: out };
+  return out;
+}
+
+/**
+ * _esEstablecidoEnTerna_(tag, mapaSemanas) (§PF578, 24-nov-2026; sin probar en Apps Script real)
+ * ÚNICA regla de «ya establecido» para la hoja «Nuevos»: true si el tag acumula SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS (3) o más semanas de guerra con al
+ * menos un ataque en un clan Terna (semanas distintas, seguidas o no, con la semana en curso). La usan la purga, la siembra, la lista de candidatos del
+ * botón de Tampermonkey, el filtro de _importarNuevosYPerfiles_ y la depuración del CSV. Antes la lista de candidatos usaba otra regla (las 3 últimas
+ * semanas cerradas con ataques y fame; _tagTieneParticipacionEstablecidaEnTerna()) y podía ofrecer a quien la purga acababa de borrar.
+ * mapaSemanas: el de _construirMapaSemanasGuerraTerna() (se arma una vez por corrida).
+ */
+function _esEstablecidoEnTerna_(tag, mapaSemanas) {
+  return _contarSemanasGuerraTerna(tag, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS;
 }
 
 /**
@@ -20022,12 +20087,9 @@ function _obtenerListaCandidatosNuevos() {
   var tagsEnNuevos = _obtenerTagsEnHojaNuevos(ss);
   var tTags = Date.now();
 
-  // FIX (29-ago-2026): mapa semanal por Tag construido SOLO desde [→ Contexto_Base_Web.md §14B084]
-  var mapaSemanalPorTag = _construirMapaSemanalPorTagDesdeSupercell();
+  // §PF578 (24-nov-2026): la lista usa la misma regla de «establecido» que la purga y la siembra (_esEstablecidoEnTerna_()), con un mapa de semanas armado una sola vez. Antes usaba el mapa de Backup_Guerra.csv y las 3 últimas semanas cerradas con ataques y fame (§14B084, §14B085, §14B089).
+  var mapaSemanasTerna = _construirMapaSemanasGuerraTerna();
   var tMapa = Date.now();
-
-  // FIX (16-sep-2026): contexto vigente (temporada + semana en curso), para [→ Contexto_Base_Web.md §14B085]
-  var ctx = _getCtx();
 
   for (var i = 0; i < dirData.length; i++) {
     var r = dirData[i];
@@ -20045,8 +20107,8 @@ function _obtenerListaCandidatosNuevos() {
     var tag = String(r[ix.tag] || '').trim();
     if (!tag) continue;
 
-    // FIX (29-ago-2026): ya tiene participación establecida en Terna [→ Contexto_Base_Web.md §14B086]
-    if (_tagTieneParticipacionEstablecidaEnTerna(tag, mapaSemanalPorTag, ctx)) continue;
+    // §PF578: ya establecido en Terna (3 o más semanas de guerra con ataques; misma regla que la purga) → no se envía a Tampermonkey. [→ Contexto_Base_Web.md §14B086]
+    if (_esEstablecidoEnTerna_(tag, mapaSemanasTerna)) continue;
 
     candidatos.push({
       tag: tag,
@@ -20773,7 +20835,7 @@ function _guardarSnapshotDebugImportacionNuevos(candidatosPayload) {
     var mapaSemanas = _construirMapaSemanasGuerraTerna();
     var purgados = 0;
     for (var t in mapa) {
-      if (_contarSemanasGuerraTerna(t, mapaSemanas) >= SEMANAS_MIN_PARA_PURGAR_DEBUG_NUEVOS) {
+      if (_esEstablecidoEnTerna_(t, mapaSemanas)) {
         delete mapa[t];
         purgados++;
       }
@@ -62438,6 +62500,9 @@ function _tagIngresoRecienteDeFilaDir_(filaDir, hoy) {
 
   var clanTagDir = String(filaDir[DC.CLAN_TAG - 1] || '').trim();
   if (CFG.TERNA_TAGS.indexOf(clanTagDir) < 0) return ''; // ya no está en un clan Terna
+
+  // §PF577 (24-nov-2026, pedido de la usuaria): solo cuenta como ingreso reciente quien tiene rango Miembro (igual que la hoja «Nuevos»); Veterano, Líder y Colíder quedan fuera aunque sean nuevos en el Directorio o tengan V. Guerra vacío.
+  if (String(filaDir[DC.RANGO - 1] || '').trim() !== 'Miembro') return '';
 
   var vGuerra = String(filaDir[DC.V_GUERRA - 1] || '').trim();
   var fechaIng = filaDir[DC.FECHA_ING - 1];
