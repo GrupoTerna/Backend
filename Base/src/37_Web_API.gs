@@ -1396,9 +1396,8 @@ function _tagIngresoRecienteDeFilaDir_(filaDir, hoy) {
   var clanTagDir = String(filaDir[DC.CLAN_TAG - 1] || '').trim();
   if (CFG.TERNA_TAGS.indexOf(clanTagDir) < 0) return ''; // ya no está en un clan Terna
 
-  // §PF577 (24-nov-2026, pedido de la usuaria): un Líder o Colíder no es un ingreso reciente, aunque sea nuevo en el Directorio o tenga V. Guerra vacío. Se compara sin tilde ni mayúsculas.
-  var rangoDir = String(filaDir[DC.RANGO - 1] || '').trim().toLowerCase().replace(/í/g, 'i');
-  if (rangoDir === 'lider' || rangoDir === 'colider') return '';
+  // §PF577 (24-nov-2026, pedido de la usuaria): solo cuenta como ingreso reciente quien tiene rango Miembro (igual que la hoja «Nuevos»); Veterano, Líder y Colíder quedan fuera aunque sean nuevos en el Directorio o tengan V. Guerra vacío.
+  if (String(filaDir[DC.RANGO - 1] || '').trim() !== 'Miembro') return '';
 
   var vGuerra = String(filaDir[DC.V_GUERRA - 1] || '').trim();
   var fechaIng = filaDir[DC.FECHA_ING - 1];
