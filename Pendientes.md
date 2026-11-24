@@ -32,6 +32,8 @@ Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el códig
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
 
+- [ ] `PF568` — Decidir qué hacer con las 70 filas de A2 (42 semanas de jugador, 24 jugadores): «Reconstruido» en 0 con clan, de jugadores que ya habían salido de ese clan según el Historial, pero cuya semana trae también filas con datos u otro origen. No se borraron. Hoy no hay función para borrarlas (`§PF567` punto 2, `§PF568`).
+
 ### A3. Nuevos, reenumeración y migraciones
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de prueba (B7) o de vigilancia (D).
@@ -101,7 +103,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
-- [ ] `PF568` — Correr `borrarFilasEnCeroFueraDelClanGuerraAplicar()` (proyecto **Base**, archivo `17_GuerraSheet.gs`): el registro debe decir «A borrar: 1549 (borradas)» y «No se borran: A2 70, temporada en curso 0». Después `generarGuerraDesglose()` (proyecto **Base**, archivo `18_CorreccionGuerra.gs`). Quedan 70 filas de A2 sin decidir (`§PF567` punto 2, `§PF568`).
 
 ### B6. Clanes externos, infiltrados e índices
 
