@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 00:34:23 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 00:42:49 */
 
 
 
@@ -81821,6 +81821,8 @@ var _rsJsonRegistrosCache_ = {};   // registros del JSON individual por Tag de j
  * _rsAtaquesEnOtrosClanes_(g, ob) [→ Contexto_Base_Web.md §PF563]
  * Suma los ataques que el JSON individual del jugador (RoyaleAPI) trae para esa temporada y semana en clanes DISTINTOS al de la serie (Terna o externos, filas `externa`).
  * El clan se compara por Tag (el del registro, o el que corresponde a su nombre); solo si alguno de los dos no tiene Tag se compara por nombre. 0 si no hay JSON o falla la lectura.
+ * §PF572: (1) el nombre del clan se corta en el primer salto de línea antes de resolver el Tag o compararlo (en el perfil de RoyaleAPI a veces trae una fecha de rascado y sin esto el propio clan contaba
+ * como «otro clan»); (2) cada otro clan cuenta UNA vez, con el mayor de sus registros (perfil, log y riverrace de una misma semana no se suman entre sí).
  */
 function _rsAtaquesEnOtrosClanes_(g, ob) {
   var tag = String(g.tag || '').trim().toUpperCase();
@@ -81834,13 +81836,20 @@ function _rsAtaquesEnOtrosClanes_(g, ob) {
     _rsJsonRegistrosCache_[tag] = regs;
   }
   var tagSerie = String(g.clanTag || '').trim().toUpperCase().replace(/^#/, '');
-  var total = 0;
+  var nombreSerie = _cdjNormalizarClan_(g.clan).toLowerCase();
+  var porClan = {};   // ataques por otro clan (el mayor de sus registros), con clave Tag o, si no tiene, nombre (§PF572)
   _rsJsonRegistrosCache_[tag].forEach(function (r) {
     if (!r || Number(r.temporadaInterna) !== Number(ob.temporada) || Number(r.semana) !== Number(ob.semana)) return;
-    var tagReg = String(r.clanTag || _clanTagDeFilaORespaldo_('', r.clan) || '').trim().toUpperCase().replace(/^#/, '');
-    var mismo = (tagSerie && tagReg) ? tagSerie === tagReg : String(r.clan || '') === String(g.clan || '');   // clan-por-nombre-ok: respaldo cuando alguno de los dos clanes no tiene Tag
-    if (!mismo) total += Number(r.ataques) > 0 ? Number(r.ataques) : 0;
+    var nombreReg = _cdjNormalizarClan_(r.clan);
+    var tagReg = String(r.clanTag || _clanTagDeFilaORespaldo_('', nombreReg) || '').trim().toUpperCase().replace(/^#/, '');
+    var mismo = (tagSerie && tagReg) ? tagSerie === tagReg : nombreReg.toLowerCase() === nombreSerie;   // clan-por-nombre-ok: respaldo cuando alguno de los dos clanes no tiene Tag
+    if (mismo) return;
+    var ataques = Number(r.ataques) > 0 ? Number(r.ataques) : 0;
+    var clave = tagReg || ('N:' + nombreReg.toLowerCase());
+    if (ataques > (porClan[clave] || 0)) porClan[clave] = ataques;
   });
+  var total = 0;
+  Object.keys(porClan).forEach(function (k) { total += porClan[k]; });
   return total;
 }
 
