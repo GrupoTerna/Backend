@@ -103,7 +103,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
-- [ ] `PF572` — Esperar a que termine la corrida de `aplicarTotalesSemanaDesdeHistorialInforme()` (proyecto **Base**, archivo `48_Herramientas_Debug.gs`; va por la tanda 6 y en GitHub hay hasta la 5, de T1 S2 a T36 S4) y comprobar con el informe completo que, en las series de `#2PUYLPPRG` y `#VJQLY8JV8` (temporadas 18 a 33), ya no omite días por «ataques en otro clan» cuando esos ataques son del propio clan del jugador.
 
 ### B6. Clanes externos, infiltrados e índices
 
