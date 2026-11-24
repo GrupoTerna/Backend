@@ -1205,6 +1205,19 @@ function runDirectorio() {
   Logger.log('=== Actualización Directorio INICIO ===');
   _fetchAllClanData();
   updateDirectorioSheet();
+  // §PF577 (24-nov-2026): igual que las demás cadenas que escriben el Directorio, «Nuevos» se purga y se siembra con los ingresos recientes (PF575). Antes esta ruta manual dejaba a un miembro en «Ingresos recientes» sin su fila en «Nuevos» hasta la siguiente cadena.
+  if (typeof _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado === 'function') {
+    try { _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado(); }
+    catch (eNuevos1) { Logger.log('[runDirectorio] _refrescarColumnasFijasNuevos_Paso1_FormatoYPurgado() falló: ' + eNuevos1.message); }
+  }
+  if (typeof _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas === 'function') {
+    try { _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas(); }
+    catch (eNuevos2) { Logger.log('[runDirectorio] _refrescarColumnasFijasNuevos_Paso2_ColumnasFijas() falló: ' + eNuevos2.message); }
+  }
+  if (typeof _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato === 'function') {
+    try { _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato(); }
+    catch (eNuevos3) { Logger.log('[runDirectorio] _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato() falló: ' + eNuevos3.message); }
+  }
   updateVistasDerivadas();
   syncDirectorioCSV();
   exportarBackupCelulares();
