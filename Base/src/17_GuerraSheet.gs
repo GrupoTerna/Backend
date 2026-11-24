@@ -4704,40 +4704,47 @@ function _completarClanTagGuerra_(aplicar) {
 
 /**
  * FILAS_MANUALES_GUERRA [→ Contexto_Base_Web.md §PF564]
- * Correcciones puntuales de Backup_Guerra.csv dictadas por la usuaria (23-nov-2026), por N°. Cada una dice el Tag del jugador y, por columna, el valor que debe tener ANTES (se comprueba) y el que queda DESPUÉS.
+ * Correcciones puntuales de Backup_Guerra.csv dictadas por la usuaria (23-nov-2026). Cada una dice el Tag del jugador y, por columna, el valor que debe tener ANTES (se comprueba) y el que queda DESPUÉS.
  * `#UJYULR99J` (vibpollo): el viernes 05/06 hizo 4 barcos de 125 (500) en el clan externo `#9J0YJGR9` (perfil de RoyaleAPI) y el domingo 07/06, en GrupoXTerna™3, un duelo de 3 mazos (250 + 100 + 100) y un PvP perdido (100): 4 ataques, 0 barcos, 550.
  * `#JR0V99Y0U` (VALENTINITA_SK): 2 barcos el viernes en el clan externo `#QC0R9JQ9` (perfil de RoyaleAPI) y 2 el domingo en GrupoXTerna™2. Las filas del 07/06 con AtaquesHoy 0 solo arrastran lo acumulado del viernes, así que llevan el clan del viernes.
  */
 var FILAS_MANUALES_GUERRA = [
-  { num: 32219, tag: '#JR0V99Y0U', campos: { CLAN_TAG: ['', '#QC0R9JQ9'] } },
-  { num: 32220, tag: '#JR0V99Y0U', campos: { CLAN_TAG: ['', '#QC0R9JQ9'] } },
-  { num: 32221, tag: '#JR0V99Y0U', campos: { CLAN_TAG: ['#GYCU9YRG', '#QC0R9JQ9'] } },
-  { num: 32243, tag: '#UJYULR99J', campos: { CLAN_TAG: ['', '#9J0YJGR9'] } },
-  { num: 32244, tag: '#UJYULR99J', campos: { CLAN_TAG: ['', '#9J0YJGR9'] } },
-  { num: 32245, tag: '#UJYULR99J', campos: { CLAN_TAG: ['#GQQPPJGR', '#9J0YJGR9'] } },
-  { num: 40292, tag: '#UJYULR99J', campos: { BARCOS: ['4', '0'], FAME: ['500', '550'] } }
+  // 23-nov-2026: el N° de Backup_Guerra.csv cambia cuando se renumera (el primer informe real encontró las N° de otros Tags), así que cada fila se identifica por Tag + Temporada + Semana + PeriodIndex + si trae o no nombre de clan. «num» es solo el N° que tenían en la copia del repo del 23-nov.
+  { num: 32219, tag: '#JR0V99Y0U', temporada: '34', semana: '1', periodIndex: '4', conClan: false, campos: { CLAN_TAG: ['', '#QC0R9JQ9'] } },
+  { num: 32220, tag: '#JR0V99Y0U', temporada: '34', semana: '1', periodIndex: '5', conClan: false, campos: { CLAN_TAG: ['', '#QC0R9JQ9'] } },
+  { num: 32221, tag: '#JR0V99Y0U', temporada: '34', semana: '1', periodIndex: '6', conClan: false, campos: { CLAN_TAG: ['#GYCU9YRG', '#QC0R9JQ9'] } },
+  { num: 32243, tag: '#UJYULR99J', temporada: '34', semana: '1', periodIndex: '4', conClan: false, campos: { CLAN_TAG: ['', '#9J0YJGR9'] } },
+  { num: 32244, tag: '#UJYULR99J', temporada: '34', semana: '1', periodIndex: '5', conClan: false, campos: { CLAN_TAG: ['', '#9J0YJGR9'] } },
+  { num: 32245, tag: '#UJYULR99J', temporada: '34', semana: '1', periodIndex: '6', conClan: false, campos: { CLAN_TAG: ['#GQQPPJGR', '#9J0YJGR9'] } },
+  { num: 40292, tag: '#UJYULR99J', temporada: '34', semana: '1', periodIndex: '6', conClan: true, campos: { BARCOS: ['4', '0'], FAME: ['500', '550'] } }
 ];
 
 /**
  * _filasManualesGuerraPlan_(filas, lista) [→ Contexto_Base_Web.md §PF564]
  * Función pura. filas: filas de Backup_Guerra.csv ya rellenadas a GUERRA_TOTAL_COLS columnas, sin encabezado. lista: como FILAS_MANUALES_GUERRA.
- * Para cada ítem busca la fila por N° y exige que el Tag coincida. Cada campo es «CAMBIAR» si hoy vale el valor de antes, «YA ESTA» si ya vale el de después y «NO COINCIDE» (no se toca) si vale otra cosa.
- * Devuelve { cambios: [{ idx, col, antes, despues }], detalle: [[estado, num, tag, campo, hoy, antes, despues]], resumen: { cambiar, yaEsta, noCoincide, noExiste } }.
+ * Cada ítem se busca por Tag + Temporada + Semana + PeriodIndex y por si la columna Clan trae algo (conClan) o está vacía; debe haber EXACTAMENTE una fila. Cada campo es «CAMBIAR» si hoy vale el valor de antes, «YA ESTA» si ya vale el de después y «NO COINCIDE» (no se toca) si vale otra cosa.
+ * Devuelve { cambios: [{ idx, col, antes, despues }], detalle: [[estado, N° hoy, tag, fila, campo, hoy, antes, despues]], resumen: { cambiar, yaEsta, noCoincide, noExiste } } (noExiste incluye las que salen más de una vez).
  */
 function _filasManualesGuerraPlan_(filas, lista) {
   var celda = function (f, col) { return String(f[col - 1] === undefined || f[col - 1] === null ? '' : f[col - 1]).trim(); };
-  var porNum = {};
-  for (var i = 0; i < filas.length; i++) porNum[celda(filas[i], GC.NUM)] = i;
   var cambios = [], detalle = [], resumen = { cambiar: 0, yaEsta: 0, noCoincide: 0, noExiste: 0 };
   lista.forEach(function (it) {
-    var idx = porNum[String(it.num)];
-    if (idx === undefined) { resumen.noExiste++; detalle.push(['NO EXISTE LA FILA', it.num, it.tag, '', '', '', '']); return; }
-    if (celda(filas[idx], GC.TAG).toUpperCase() !== String(it.tag).toUpperCase()) { resumen.noCoincide++; detalle.push(['NO COINCIDE EL TAG (no se toca)', it.num, it.tag, 'Tag', celda(filas[idx], GC.TAG), '', '']); return; }
+    var fila = 'T' + it.temporada + ' S' + it.semana + ' PI' + it.periodIndex + (it.conClan ? ' con clan' : ' sin clan');
+    var cand = [];
+    for (var i = 0; i < filas.length; i++) {
+      var f = filas[i];
+      if (celda(f, GC.TAG).toUpperCase() !== String(it.tag).toUpperCase()) continue;
+      if (celda(f, GC.TEMPORADA) !== it.temporada || celda(f, GC.SEMANA) !== it.semana || celda(f, GC.PERIOD_IDX) !== it.periodIndex) continue;
+      if ((celda(f, GC.CLAN) !== '') !== it.conClan) continue;
+      cand.push(i);
+    }
+    if (cand.length !== 1) { resumen.noExiste++; detalle.push([cand.length ? 'AMBIGUA (' + cand.length + ' filas; no se toca)' : 'NO EXISTE LA FILA', '', it.tag, fila, '', '', '', '']); return; }
+    var idx = cand[0];
     Object.keys(it.campos).forEach(function (campo) {
-      var col = GC[campo], antes = it.campos[campo][0], despues = it.campos[campo][1], hoy = celda(filas[idx], col);
-      if (hoy === despues) { resumen.yaEsta++; detalle.push(['YA ESTA', it.num, it.tag, campo, hoy, antes, despues]); }
-      else if (hoy === antes) { resumen.cambiar++; cambios.push({ idx: idx, col: col, antes: antes, despues: despues }); detalle.push(['CAMBIAR', it.num, it.tag, campo, hoy, antes, despues]); }
-      else { resumen.noCoincide++; detalle.push(['NO COINCIDE (no se toca)', it.num, it.tag, campo, hoy, antes, despues]); }
+      var col = GC[campo], antes = it.campos[campo][0], despues = it.campos[campo][1], hoy = celda(filas[idx], col), n = celda(filas[idx], GC.NUM);
+      if (hoy === despues) { resumen.yaEsta++; detalle.push(['YA ESTA', n, it.tag, fila, campo, hoy, antes, despues]); }
+      else if (hoy === antes) { resumen.cambiar++; cambios.push({ idx: idx, col: col, antes: antes, despues: despues }); detalle.push(['CAMBIAR', n, it.tag, fila, campo, hoy, antes, despues]); }
+      else { resumen.noCoincide++; detalle.push(['NO COINCIDE (no se toca)', n, it.tag, fila, campo, hoy, antes, despues]); }
     });
   });
   return { cambios: cambios, detalle: detalle, resumen: resumen };
@@ -4771,7 +4778,7 @@ function _corregirFilasManualesGuerra_(aplicar) {
     }
     for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
     var plan = _filasManualesGuerraPlan_(filas, FILAS_MANUALES_GUERRA);
-    var informe = [['Estado', 'N°', 'Tag', 'Campo', 'Valor hoy', 'Esperado antes', 'Queda despues']].concat(plan.detalle);
+    var informe = [['Estado', 'N° hoy', 'Tag', 'Fila', 'Campo', 'Valor hoy', 'Esperado antes', 'Queda despues']].concat(plan.detalle);
     var nombreInforme = 'Corregir_Filas_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
     _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
     if (aplicar && plan.cambios.length) {
