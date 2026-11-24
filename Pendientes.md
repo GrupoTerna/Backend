@@ -35,8 +35,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos 
 - [ ] `PF559` — Decidir qué hacer con las 225 filas de `Backup_Guerra.csv` que siguen sin `Clan_Tag` tras la aplicación del 22-nov-2026 (las 4 con ataques o fame se resuelven en `PF564`): 185 en conflicto (el perfil dice un clan y otras filas de la semana dicen otro) y 40 sin clan, todas sin ataques ni fame. Detalle y lista en `Completar_ClanTag_Guerra 2026-11-22 20.35.24 (aplicado).csv` (`§PF559` punto 7).
 - [ ] `PF563` — Decidir qué hacer con las otras series que empiezan con filas reconstruidas en cero antes del primer día real: 1 214 en `Backup_Guerra.csv` (23-nov-2026), 90 con otra serie de otro clan esa semana. No se sabe cuántas son «no estaba en el clan» sin cruzar con los JSON de todos los jugadores; hace falta una función informe (solo lectura) antes de quitar nada.
 
-- [ ] `PF564` / `PF449` — Decidir si se corre `repararClanVacioGuerraAplicar()` (proyecto **Base**, archivo `17_GuerraSheet.gs`). El informe del 23-nov-2026 (10:35 p. m.) dice: borrar 5 filas que son copias exactas de otra con clan, escribir el nombre de clan en 1 185 filas y el nombre de jugador en 2 522; las 9 «distintas» no se tocan. Cada paso ya se probó en Node (`§PF449`); falta tu decisión (`§PF564` punto 10).
-
 ### A3. Nuevos, reenumeración y migraciones
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de prueba (B7) o de vigilancia (D).
