@@ -4967,7 +4967,7 @@ function _filasEnCeroFueraDelClanPlan_(filas, historial) {
     }
     var ing = null, sal = null;
     for (var n = 0; n < movs.length; n++) {
-      if (movs[n].clan !== ct) continue;
+      if (movs[n].clan !== ct) continue; // clan-por-nombre-ok: ambos son Tag (el campo clan de los movimientos del Historial ya es el ClanTag)
       if (!ing && movs[n].tipo === 'E' && movs[n].dia >= primero && movs[n].dia <= ultimo) ing = movs[n];
       if (!sal && movs[n].tipo === 'S' && movs[n].dia >= primero && movs[n].dia < ultimo) sal = movs[n];
     }
