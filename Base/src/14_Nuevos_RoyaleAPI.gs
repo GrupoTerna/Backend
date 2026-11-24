@@ -1029,6 +1029,7 @@ function _semanasGuerraTernaDesdeCsv_(nombresTerna) {
   var ahora = Date.now();
   if (_CACHE_SEMANAS_CSV_ && (ahora - _CACHE_SEMANAS_CSV_.ts) < CACHE_SEMANAS_CSV_TTL_MS) return _CACHE_SEMANAS_CSV_.datos;
   var out = {};
+  var leyoBien = false; // si la lectura falla, el resultado vacío NO se guarda en la caché (un fallo pasajero no debe durar 2 minutos)
   try {
     var texto = _loadCSVFromDrive('Backup_Guerra.csv');
     var filas = texto ? _parseCSV(texto) : null;
@@ -1049,12 +1050,13 @@ function _semanasGuerraTernaDesdeCsv_(nombresTerna) {
         if (!out[tg]) out[tg] = {};
         out[tg][temporada + '-' + semana] = true;
       }
+      leyoBien = true;
     }
   } catch (e) {
     Logger.log('[Nuevos-RoyaleAPI] AVISO: no se pudo leer Backup_Guerra.csv para contar semanas (' + (e.message || e) + '). Se usa solo la hoja Guerra.');
     out = {};
   }
-  _CACHE_SEMANAS_CSV_ = { ts: Date.now(), datos: out };
+  if (leyoBien) _CACHE_SEMANAS_CSV_ = { ts: Date.now(), datos: out };
   return out;
 }
 
