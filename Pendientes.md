@@ -32,6 +32,8 @@ Ninguno abierto: los decidió Claude el 21-nov-2026 con los archivos y el códig
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos ítems es de prueba (B5) o de vigilancia (D).
 
+- [ ] `PF565` — Decidir qué hacer con las 161 filas «Reconstruido» sin clan y en 0 que quedan en `Backup_Guerra.csv` (109 anteriores al Historial, que empieza el 24-jun-2026, y 52 de jugadores sin movimiento previo): no se pueden demostrar con el Historial actual. Hoy no suman ni restan a ningún clan (`§PF565` punto 7).
+
 ### A3. Nuevos, reenumeración y migraciones
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de prueba (B7) o de vigilancia (D).
@@ -102,7 +104,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
 
-- [ ] `PF565` — Probar en Apps Script real (proyecto **Base**, archivo `17_GuerraSheet.gs`) `borrarFilasFantasmaGuerraInforme()`: debe dar 64 filas a borrar de 225 candidatas (14 jugadores; las otras 161 no se tocan: 109 anteriores al Historial y 52 sin movimiento previo). Si coincide, `borrarFilasFantasmaGuerraAplicar()` y después `generarGuerraDesglose()` (proyecto **Base**, archivo `18_CorreccionGuerra.gs`). Quedan 161 filas sin clan y sin demostrar (`§PF565` punto 2).\n\n### B6. Clanes externos, infiltrados e índices
 
 - [ ] `PF375` — Probar el ⚠️ de punta a punta. (1) En Apps Script, en el proyecto Base, archivo `15_DeteccionInfiltrados.gs`, `generarIndiceClanesExternos()` hasta completar el índice y `actualizarAlertasClanesSospechosos()`; mirar el registro `[AlertasClanes] …` y que `Alertas_Clanes_Sospechosos.json` exista en `Otros`. (2) Con sesión de admin: ⚠️ a la izquierda del WhatsApp y del 📈 en `guerra.html` (en `directorio.html` ya se vio el 19-nov, `§PF521`), modal con clanes y semanas. (3) Confirmar con la usuaria las decisiones del punto 2 (archivo en vez de columna, `perfil.html` sin ⚠️).
 - [ ] `PF376` — Probar el índice semanal. (1) Correr `activarTodosLosActivadores()` (proyecto Base, archivo `08_Activadores.gs`): en el registro debe figurar `generarIndiceClanesExternosProgramado (semanal, dia 2, hora 9)`.
