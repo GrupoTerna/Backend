@@ -90,6 +90,9 @@ var NUEVOS_RESTORE_LOTE_MAX = 5;
 // §PF575 (24-nov-2026): tope de miembros nuevos del Directorio que _sembrarNuevosDesdeDirectorio_() agrega a «Nuevos» en UNA corrida. Cada candidato nuevo cuesta como uno del botón de Nuevos (decenas de segundos por lote de 8, §PF311); lo que pasa del tope queda para la corrida siguiente.
 var NUEVOS_SEMBRAR_MAX_POR_CORRIDA = 8;
 
+// §PF576 (24-nov-2026): días desde el ingreso (Fecha_ing del Directorio) para que un miembro cuente como ingreso reciente al decidir a quién se le visita el perfil en la Corrección de Guerra sin backfill (_tagsNuevosParaPerfil_()). Es la misma ventana de 7 días de _tagIngresoRecienteDeFilaDir_() (37_Web_API.gs); si aquella cambia, esta debe cambiar igual (si divergen solo cuesta alguna visita de perfil de más o de menos).
+var NUEVOS_PERFIL_DIAS_INGRESO = 7;
+
 // ===== PARTE 1 — Funciones que se corren a mano =====
 
 // ----- Reordenar la hoja y reparar el formato de los encabezados -----
@@ -2019,6 +2022,53 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
     if (n.indexOf(nt) >= 0 || nt.indexOf(n) >= 0) return true;
   }
   return false;
+}
+
+/**
+ * _tagsNuevosParaPerfil_(infoJugadores) (§PF576, 24-nov-2026; sin probar en Apps Script real)
+ * Tags cuyo PERFIL de RoyaleAPI debe visitar el botón «Corrección de Guerra» de Tampermonkey aunque se corra SIN backfill y aunque Log o Analytics ya los hayan
+ * cubierto, para que _alimentarNuevosDesdeCorrecciones_() reciba filas de perfil suyas y llene la hoja «Nuevos». Sin esto, un ingreso reciente (que sí sale en el Log de su
+ * clan) no recibía visita de perfil y su fila, sembrada vacía por _sembrarNuevosDesdeDirectorio_() (§PF575), se quedaba sin historial.
+ * infoJugadores: los jugadores de la lista de la corrección (todos Activos en un clan Terna por tag), cada uno { tag, rango, admin, fechaIng } con los valores de la hoja
+ * física del Directorio (fechaIng es un Date si la celda es una fecha). Entran los que:
+ *   (a) ya tienen fila en «Nuevos» (para que su cuadrícula no se congele, como en _alimentarNuevosDesdeCorrecciones_()); no se pide rango ni Admin, porque si la fila sigue
+ *       en la hoja es que _purgarNuevosEstablecidos() y _purgarNuevosExpulsados() todavía no la borraron; o
+ *   (b) ingresaron hace NUEVOS_PERFIL_DIAS_INGRESO días o menos (Fecha_ing), con rango Miembro y sin Admin, igual que _sembrarNuevosDesdeDirectorio_().
+ * No se usa _tagIngresoRecienteDeFilaDir_() porque pide V_Guerra, que está en Players y no en la hoja física del Directorio que lee esa lista (§PF042); por eso la rama (b)
+ * mira solo la fecha. Tampoco se usa el mapa de semanas de guerra (_construirMapaSemanasGuerraTerna() lee toda la hoja Guerra y esa lista tiene el tiempo contado, §PF043):
+ * un establecido que aún figure en «Nuevos» o ingresó hace poco solo cuesta una visita de perfil de más.
+ * Devuelve los tags tal como vienen en infoJugadores (los mismos de jugadores[].tag, que Tampermonkey compara tal cual), sin repetidos y en el mismo orden. Si no se puede
+ * leer la hoja «Nuevos», solo cuenta la rama (b); no lanza error por eso.
+ */
+function _tagsNuevosParaPerfil_(infoJugadores) {
+  var salida = [];
+  if (!infoJugadores || !infoJugadores.length) return salida;
+  var tagsEnHoja = {};
+  try {
+    tagsEnHoja = _obtenerTagsEnHojaNuevos(_getSs());
+  } catch (eTags) {
+    Logger.log('[Nuevos-Perfil] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) + '); solo se consideran los ingresos recientes por fecha.');
+    tagsEnHoja = {};
+  }
+  var ahora = new Date().getTime();
+  var limiteMs = NUEVOS_PERFIL_DIAS_INGRESO * 86400000;
+  var vistos = {};
+  for (var i = 0; i < infoJugadores.length; i++) {
+    var j = infoJugadores[i] || {};
+    var tag = String(j.tag || '').trim();
+    var clave = tag.toUpperCase();
+    if (!tag || vistos[clave]) continue;
+    var entra = tagsEnHoja[clave] === true;
+    if (!entra && String(j.rango || '').trim() === 'Miembro' && String(j.admin || '').trim() !== 'Sí' &&
+        j.fechaIng instanceof Date && !isNaN(j.fechaIng.getTime())) {
+      var transcurrido = ahora - j.fechaIng.getTime();
+      entra = transcurrido >= 0 && transcurrido <= limiteMs;
+    }
+    if (!entra) continue;
+    vistos[clave] = true;
+    salida.push(tag);
+  }
+  return salida;
 }
 
 /**

@@ -3160,6 +3160,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
   var tInicio = Date.now();
   var ss = _getSs();
   var jugadores = [];
+  var infoNuevosPerfil = []; // §PF576: por cada jugador de la lista, rango, Admin y Fecha_ing (para _tagsNuevosParaPerfil_)
   if (!soloClanes) {
     // FIX (24-sep-2026, pedido del usuario -- auditoría Sheet->CSV->JSON, [→ Contexto_Base_Web.md §18B107]
     // PF042: se lee solo el Directorio físico (layout IC) en vez de _leerDirectorioFisicoComoDC(), que además leía Players y Links y armaba filas de 60 columnas para todos los registros; los seis campos que usa esta lista (estado, clan, tag, nombre, nom_multi, clan_tag) salen todos de la hoja Directorio y no se pisan con Players/Links. [→ Contexto_Base_Web.md §PF042]
@@ -3168,11 +3169,13 @@ function _obtenerListaCorreccionGuerra(opciones) {
     var ix; // índices 0-based según el layout de las filas leídas
     if (shDirCorr && shDirCorr.getLastRow() >= 2) {
       dirData = shDirCorr.getRange(2, 1, shDirCorr.getLastRow() - 1, DIR_SHEET_COLS).getValues();
-      ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, tag: IC.TAG - 1, nombre: IC.NOMBRE - 1, nomMulti: IC.NOM_MULTI - 1, clan: IC.CLAN - 1 };
+      ix = { estado: IC.ESTADO - 1, clanTag: IC.CLAN_TAG - 1, tag: IC.TAG - 1, nombre: IC.NOMBRE - 1, nomMulti: IC.NOM_MULTI - 1, clan: IC.CLAN - 1,
+            rango: IC.RANGO - 1, admin: IC.ADMIN - 1, fechaIng: IC.FECHA_ING - 1 }; // §PF576: rango, Admin y Fecha_ing para _tagsNuevosParaPerfil_
     } else {
       var lecturaDirCorr = _obtenerFilasConFallbackCSV(ss, CFG.SHEETS.DIRECTORIO, 'Backup_Directorio.csv', DIR_TOTAL_COLS);
       dirData = (lecturaDirCorr.origen === 'csv') ? lecturaDirCorr.filas : [];
-      ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, tag: DC.TAG - 1, nombre: DC.NOMBRE - 1, nomMulti: DC.NOM_MULTI - 1, clan: DC.CLAN - 1 };
+      ix = { estado: DC.ESTADO - 1, clanTag: DC.CLAN_TAG - 1, tag: DC.TAG - 1, nombre: DC.NOMBRE - 1, nomMulti: DC.NOM_MULTI - 1, clan: DC.CLAN - 1,
+            rango: DC.RANGO - 1, admin: DC.ADMIN - 1, fechaIng: DC.FECHA_ING - 1 }; // §PF576
     }
 
     for (var i = 0; i < dirData.length; i++) {
@@ -3191,6 +3194,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
         clan: String(r[ix.clan] || ''),
         royaleApiUrl: 'https://royaleapi.com/player/' + tagJugador.replace('#', '') + '/'
       });
+      infoNuevosPerfil.push({ tag: tagJugador, rango: String(r[ix.rango] || '').trim(), admin: String(r[ix.admin] || '').trim(), fechaIng: r[ix.fechaIng] }); // §PF576
     }
   }
   var tDirectorio = Date.now();
@@ -3214,9 +3218,14 @@ function _obtenerListaCorreccionGuerra(opciones) {
     try { regresadosSinPerfil = _tagsRegresadosSinPerfilTrasRegreso_(mapaOverlayLista); }
     catch (eReg) { Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo calcular quién regresó (' + (eReg.message || eReg) + '); la lista sale sin ese campo.'); }
   }
+  var nuevosParaPerfil = [];
+  if (!soloClanes) { // §PF576: quien ya está en «Nuevos» o es ingreso reciente se visita aunque Log/Analytics lo cubran; un fallo no frena la lista
+    try { nuevosParaPerfil = _tagsNuevosParaPerfil_(infoNuevosPerfil); }
+    catch (eNp) { Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo calcular quién alimenta «Nuevos» (' + (eNp.message || eNp) + '); la lista sale sin ese campo.'); }
+  }
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
              ' · directorio ' + (tDirectorio - tInicio) + ' ms · cobertura ' + (Date.now() - tDirectorio) + ' ms · ' +
-             jugadores.length + ' jugador(es) · total ' + (Date.now() - tInicio) + ' ms');
+             jugadores.length + ' jugador(es) · ' + nuevosParaPerfil.length + ' para «Nuevos» · total ' + (Date.now() - tInicio) + ' ms');
 
   return {
     ok: true,
@@ -3237,7 +3246,9 @@ function _obtenerListaCorreccionGuerra(opciones) {
     // Tampermonkey v3.10 visita su perfil aunque Log/Analytics los hayan cubierto, una sola vez: al guardarse su perfil salen de esta lista.
     sinPerfilEnCsv: sinPerfilEnCsv,
     // §PF314 (PF253 opción B): activos que salieron de los clanes Terna y regresaron, sin perfil leído desde el regreso. Tampermonkey v3.17 visita su perfil (todas las semanas) y el backend decide qué reemplaza o agrega.
-    regresadosSinPerfil: regresadosSinPerfil
+    regresadosSinPerfil: regresadosSinPerfil,
+    // §PF576: activos que ya tienen fila en «Nuevos» o ingresaron hace 7 días o menos (rango Miembro, sin Admin). Tampermonkey visita su perfil sin backfill aunque Log/Analytics los cubran, para que _alimentarNuevosDesdeCorrecciones_() llene su fila. Sin el campo, Tampermonkey no visita a nadie de más.
+    nuevosParaPerfil: nuevosParaPerfil
   };
 }
 
