@@ -103,6 +103,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF252 / PF253 / PF313 / PF314` — Contradicciones entre filas (vista en real el 4-nov) y opción B para quien regresa (programada el 31-oct): sin probar el segundo en Apps Script real.
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
+- [ ] `PF573` — Subir `Base` y volver a correr `aplicarTotalesSemanaDesdeHistorialInforme()` (proyecto **Base**, archivo `48_Herramientas_Debug.gs`): el registro de cada tanda debe traer «Analisis de las series por escribir (§PF573)» y el CSV del informe las cuatro columnas nuevas al final («Confianza del reparto», «Prioridad de revision», «Evidencia de otro clan esa semana» y «Dudas»). Con los informes de las 00:50 a las 01:15 y el Backup de 39 799 filas, Node dio 2 154 series por escribir (Alta 814, Media 872, Baja 468); si el caché de totales ya caducó, la corrida vuelve a leer los JSON.
 
 ### B6. Clanes externos, infiltrados e índices
 
