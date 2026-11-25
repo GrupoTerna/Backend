@@ -2,7 +2,7 @@
  * 60_Control_Medallas_API.gs — Control de medallas por clan y día contra la API (§PF584, 24-nov-2026, pedido de la usuaria)
  *
  * Índice del orden (criterios de 0.9 de la skill):
- *   1. Funciones que la usuaria corre a mano: estadoControlMedallasApi() (solo lectura; parte 2) y actualizarControlMedallasWeb() (parte 3, escribe Control_Medallas_Web.csv).
+ *   1. Funciones que la usuaria corre a mano: estadoControlMedallasApi() (solo lectura; parte 2) y actualizarControlMedallasWeb() (parte 3, escribe Control_Medallas_Web.csv; también la dispara el activador semanal de 08_Activadores.gs).
  *   2. No manuales, tema «control de medallas», en el orden en que se usan:
  *        _cmaControlClanes_() (parte 1, pura) -> _cmaFilasDeControl_() y _cmaMezclarFilas_() (parte 2, puras) -> _cmaCierreSemana_() y _cmaFilasDeCierre_() (cierre del domingo en el lunes, puras)
  *        -> _cmaGuardarControlDeCorrida_() (parte 2, escribe el CSV)
@@ -50,7 +50,7 @@ function estadoControlMedallasApi() {
 
 /**
  * actualizarControlMedallasWeb() [→ Contexto_Base_Web.md §PF584]
- * Manual (proyecto Base): parte 3 del control de medallas. Lee HistorialGuerra_Grupal.csv (lo que trae Tampermonkey del Log de RoyaleAPI) y
+ * Manual o por el activador semanal de `ACTIVADORES_CONFIG` (`08_Activadores.gs`: miércoles, 23:00 a 23:59 de Lima) (proyecto Base): parte 3 del control de medallas. Lee HistorialGuerra_Grupal.csv (lo que trae Tampermonkey del Log de RoyaleAPI) y
  * Control_Medallas_API.csv (parte 2) y guarda en Control_Medallas_Web.csv una fila por clan Terna y semana cerrada con el total de fama de la web y,
  * donde la API no da la semana completa (coliseo, o domingo todavía sin cerrar), el respaldo. La API manda siempre: si ya tiene los 4 días, la fila
  * solo compara. No cambia nada de lo que se escribe en las hojas ni en los demás CSV.

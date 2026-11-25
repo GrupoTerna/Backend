@@ -39,7 +39,8 @@ var ACTIVADORES_CONFIG = [
   { handler: 'resolverAlertasHistorialGuerra', tipo: 'diario', hora: 6, activo: true },
   { handler: 'generarIndiceClanesExternosProgramado', tipo: 'semanal', dia: 2, hora: 9, activo: true },  // 5-nov-2026 (PF376): índice de clanes externos cada martes a las 9 (Lima); si queda incompleto se continúa solo
   { handler: 'descargarRankingsSemanal', tipo: 'semanal', dia: 1, hora: 8, activo: true },  // 6-nov-2026 (PF393): rankings de Perú y globales, una sola descarga a la semana (lunes, entre las 8:00 y las 8:59; fuera de la ventana de guerra de 4:00 a 4:59); 6 llamadas a la API, ~1 a 2 min
-  { handler: '_autogenerarParCRListaSiCorrespondeInicioTemporada', tipo: 'diario', hora: 6, activo: true }
+  { handler: '_autogenerarParCRListaSiCorrespondeInicioTemporada', tipo: 'diario', hora: 6, activo: true },
+  { handler: 'actualizarControlMedallasWeb', tipo: 'semanal', dia: 3, hora: 23, activo: true }  // 25-nov-2026 (PF584): control de medallas contra la web, cada miércoles entre las 23:00 y las 23:59 (Lima); para entonces las capturas de entrenamiento de lunes a miércoles ya guardaron el cierre del domingo en Control_Medallas_API.csv. Solo lee y escribe CSV de Drive (no llama a la API)
 ];
 
 // Nombres que NO deben tener activador y que, si alguno sigue instalado, se retira al activar/desactivar. Desde el 17-oct-2026
