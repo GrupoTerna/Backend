@@ -40,7 +40,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 
 ### A4. Programar lo que pediste
 
-- [ ] `PF584` — **Parte 1:** función pura de control de medallas por clan y día con el JSON de la API (Σ fama de participantes, `periodPoints`, `pointsEarned` por día cerrado, residuo y estado), probada en Node con las capturas reales. Detalle en `§PF584`.
 - [ ] `PF584` — **Parte 2:** guardar ese control en un CSV propio de Drive, una fila por clan y día, con fuente `api`, al cerrar cada día junto a la corrección automática; solo guarda y avisa. Detalle en `§PF584`.
 - [ ] `PF584` — **Parte 3:** respaldo con la suma de la web (marcado `respaldo`) para el último domingo de la temporada y coliseo, que la API no da; la API lo reemplaza si aparece. Detalle en `§PF584`.
 - [ ] `PF584` — **Parte 4:** usar `pointsEarned` de la API como pista al ubicar ataques de un día sin dato; solo después de ver los resultados de las partes 1 a 3. Detalle en `§PF584`.
