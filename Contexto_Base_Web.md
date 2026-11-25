@@ -594,6 +594,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF578` | **Una sola regla de «establecido» y de «ingreso reciente» entre la web y la hoja «Nuevos»** (24-nov-2026, Lima; pedido de la usuaria; `Base/src/14_Nuevos_RoyaleAPI.gs`, `Base/src/37_Web_API.gs`) |
 | `PF579` | **El conteo de semanas de guerra de «Nuevos» también lee `Backup_Guerra.csv`** (24-nov-2026, Lima; pedido de la usuaria: «¿no se puede hacer que se mire el csv por si la hoja… todavía no se ha actualizado?»; `Base/src/14_Nuevos_RoyaleAPI.gs`) |
 | `PF580` | **Menos visitas de perfil y un solo criterio de ingreso reciente en «Nuevos»** (24-nov-2026, Lima; los 4 puntos de la revisión de `§PF579` punto 5; `Base/src/14_Nuevos_RoyaleAPI.gs`, `37_Web_API.gs`, `05_Backup_CSV.gs`, `18_CorreccionGuerra.gs`, `Tampermonkey.md` v3.40; sin probar en Apps Script real) |
+| `PF581` | **El filtro de «Nuevos» no cubría las filas agregadas** (24-nov-2026, Lima; reporte de la usuaria; `Base/src/14_Nuevos_RoyaleAPI.gs`, `_ajustarFiltroNuevos_`; sin probar en Apps Script real) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -11491,3 +11492,10 @@ Criterio: se quita de una línea lo que su propio texto dice ya hecho o confirma
 6. **Límites (decisiones de Claude).** (a) No se exigen las 5 semanas: quien tiene poco historial se visitaría siempre; un hueco en semanas anteriores a la última no provoca visita. (b) Una fila que sigue vacía porque todas sus semanas están en el histórico, o cuyo perfil no trae la última semana, se sigue visitando en cada corrida. (c) «Última semana cerrada» sale del `sectionIndex` de `_getCtx()`; en una petición suelta puede ser el último guardado.
 7. **Tampermonkey v3.40 (`325d5f0`).** Solo cambia el texto del panel «[Perfiles] …»; la v3.39 funciona igual con este backend.
 8. **Probado.** `validar_proyecto_gs.js Base`, `verificar_idioma.py`, `verificar_clanes_por_tag.py`, `node --check` de Tampermonkey y pruebas en Node con dobles (criterio de ingreso reciente; caché y exclusión; filas al día, con `TZ=America/Lima`). En `Correcciones_Nuevos.csv` de `Datos descargados` las fechas son domingos (138-3 = 22/11/2026), como supone el punto 5. Los guiones de prueba no se guardaron en el repo. **No se ejecutó en Apps Script real ni en navegador.** Pendiente: fila `PF580` de B5 en `Pendientes.md`.
+
+### PF581 — El filtro de «Nuevos» se ajusta hasta la última fila (24-nov-2026, Lima; `Base/src/14_Nuevos_RoyaleAPI.gs`; `Backend` `edf933f`; **sin probar en Apps Script real**)
+
+1. **Reporte (texto de la usuaria).** «la línea que se ve debajo de la fila 13 (sacs) es donde termina la tabla, las otras filas no se afectan por los filtros». No llegó captura ni dijo la hoja: **Claude asumió «Nuevos»** (por confirmar).
+2. **Causa (leída en el código).** `repararFormatoEncabezadosNuevos()` y la función que pinta los encabezados creaban el filtro solo si faltaba, y `_reajustarTituloGridNuevos()` lo recreaba desde la fila de encabezados sola. Las filas escritas después debajo del rango del filtro quedaban fuera. `_restaurarFiltros()` (`04_Formato_Comun.gs`) sí lo recrea completo, pero solo cuando corre su cadena.
+3. **Cambio.** `_ajustarFiltroNuevos_()`: si el filtro no llega a la última fila y columna con datos, lo recrea desde la fila 3 y repone los criterios por columna. La llaman los tres sitios del punto 2, el paso 3 del refresco y el final de `_aplicarImportacionNuevos()`.
+4. **Probado.** Validadores del repo y prueba en Node con una hoja simulada (filtro corto, completo, sin filtro y hoja vacía). El guion no se guardó. Pendiente: fila `PF581` de B5 en `Pendientes.md`.
