@@ -596,6 +596,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF580` | **Menos visitas de perfil y un solo criterio de ingreso reciente en «Nuevos»** (24-nov-2026, Lima; los 4 puntos de la revisión de `§PF579` punto 5; `Base/src/14_Nuevos_RoyaleAPI.gs`, `37_Web_API.gs`, `05_Backup_CSV.gs`, `18_CorreccionGuerra.gs`, `Tampermonkey.md` v3.40; sin probar en Apps Script real) |
 | `PF581` | **El filtro de «Nuevos» no cubría las filas agregadas** (24-nov-2026, Lima; reporte de la usuaria; `Base/src/14_Nuevos_RoyaleAPI.gs`, `_ajustarFiltroNuevos_`; sin probar en Apps Script real) |
 | `PF582` | **Embudos de orden y filtro en las tablas del cruce de roster** (24-nov-2026, Lima; pedido de la usuaria; `Web/admin.html`, `_tablaCruce`, `sw.js` v339; probado en navegador emulado, sin probar en celular real) |
+| `PF583` | **Los valores atravesaban el encabezado del Log de Guerra (Histórico)** (24-nov-2026, Lima; pedido de la usuaria con captura; `Web/assets/styles.css`, `sw.js` v340; probado en Chromium emulado con una tabla de prueba, sin probar en la página real) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -11508,3 +11509,12 @@ Criterio: se quita de una línea lo que su propio texto dice ya hecho o confirma
 3. **No cambia.** Las tablas de la ficha de un jugador («¿Infiltrado?») siguen sin embudo. No se agregó caja de búsqueda (no se pidió). Los números de las pastillas y de los títulos cuentan el total, no lo filtrado.
 4. **Cambio de paso (decisión de Claude).** `.rt-filtro-pop` es opaco en todo `admin.html` (también «Verificar» y «Clanes externos»): en celular emulado se leía la tabla por debajo.
 5. **Probado.** `npm test` de `Web` (1347 pruebas, una nueva) y Chromium de escritorio y emulando un Pixel 7, con datos simulados: embudos, orden, cuadro dentro de la pantalla y sin desborde de la página. **No se probó con el backend real ni en celular real.** Pendiente: fila `PF582` en `Pendientes.md`.
+
+### PF583 — Los valores atravesaban el encabezado del Log de Guerra (Histórico) (24-nov-2026, Lima; `Web` `b2bcd98`: `assets/styles.css`, `sw.js` v340)
+
+1. **Pedido (texto de la usuaria).** «los valores atraviesan el encabezado de los logs», con captura de «Log de Guerra (Histórico)» de `guerra.html`: al desplazar la tabla, las filas se veían a través de los encabezados de clan y de columna.
+2. **Causa.** El encabezado fijo de `.tabla-scroll-wrap thead th` lleva fondo opaco `#0e111c` (§ del encabezado inmovilizado, 11-oct-2026). Pero la tabla del log usa también `.hist-tabla` (§PF567) y `.hist-tabla thead th{background:rgba(162,57,255,.14)}` va después con la misma especificidad, así que el fondo pasó a ser translúcido y el contenido se veía por detrás.
+3. **Cambio.** `assets/styles.css`: regla `.tabla-scroll-wrap .tbl-log-guerra.hist-tabla thead th` con `background-color:#0e111c` y el mismo tinte morado como `background-image:linear-gradient(...)` (se ve igual que antes, pero sobre una base opaca), más la línea inferior; la variante `th.log-sep` junta la divisoria entre clanes con esa línea, porque `.tbl-log-guerra th.log-sep` de `guerra.html` reemplazaba el `box-shadow`.
+4. **No hacer.** No sustituir el tinte por un color plano ni quitar `.hist-tabla` del log: el aspecto morado se pidió en §PF567. La causa fue el fondo, no el `z-index` ni el `top` de `_fijarTopEncabezados()`.
+5. **Alcance.** Solo el Log de Guerra. Otras tablas con `.hist-tabla` dentro de un recuadro con scroll (por ejemplo las del historial de guerra del jugador) llevarían el mismo defecto si usaran `.tabla-scroll-wrap`; no se tocaron porque no se pidió y no se vio en ellas.
+6. **Probado.** `npm test` de `Web` (1348 pruebas, una nueva que comprueba la regla); en Chromium emulado (`@sparticuz/chromium`) con una tabla de prueba y la hoja de estilos real: fondo calculado `rgb(14,17,28)` con el degradado encima. **No se probó la página real de `guerra.html` (exige el backend) ni el celular real.** Pendiente: fila `PF583` en `Pendientes.md`.
