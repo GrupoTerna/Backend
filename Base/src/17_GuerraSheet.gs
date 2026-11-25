@@ -374,6 +374,7 @@ function updateGuerraSheet() {
 
   var now         = new Date();
   var nuevasFilas = [];
+  var controlMedallasItems = [];   // §PF584 parte 2: currentriverrace de la API de cada clan, para el control de medallas contra periodLogs (60_Control_Medallas_API.gs)
 
   // Procesar solo clanes Terna (no el clan vetado)
   for (var i = 0; i < CFG.TERNA_TAGS.length; i++) {
@@ -416,6 +417,9 @@ function updateGuerraSheet() {
 
     // LOG DE PERIODO POR CLAN (05-oct-2026, pedido usuario): sectionIndex/periodIndex que reporta la API [→ Contexto_Base_Web.md §17B041]
     try { Logger.log(_lineaPeriodoClan_('Guerra', info.name || '', clanTag, rr, ctx, ctxClan)); } catch (eLogPer) {}
+
+    // §PF584 parte 2: se junta ANTES de las protecciones de más abajo (que pueden saltar el clan) para que el control vea siempre lo que dice la API.
+    controlMedallasItems.push({ rr: rr, temporada: temporadaClan });
 
     // Mapa de miembros activos del clan para cruzar donaciones/ranking
     var memberMap = {};
@@ -592,6 +596,9 @@ function updateGuerraSheet() {
   }
 
   Logger.log('[Guerra][t] tras loop de participantes: ' + (Date.now() - _tGS0) + ' ms');
+
+  // §PF584 parte 2 (24-nov-2026): control de medallas por clan y día contra periodLogs de la API. Solo guarda y avisa; un fallo aquí nunca debe frenar la guerra.
+  try { _cmaGuardarControlDeCorrida_(controlMedallasItems); } catch (eCma) { Logger.log('[Control medallas API] AVISO: no se pudo guardar el control (' + (eCma.message || eCma) + ').'); }
 
   // MERMA (30-oct-2026): se recalcula sobre las filas de la hoja y las nuevas juntas, para que la merma semanal vea todos los días.
   var _mermaCambios = _recalcularMermaGuerra_(datosGuerra.concat(nuevasFilas.map(function (nf) { return nf.row; })));
