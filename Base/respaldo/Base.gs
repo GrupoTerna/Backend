@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 19:00:00 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 24/11/2026 19:20:26 */
 
 
 
@@ -8454,7 +8454,7 @@ function _csvCacheBorrar_(filename) {
     var n = parseInt(cache.get(base + '_n') || '0', 10);
     var keys = [base + '_n'];
     for (var i = 0; i < Math.max(n, 0); i++) keys.push(base + '_' + i);
-    if (filename === 'Backup_Guerra.csv') keys.push(COBERTURA_GUERRA_CACHE_KEY); // PF042
+    if (filename === 'Backup_Guerra.csv') keys.push(COBERTURA_GUERRA_CACHE_KEY, NUEVOS_ESTABLECIDOS_CACHE_KEY); // PF042; §PF580
     cache.removeAll(keys);
   } catch (e) { /* nada que hacer */ }
 }
@@ -18407,8 +18407,9 @@ var NUEVOS_RESTORE_LOTE_MAX = 5;
 // §PF575 (24-nov-2026): tope de miembros nuevos del Directorio que _sembrarNuevosDesdeDirectorio_() agrega a «Nuevos» en UNA corrida. Cada candidato nuevo cuesta como uno del botón de Nuevos (decenas de segundos por lote de 8, §PF311); lo que pasa del tope queda para la corrida siguiente.
 var NUEVOS_SEMBRAR_MAX_POR_CORRIDA = 8;
 
-// §PF576 (24-nov-2026): días desde el ingreso (Fecha_ing del Directorio) para que un miembro cuente como ingreso reciente al decidir a quién se le visita el perfil en la Corrección de Guerra sin backfill (_tagsNuevosParaPerfil_()). Es la misma ventana de 7 días de _tagIngresoRecienteDeFilaDir_() (37_Web_API.gs); si aquella cambia, esta debe cambiar igual (si divergen solo cuesta alguna visita de perfil de más o de menos).
-var NUEVOS_PERFIL_DIAS_INGRESO = 7;
+// §PF580 (24-nov-2026): los tags ya «establecidos» se guardan en CacheService para las peticiones sueltas de Tampermonkey (lista de candidatos y lista de la Corrección de Guerra), que antes leían la hoja Guerra y el CSV cada vez. _csvCacheBorrar_('Backup_Guerra.csv') (05_Backup_CSV.gs) la borra. La purga y la siembra NO leen esta caché: arman el mapa fresco.
+var NUEVOS_ESTABLECIDOS_CACHE_KEY = 'NUEVOS_ESTABLECIDOS_v1';
+var NUEVOS_ESTABLECIDOS_CACHE_TTL_SEG = 10 * 60;
 
 // ===== PARTE 1 — Funciones que se corren a mano =====
 
@@ -18844,8 +18845,7 @@ function _sembrarNuevosDesdeDirectorio_(dirData) {
     var fila = dirData[i];
     var tagReciente = _tagIngresoRecienteDeFilaDir_(fila, hoy);
     if (!tagReciente) continue;
-    if (String(fila[DC.RANGO - 1] || '').trim() !== 'Miembro') continue;
-    if (String(fila[DC.ADMIN - 1] || '').trim() === 'Sí') continue;
+    if (!_cuentaParaNuevos_(fila[DC.RANGO - 1], fila[DC.ADMIN - 1])) continue;
     var clave = String(tagReciente).trim().toUpperCase();
     if (!clave || vistos[clave] || tagsEnHoja[clave] === true) continue;
     vistos[clave] = true;
@@ -19328,7 +19328,43 @@ function _construirMapaSemanasGuerraTerna() {
   for (var tag in semanasPorTag) {
     mapa[tag] = Object.keys(semanasPorTag[tag]).length;
   }
+  // §PF580: solo se guarda en CacheService un mapa armado con el CSV bien leído (la caché en memoria solo se llena en ese caso).
+  if (_CACHE_SEMANAS_CSV_ && _CACHE_SEMANAS_CSV_.datos === semanasCsv) _guardarEstablecidosEnCache_(mapa);
   return mapa;
+}
+
+/**
+ * _obtenerEstablecidosTerna_() (§PF580, 24-nov-2026; sin probar en Apps Script real)
+ * Devuelve { tags: { TAG: true }, desdeCache: bool } con los jugadores «ya establecidos» (_esEstablecidoEnTerna_()). Lee CacheService (hasta 10 minutos) y,
+ * si no hay nada guardado o no se puede leer, arma el mapa de semanas (que vuelve a llenar la caché). Es solo para consultas que no borran filas: con un
+ * dato atrasado, lo peor es ofrecer o visitar a alguien que acaba de volverse establecido, y la purga lo retira después.
+ */
+function _obtenerEstablecidosTerna_() {
+  try {
+    var crudo = CacheService.getScriptCache().get(NUEVOS_ESTABLECIDOS_CACHE_KEY);
+    var lista = crudo ? JSON.parse(crudo) : null;
+    if (Array.isArray(lista)) {
+      var guardados = {};
+      for (var i = 0; i < lista.length; i++) guardados[lista[i]] = true;
+      return { tags: guardados, desdeCache: true };
+    }
+  } catch (eCache) { /* sin caché: se calcula */ }
+  var mapa = _construirMapaSemanasGuerraTerna();
+  var tags = {};
+  for (var tag in mapa) {
+    if (_esEstablecidoEnTerna_(tag, mapa)) tags[tag] = true;
+  }
+  return { tags: tags, desdeCache: false };
+}
+
+// §PF580: guarda en CacheService solo los tags establecidos del mapa de semanas; ante cualquier fallo no hace nada.
+function _guardarEstablecidosEnCache_(mapa) {
+  try {
+    var lista = Object.keys(mapa).filter(function (tg) { return _esEstablecidoEnTerna_(tg, mapa); });
+    var json = JSON.stringify(lista);
+    if (json.length > 90000) return; // tope de CacheService: 100 KB por valor
+    CacheService.getScriptCache().put(NUEVOS_ESTABLECIDOS_CACHE_KEY, json, NUEVOS_ESTABLECIDOS_CACHE_TTL_SEG);
+  } catch (e) { /* sin caché: no pasa nada */ }
 }
 
 // §PF579: caché de las semanas leídas de Backup_Guerra.csv dentro de una misma ejecución (la purga, la siembra y la lista piden el mapa una tras otra; leer y analizar el CSV cada vez sería lento). Vence a los 2 minutos.
@@ -20089,8 +20125,8 @@ function _obtenerListaCandidatosNuevos() {
   var tagsEnNuevos = _obtenerTagsEnHojaNuevos(ss);
   var tTags = Date.now();
 
-  // §PF578 (24-nov-2026): la lista usa la misma regla de «establecido» que la purga y la siembra (_esEstablecidoEnTerna_()), con un mapa de semanas armado una sola vez. Antes usaba el mapa de Backup_Guerra.csv y las 3 últimas semanas cerradas con ataques y fame (§14B084, §14B085, §14B089).
-  var mapaSemanasTerna = _construirMapaSemanasGuerraTerna();
+  // §PF578 (24-nov-2026): la lista usa la misma regla de «establecido» que la purga y la siembra (_esEstablecidoEnTerna_()). Antes usaba el mapa de Backup_Guerra.csv y las 3 últimas semanas cerradas con ataques y fame (§14B084, §14B085, §14B089). §PF580: el resultado sale de CacheService si hay uno reciente.
+  var establecidos = _obtenerEstablecidosTerna_();
   var tMapa = Date.now();
 
   for (var i = 0; i < dirData.length; i++) {
@@ -20100,17 +20136,13 @@ function _obtenerListaCandidatosNuevos() {
     var clanTag = String(r[ix.clanTag] || '').trim();
     if (CFG.TERNA_TAGS.indexOf(clanTag) < 0) continue;
 
-    var rango = String(r[ix.rango] || '').trim();
-    if (rango !== 'Miembro') continue;
-
-    var esAdmin = String(r[ix.admin] || '').trim() === 'Sí';
-    if (esAdmin) continue;
+    if (!_cuentaParaNuevos_(r[ix.rango], r[ix.admin])) continue; // §PF580
 
     var tag = String(r[ix.tag] || '').trim();
     if (!tag) continue;
 
     // §PF578: ya establecido en Terna (3 o más semanas de guerra con ataques; misma regla que la purga) → no se envía a Tampermonkey. [→ Contexto_Base_Web.md §14B086]
-    if (_esEstablecidoEnTerna_(tag, mapaSemanasTerna)) continue;
+    if (establecidos.tags[tag.toUpperCase()]) continue;
 
     candidatos.push({
       tag: tag,
@@ -20121,7 +20153,7 @@ function _obtenerListaCandidatosNuevos() {
     });
   }
 
-  Logger.log('[Nuevos][Lista] ' + candidatos.length + ' candidato(s) · directorio ' + (tDir - tIni) + ' ms · hoja Nuevos ' + (tTags - tDir) + ' ms · mapa semanal ' + (tMapa - tTags) + ' ms · filtrado ' + (Date.now() - tMapa) + ' ms · total ' + (Date.now() - tIni) + ' ms');
+  Logger.log('[Nuevos][Lista] ' + candidatos.length + ' candidato(s) · directorio ' + (tDir - tIni) + ' ms · hoja Nuevos ' + (tTags - tDir) + ' ms · mapa semanal ' + (tMapa - tTags) + ' ms' + (establecidos.desdeCache ? ' (caché)' : '') + ' · filtrado ' + (Date.now() - tMapa) + ' ms · total ' + (Date.now() - tIni) + ' ms');
 
   return {
     ok: true,
@@ -20412,16 +20444,15 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
  * clan) no recibía visita de perfil y su fila, sembrada vacía por _sembrarNuevosDesdeDirectorio_() (§PF575), se quedaba sin historial.
  * infoJugadores: los jugadores de la lista de la corrección (todos Activos en un clan Terna por tag), cada uno { tag, rango, admin, fechaIng } con los valores de la hoja
  * física del Directorio (fechaIng es un Date si la celda es una fecha). Entran los que:
- *   (a) ya tienen fila en «Nuevos» (para que su cuadrícula no se congele, como en _alimentarNuevosDesdeCorrecciones_()); no se pide rango ni Admin, porque si la fila sigue
- *       en la hoja es que _purgarNuevosEstablecidos() y _purgarNuevosExpulsados() todavía no la borraron; o
- *   (b) ingresaron hace NUEVOS_PERFIL_DIAS_INGRESO días o menos (Fecha_ing), con rango Miembro y sin Admin, igual que _sembrarNuevosDesdeDirectorio_().
+ *   (a) tienen fila en «Nuevos» que todavía no está al día (§PF580: vacía, o sin la última semana cerrada ni en la cuadrícula ni en el histórico de Guerra;
+ *       _filasNuevosAlDia_()); no se pide rango ni Admin, porque si la fila sigue en la hoja es que _purgarNuevosEstablecidos() y _purgarNuevosExpulsados() todavía no la borraron; o
+ *   (b) no tienen fila e ingresaron hace INGRESO_RECIENTE_DIAS días o menos (Fecha_ing), con rango Miembro y sin Admin (_cuentaParaNuevos_() e _ingresoDentroDeVentana_(), §PF580).
  * No se usa _tagIngresoRecienteDeFilaDir_() porque pide V_Guerra, que está en Players y no en la hoja física del Directorio que lee esa lista (§PF042); por eso la rama (b)
- * mira solo la fecha. Tampoco se usa el mapa de semanas de guerra (_construirMapaSemanasGuerraTerna() lee toda la hoja Guerra y esa lista tiene el tiempo contado, §PF043):
- * un establecido que aún figure en «Nuevos» o ingresó hace poco solo cuesta una visita de perfil de más.
+ * mira solo la fecha. §PF580: en la rama (b) se excluye a los ya establecidos (_obtenerEstablecidosTerna_(), con caché; se calcula solo si hay algún candidato en esa rama).
  * Devuelve los tags tal como vienen en infoJugadores (los mismos de jugadores[].tag, que Tampermonkey compara tal cual), sin repetidos y en el mismo orden. Si no se puede
  * leer la hoja «Nuevos», solo cuenta la rama (b); no lanza error por eso.
  */
-function _tagsNuevosParaPerfil_(infoJugadores) {
+function _tagsNuevosParaPerfil_(infoJugadores, coberturaPorTag, ctx) {
   var salida = [];
   if (!infoJugadores || !infoJugadores.length) return salida;
   var tagsEnHoja = {};
@@ -20431,25 +20462,90 @@ function _tagsNuevosParaPerfil_(infoJugadores) {
     Logger.log('[Nuevos-Perfil] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) + '); solo se consideran los ingresos recientes por fecha.');
     tagsEnHoja = {};
   }
-  var ahora = new Date().getTime();
-  var limiteMs = NUEVOS_PERFIL_DIAS_INGRESO * 86400000;
+  // §PF580: filas que ya no necesitan visita. Si no se puede saber, no se salta ninguna.
+  var alDia = {};
+  try {
+    alDia = _filasNuevosAlDia_(_getSs(), ctx, coberturaPorTag);
+  } catch (eAlDia) {
+    Logger.log('[Nuevos-Perfil] AVISO: no se pudo revisar qué filas de «Nuevos» están al día (' + (eAlDia.message || eAlDia) + '); se visitan todas.');
+    alDia = {};
+  }
+  var hoy = new Date();
   var vistos = {};
+  var establecidos = null; // §PF580: se pide solo si algún ingreso reciente sin fila lo necesita
   for (var i = 0; i < infoJugadores.length; i++) {
     var j = infoJugadores[i] || {};
     var tag = String(j.tag || '').trim();
     var clave = tag.toUpperCase();
     if (!tag || vistos[clave]) continue;
-    var entra = tagsEnHoja[clave] === true;
-    if (!entra && String(j.rango || '').trim() === 'Miembro' && String(j.admin || '').trim() !== 'Sí' &&
-        j.fechaIng instanceof Date && !isNaN(j.fechaIng.getTime())) {
-      var transcurrido = ahora - j.fechaIng.getTime();
-      entra = transcurrido >= 0 && transcurrido <= limiteMs;
+    var tieneFila = tagsEnHoja[clave] === true;
+    var entra = tieneFila && alDia[clave] !== true;
+    if (!tieneFila && _cuentaParaNuevos_(j.rango, j.admin) && _ingresoDentroDeVentana_(j.fechaIng, hoy)) {
+      if (establecidos === null) {
+        try { establecidos = _obtenerEstablecidosTerna_().tags; }
+        catch (eEst) {
+          Logger.log('[Nuevos-Perfil] AVISO: no se pudo saber quién ya está establecido (' + (eEst.message || eEst) + '); no se excluye a nadie por ese motivo.');
+          establecidos = {};
+        }
+      }
+      entra = !establecidos[clave]; // §PF580: un regresado ya establecido no se visita (la siembra tampoco lo agrega)
     }
     if (!entra) continue;
     vistos[clave] = true;
     salida.push(tag);
   }
   return salida;
+}
+
+/**
+ * _filasNuevosAlDia_(ss, ctx, coberturaPorTag) (§PF580, 24-nov-2026; sin probar en Apps Script real)
+ * Devuelve { TAG: true } con las filas de «Nuevos» cuyo perfil no hace falta volver a leer: tienen algún dato en la cuadrícula Y la última semana de guerra
+ * cerrada ya está resuelta, porque (1) su bloque de fecha (domingo de esa semana) tiene datos en la fila, o (2) esa semana está en el histórico de Guerra
+ * del jugador (coberturaPorTag, de _construirCoberturaPorTag(): _alimentarNuevosDesdeCorrecciones_() no la escribe en la cuadrícula).
+ * Una fila vacía nunca está al día. No exige las 5 semanas: quien tiene poco historial se visitaría siempre. Sin ctx fiable (periodIndexSospechoso) devuelve {}.
+ * ctx: el de _getCtx().
+ */
+function _filasNuevosAlDia_(ss, ctx, coberturaPorTag) {
+  var alDia = {};
+  if (!ctx || ctx.periodIndexSospechoso) return alDia;
+  var pl = primerLunesTemporada(ctx.ref, ctx.temporada);
+  if (!pl || isNaN(pl.getTime())) return alDia;
+  var inicioEnCurso = new Date(pl.getFullYear(), pl.getMonth(), pl.getDate() + Number(ctx.sectionIndex) * 7); // lunes de la semana en curso
+  var inicioCerrada = new Date(inicioEnCurso.getFullYear(), inicioEnCurso.getMonth(), inicioEnCurso.getDate() - 7);
+  var domingoCerrado = new Date(inicioEnCurso.getFullYear(), inicioEnCurso.getMonth(), inicioEnCurso.getDate() - 1);
+  var ts = _fechaATemporadaSemana(domingoCerrado);
+  var etiqueta = ts ? (ts.temporadaPropia + _getTemporadaOffsetRoyaleApi()) + '-' + ts.semana : '';
+
+  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
+  if (!sh || sh.getLastRow() < NUEVOS_FILA_DATOS_INICIO) return alDia;
+  var anchoGrid = sh.getLastColumn() - COL_INICIO_GRID_NUEVOS + 1;
+  if (anchoGrid < GRID_BLOQUE_ANCHO_NUEVOS) return alDia; // sin cuadrícula: todas las filas están vacías
+  var numFilas = sh.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
+  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, numFilas, 1).getValues();
+  var fechas = sh.getRange(NUEVOS_FILA_FECHAS, COL_INICIO_GRID_NUEVOS, 1, anchoGrid).getValues()[0];
+  var grid = sh.getRange(NUEVOS_FILA_DATOS_INICIO, COL_INICIO_GRID_NUEVOS, numFilas, anchoGrid).getValues();
+
+  var cubiertos = {};
+  Object.keys(coberturaPorTag || {}).forEach(function (k) {
+    if (etiqueta && (coberturaPorTag[k] || []).indexOf(etiqueta) >= 0) cubiertos[String(k).trim().toUpperCase()] = true;
+  });
+
+  var pendientes = {}; // un tag repetido está al día solo si todas sus filas lo están
+  for (var i = 0; i < numFilas; i++) {
+    var tag = String(tags[i][0] || '').trim().toUpperCase();
+    if (!tag) continue;
+    var tieneDatos = false, tieneCerrada = false;
+    for (var c = 0; c < anchoGrid; c++) {
+      if (grid[i][c] === '' || grid[i][c] === null) continue;
+      tieneDatos = true;
+      var fecha = fechas[c - (c % GRID_BLOQUE_ANCHO_NUEVOS)]; // la fecha vive en la primera columna del bloque
+      if (fecha instanceof Date && fecha >= inicioCerrada && fecha < inicioEnCurso) { tieneCerrada = true; break; }
+    }
+    if (tieneDatos && (tieneCerrada || cubiertos[tag] === true)) alDia[tag] = true;
+    else pendientes[tag] = true;
+  }
+  Object.keys(pendientes).forEach(function (tg) { delete alDia[tg]; });
+  return alDia;
 }
 
 /**
@@ -34319,7 +34415,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
   }
   var nuevosParaPerfil = [];
   if (!soloClanes) { // §PF576: quien ya está en «Nuevos» o es ingreso reciente se visita aunque Log/Analytics lo cubran; un fallo no frena la lista
-    try { nuevosParaPerfil = _tagsNuevosParaPerfil_(infoNuevosPerfil); }
+    try { nuevosParaPerfil = _tagsNuevosParaPerfil_(infoNuevosPerfil, coberturaPorTag, ctxActual); } // §PF580
     catch (eNp) { Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo calcular quién alimenta «Nuevos» (' + (eNp.message || eNp) + '); la lista sale sin ese campo.'); }
   }
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
@@ -34346,7 +34442,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
     sinPerfilEnCsv: sinPerfilEnCsv,
     // §PF314 (PF253 opción B): activos que salieron de los clanes Terna y regresaron, sin perfil leído desde el regreso. Tampermonkey v3.17 visita su perfil (todas las semanas) y el backend decide qué reemplaza o agrega.
     regresadosSinPerfil: regresadosSinPerfil,
-    // §PF576: activos que ya tienen fila en «Nuevos» o ingresaron hace 7 días o menos (rango Miembro, sin Admin). Tampermonkey visita su perfil sin backfill aunque Log/Analytics los cubran, para que _alimentarNuevosDesdeCorrecciones_() llene su fila. Sin el campo, Tampermonkey no visita a nadie de más.
+    // §PF576 y §PF580: activos cuya fila de «Nuevos» está vacía o sin la última semana cerrada, o ingresos de 7 días o menos sin fila y todavía no establecidos (rango Miembro, sin Admin). Tampermonkey visita su perfil sin backfill aunque Log/Analytics los cubran, para que _alimentarNuevosDesdeCorrecciones_() llene su fila. Sin el campo, Tampermonkey no visita a nadie de más.
     nuevosParaPerfil: nuevosParaPerfil
   };
 }
@@ -62495,24 +62591,38 @@ function _webUltimaGuerraPreviaFilas_(ctx) {
   return snap ? _webUltimaGuerraPreviaExpandir_(snap) : [];
 }
 
+// §PF580 (24-nov-2026): ÚNICA definición de las piezas del criterio de «ingreso reciente», compartida por la web, la siembra de «Nuevos», la lista de candidatos y la lista de perfiles de la Corrección de Guerra (14_Nuevos_RoyaleAPI.gs). Reciben valores sueltos y no una fila, porque cada llamador lee el Directorio con un diseño distinto (IC o DC). Si cambia el rango, la ventana de días o la marca de Admin, se cambia solo aquí. [→ Contexto_Base_Web.md §PF580]
+var INGRESO_RECIENTE_DIAS = 7;
+
+// Rango que puede contar como ingreso reciente: solo Miembro (§PF577).
+function _esRangoDeIngresoReciente_(rango) {
+  return String(rango || '').trim() === 'Miembro';
+}
+
+// true si Fecha_ing es una fecha de hace INGRESO_RECIENTE_DIAS días o menos (una fecha futura, vacía o en texto no cuenta).
+function _ingresoDentroDeVentana_(fechaIng, hoy) {
+  if (!(fechaIng instanceof Date) || isNaN(fechaIng.getTime())) return false;
+  var diasDesdeIngreso = (hoy - fechaIng) / 86400000;
+  return diasDesdeIngreso >= 0 && diasDesdeIngreso <= INGRESO_RECIENTE_DIAS;
+}
+
+// Criterio de rango y Admin de la hoja «Nuevos»: rango de ingreso reciente y sin Admin. La web NO usa esta función porque sí muestra a los Admin (la pastilla «Ocultar admins» los oculta).
+function _cuentaParaNuevos_(rango, admin) {
+  return _esRangoDeIngresoReciente_(rango) && String(admin || '').trim() !== 'Sí';
+}
+
 // Tag de una fila del Directorio (formato DC) si califica como «ingreso reciente»; '' si no. Criterio de siempre del PASO 1 de _construirIngresosRecientesUnificado(): estado Activo, en un clan Terna vigente y (V. Guerra vacío o Fecha_ing de hace 7 días o menos). Lo reutiliza _getTagsIngresosRecientes() (09_API_ClashRoyale.gs) para que el botón «Actualizar» pida /players de las mismas cuentas que muestra el panel. [→ Contexto_Base_Web.md §PF345]
 function _tagIngresoRecienteDeFilaDir_(filaDir, hoy) {
-  var LIMITE_DIAS_NUEVO = 7;
   if (String(filaDir[DC.ESTADO - 1] || '').trim() !== 'Activo') return '';
 
   var clanTagDir = String(filaDir[DC.CLAN_TAG - 1] || '').trim();
   if (CFG.TERNA_TAGS.indexOf(clanTagDir) < 0) return ''; // ya no está en un clan Terna
 
   // §PF577 (24-nov-2026, pedido de la usuaria): solo cuenta como ingreso reciente quien tiene rango Miembro (igual que la hoja «Nuevos»); Veterano, Líder y Colíder quedan fuera aunque sean nuevos en el Directorio o tengan V. Guerra vacío.
-  if (String(filaDir[DC.RANGO - 1] || '').trim() !== 'Miembro') return '';
+  if (!_esRangoDeIngresoReciente_(filaDir[DC.RANGO - 1])) return '';
 
   var vGuerra = String(filaDir[DC.V_GUERRA - 1] || '').trim();
-  var fechaIng = filaDir[DC.FECHA_ING - 1];
-  var esReciente = false;
-  if (fechaIng instanceof Date && !isNaN(fechaIng.getTime())) {
-    var diasDesdeIngreso = (hoy - fechaIng) / 86400000;
-    esReciente = diasDesdeIngreso >= 0 && diasDesdeIngreso <= LIMITE_DIAS_NUEVO;
-  }
+  var esReciente = _ingresoDentroDeVentana_(filaDir[DC.FECHA_ING - 1], hoy);
   if (vGuerra !== '' && !esReciente) return ''; // no califica como "reciente"
 
   return String(filaDir[DC.TAG - 1] || '').trim();
