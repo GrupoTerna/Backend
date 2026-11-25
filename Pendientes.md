@@ -40,7 +40,6 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 
 ### A4. Programar lo que pediste
 
-- [ ] `PF584` — **Parte 2:** guardar ese control en un CSV propio de Drive, una fila por clan y día, con fuente `api`, al cerrar cada día junto a la corrección automática; solo guarda y avisa. Detalle en `§PF584`.
 - [ ] `PF584` — **Parte 3:** respaldo con la suma de la web (marcado `respaldo`) para el último domingo de la temporada y coliseo, que la API no da; la API lo reemplaza si aparece. Detalle en `§PF584`.
 - [ ] `PF584` — **Parte 4:** usar `pointsEarned` de la API como pista al ubicar ataques de un día sin dato; solo después de ver los resultados de las partes 1 a 3. Detalle en `§PF584`.
 
@@ -115,6 +114,7 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Blog.md` en `royaleapi.com/blog` real: que no abra nada y solo traiga lo nuevo (la primera corrida del 22-nov-2026 trajo las 537 entradas sin errores, punto 14 (b)).
 - [ ] `PF557` — Segunda corrida de `Tampermonkey/Tampermonkey_Supercell.md`: que se detenga en la página 1 y solo traiga lo nuevo (la primera corrida del 22-nov-2026 recorrió 24 páginas y trajo 140 artículos sin errores, y terminó sola en la última página, puntos 12 y 14 (a)).
 - [ ] `PF573` — Subir `Base` y volver a correr `aplicarTotalesSemanaDesdeHistorialInforme()` (proyecto **Base**, archivo `48_Herramientas_Debug.gs`): el registro de cada tanda debe traer «Analisis de las series por escribir (§PF573)» y el CSV del informe las cuatro columnas nuevas al final («Confianza del reparto», «Prioridad de revision», «Evidencia de otro clan esa semana» y «Dudas»). Con los informes de las 00:50 a las 01:15 y el Backup de 39 799 filas, Node dio 2 154 series por escribir (Alta 814, Media 872, Baja 468); si el caché de totales ya caducó, la corrida vuelve a leer los JSON.
+- [ ] `PF584` — **Parte 2 (control de medallas guardado):** después de una corrida de la guerra con un día de guerra en curso, ver que exista `Control_Medallas_API.csv` en la carpeta CSV de Drive con filas `Terna` y `Rival` en estado `cuadra`, y correr `estadoControlMedallasApi()` (proyecto **Base**, `60_Control_Medallas_API.gs`). Detalle en `§PF584` punto 8.
 
 ### B6. Clanes externos, infiltrados e índices
 
