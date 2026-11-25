@@ -228,9 +228,7 @@ function repararFormatoEncabezadosNuevos() {
   // 7) Filas/columnas congeladas + filtro nativo, por si la hoja los [→ Contexto_Base_Web.md §14B025]
   sh.setFrozenRows(NUEVOS_FILA_HEADERS);
   sh.setFrozenColumns(3);
-  if (!sh.getFilter()) {
-    sh.getRange(NUEVOS_FILA_HEADERS, 1, 1, lastCol).createFilter();
-  }
+  _ajustarFiltroNuevos_(sh); // §PF581
 
   // 8) Borde blanco sobre TODO el bloque de encabezado (filas 1 a 3, [→ Contexto_Base_Web.md §14B026]
   sh.getRange(1, 1, NUEVOS_FILA_HEADERS, lastCol)
@@ -415,10 +413,7 @@ function _pintarEncabezadosNuevos(sh) {
   sh.setFrozenColumns(3);
 
   // Filtro nativo desde la fila de encabezados, igual que Control/Control_2/T_Control.
-  var filtroActual = sh.getFilter();
-  if (!filtroActual) {
-    sh.getRange(NUEVOS_FILA_HEADERS, 1, 1, totalCols).createFilter();
-  }
+  _ajustarFiltroNuevos_(sh); // §PF581
 
   // Borde blanco sobre todo el bloque de encabezado (mismo criterio que [→ Contexto_Base_Web.md §14B034]
   var COLOR_BORDE_HEADER = '#ffffff';
@@ -637,6 +632,7 @@ function _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato() {
   _reordenarFilasNuevosPorClanYNombre(sh);
   _aplicarTodoFormatoCondicionalNuevos(sh);
   _limpiarLinksAccidentalesEnHoja(sh, NUEVOS_FILA_HEADERS);
+  _ajustarFiltroNuevos_(sh); // §PF581
 
   Logger.log('[Nuevos-RoyaleAPI] _refrescarColumnasFijasNuevos_Paso3_OrdenYFormato(): semana actual/orden/formato reaplicados.');
 }
@@ -1146,6 +1142,41 @@ function _contarSemanasGuerraTerna(tag, mapaPrecomputado) {
 // ----- Orden y formato de la hoja -----
 
 /**
+ * _ajustarFiltroNuevos_(sh) (§PF581, 24-nov-2026; sin probar en Apps Script real)
+ * Deja el filtro nativo de «Nuevos» desde la fila de encabezados hasta la última fila y columna con datos. Antes el filtro solo se creaba si faltaba, y las
+ * filas agregadas después quedaban debajo de él (no se filtraban ni se ordenaban). Si el filtro ya cubre todo, no hace nada; si no, lo recrea y repone los
+ * criterios que tuviera cada columna. Un fallo solo se anota en el registro. Devuelve true solo si creó o recreó el filtro.
+ */
+function _ajustarFiltroNuevos_(sh) {
+  try {
+    var lastCol = sh.getLastColumn();
+    var ultimaFila = Math.min(Math.max(sh.getLastRow(), NUEVOS_FILA_DATOS_INICIO), sh.getMaxRows());
+    if (lastCol < 1 || ultimaFila < NUEVOS_FILA_HEADERS) return false;
+    var filtro = sh.getFilter();
+    var criterios = [];
+    if (filtro) {
+      var rango = filtro.getRange();
+      if (rango.getRow() === NUEVOS_FILA_HEADERS && rango.getColumn() === 1 &&
+          rango.getLastRow() >= ultimaFila && rango.getLastColumn() >= lastCol) return false;
+      for (var c = rango.getColumn(); c <= rango.getLastColumn(); c++) {
+        var criterio = filtro.getColumnFilterCriteria(c);
+        if (criterio) criterios.push({ col: c, criterio: criterio });
+      }
+      filtro.remove();
+    }
+    var nuevo = sh.getRange(NUEVOS_FILA_HEADERS, 1, ultimaFila - NUEVOS_FILA_HEADERS + 1, lastCol).createFilter();
+    for (var i = 0; i < criterios.length; i++) {
+      if (criterios[i].col <= lastCol) nuevo.setColumnFilterCriteria(criterios[i].col, criterios[i].criterio);
+    }
+    Logger.log('[Filtros] Nuevos: filtro ajustado hasta la fila ' + ultimaFila + ' y la columna ' + lastCol + '.');
+    return true;
+  } catch (e) {
+    Logger.log('[Filtros] No se pudo ajustar el filtro de Nuevos: ' + (e.message || e));
+    return false;
+  }
+}
+
+/**
  * _reordenarFilasNuevosPorClanYNombre(sh) [→ Contexto_Base_Web.md §14B110]
  */
 function _reordenarFilasNuevosPorClanYNombre(sh) {
@@ -1337,9 +1368,7 @@ function _reajustarTituloGridNuevos(sh) {
     .setHorizontalAlignment('center')
     .setVerticalAlignment('middle');
 
-  var filtroActual = sh.getFilter();
-  if (filtroActual) filtroActual.remove();
-  sh.getRange(NUEVOS_FILA_HEADERS, 1, 1, sh.getLastColumn()).createFilter();
+  _ajustarFiltroNuevos_(sh); // §PF581
 }
 
 // ----- Semana actual y bloques de fechas -----
@@ -2584,6 +2613,8 @@ function _aplicarImportacionNuevos(candidatosPayload, opciones) {
     _ordenarBloquesFechaNuevos(sh);
     _actualizarFormatoGridNuevos(sh);
   }
+
+  _ajustarFiltroNuevos_(sh); // §PF581: las filas agregadas al final quedan dentro del filtro
 
   Logger.log('[Nuevos-RoyaleAPI] Procesados: ' + procesados + ', filas nuevas: ' + filasNuevas +
     ', celdas escritas: ' + celdasEscritas + ', registros omitidos (fecha inválida): ' + registrosOmitidos +
