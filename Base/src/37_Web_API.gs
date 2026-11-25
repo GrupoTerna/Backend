@@ -1388,24 +1388,38 @@ function _webUltimaGuerraPreviaFilas_(ctx) {
   return snap ? _webUltimaGuerraPreviaExpandir_(snap) : [];
 }
 
+// §PF580 (24-nov-2026): ÚNICA definición de las piezas del criterio de «ingreso reciente», compartida por la web, la siembra de «Nuevos», la lista de candidatos y la lista de perfiles de la Corrección de Guerra (14_Nuevos_RoyaleAPI.gs). Reciben valores sueltos y no una fila, porque cada llamador lee el Directorio con un diseño distinto (IC o DC). Si cambia el rango, la ventana de días o la marca de Admin, se cambia solo aquí. [→ Contexto_Base_Web.md §PF580]
+var INGRESO_RECIENTE_DIAS = 7;
+
+// Rango que puede contar como ingreso reciente: solo Miembro (§PF577).
+function _esRangoDeIngresoReciente_(rango) {
+  return String(rango || '').trim() === 'Miembro';
+}
+
+// true si Fecha_ing es una fecha de hace INGRESO_RECIENTE_DIAS días o menos (una fecha futura, vacía o en texto no cuenta).
+function _ingresoDentroDeVentana_(fechaIng, hoy) {
+  if (!(fechaIng instanceof Date) || isNaN(fechaIng.getTime())) return false;
+  var diasDesdeIngreso = (hoy - fechaIng) / 86400000;
+  return diasDesdeIngreso >= 0 && diasDesdeIngreso <= INGRESO_RECIENTE_DIAS;
+}
+
+// Criterio de rango y Admin de la hoja «Nuevos»: rango de ingreso reciente y sin Admin. La web NO usa esta función porque sí muestra a los Admin (la pastilla «Ocultar admins» los oculta).
+function _cuentaParaNuevos_(rango, admin) {
+  return _esRangoDeIngresoReciente_(rango) && String(admin || '').trim() !== 'Sí';
+}
+
 // Tag de una fila del Directorio (formato DC) si califica como «ingreso reciente»; '' si no. Criterio de siempre del PASO 1 de _construirIngresosRecientesUnificado(): estado Activo, en un clan Terna vigente y (V. Guerra vacío o Fecha_ing de hace 7 días o menos). Lo reutiliza _getTagsIngresosRecientes() (09_API_ClashRoyale.gs) para que el botón «Actualizar» pida /players de las mismas cuentas que muestra el panel. [→ Contexto_Base_Web.md §PF345]
 function _tagIngresoRecienteDeFilaDir_(filaDir, hoy) {
-  var LIMITE_DIAS_NUEVO = 7;
   if (String(filaDir[DC.ESTADO - 1] || '').trim() !== 'Activo') return '';
 
   var clanTagDir = String(filaDir[DC.CLAN_TAG - 1] || '').trim();
   if (CFG.TERNA_TAGS.indexOf(clanTagDir) < 0) return ''; // ya no está en un clan Terna
 
   // §PF577 (24-nov-2026, pedido de la usuaria): solo cuenta como ingreso reciente quien tiene rango Miembro (igual que la hoja «Nuevos»); Veterano, Líder y Colíder quedan fuera aunque sean nuevos en el Directorio o tengan V. Guerra vacío.
-  if (String(filaDir[DC.RANGO - 1] || '').trim() !== 'Miembro') return '';
+  if (!_esRangoDeIngresoReciente_(filaDir[DC.RANGO - 1])) return '';
 
   var vGuerra = String(filaDir[DC.V_GUERRA - 1] || '').trim();
-  var fechaIng = filaDir[DC.FECHA_ING - 1];
-  var esReciente = false;
-  if (fechaIng instanceof Date && !isNaN(fechaIng.getTime())) {
-    var diasDesdeIngreso = (hoy - fechaIng) / 86400000;
-    esReciente = diasDesdeIngreso >= 0 && diasDesdeIngreso <= LIMITE_DIAS_NUEVO;
-  }
+  var esReciente = _ingresoDentroDeVentana_(filaDir[DC.FECHA_ING - 1], hoy);
   if (vGuerra !== '' && !esReciente) return ''; // no califica como "reciente"
 
   return String(filaDir[DC.TAG - 1] || '').trim();

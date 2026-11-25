@@ -90,9 +90,6 @@ var NUEVOS_RESTORE_LOTE_MAX = 5;
 // §PF575 (24-nov-2026): tope de miembros nuevos del Directorio que _sembrarNuevosDesdeDirectorio_() agrega a «Nuevos» en UNA corrida. Cada candidato nuevo cuesta como uno del botón de Nuevos (decenas de segundos por lote de 8, §PF311); lo que pasa del tope queda para la corrida siguiente.
 var NUEVOS_SEMBRAR_MAX_POR_CORRIDA = 8;
 
-// §PF576 (24-nov-2026): días desde el ingreso (Fecha_ing del Directorio) para que un miembro cuente como ingreso reciente al decidir a quién se le visita el perfil en la Corrección de Guerra sin backfill (_tagsNuevosParaPerfil_()). Es la misma ventana de 7 días de _tagIngresoRecienteDeFilaDir_() (37_Web_API.gs); si aquella cambia, esta debe cambiar igual (si divergen solo cuesta alguna visita de perfil de más o de menos).
-var NUEVOS_PERFIL_DIAS_INGRESO = 7;
-
 // ===== PARTE 1 — Funciones que se corren a mano =====
 
 // ----- Reordenar la hoja y reparar el formato de los encabezados -----
@@ -527,8 +524,7 @@ function _sembrarNuevosDesdeDirectorio_(dirData) {
     var fila = dirData[i];
     var tagReciente = _tagIngresoRecienteDeFilaDir_(fila, hoy);
     if (!tagReciente) continue;
-    if (String(fila[DC.RANGO - 1] || '').trim() !== 'Miembro') continue;
-    if (String(fila[DC.ADMIN - 1] || '').trim() === 'Sí') continue;
+    if (!_cuentaParaNuevos_(fila[DC.RANGO - 1], fila[DC.ADMIN - 1])) continue;
     var clave = String(tagReciente).trim().toUpperCase();
     if (!clave || vistos[clave] || tagsEnHoja[clave] === true) continue;
     vistos[clave] = true;
@@ -1783,11 +1779,7 @@ function _obtenerListaCandidatosNuevos() {
     var clanTag = String(r[ix.clanTag] || '').trim();
     if (CFG.TERNA_TAGS.indexOf(clanTag) < 0) continue;
 
-    var rango = String(r[ix.rango] || '').trim();
-    if (rango !== 'Miembro') continue;
-
-    var esAdmin = String(r[ix.admin] || '').trim() === 'Sí';
-    if (esAdmin) continue;
+    if (!_cuentaParaNuevos_(r[ix.rango], r[ix.admin])) continue; // §PF580
 
     var tag = String(r[ix.tag] || '').trim();
     if (!tag) continue;
@@ -2097,7 +2089,7 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
  * física del Directorio (fechaIng es un Date si la celda es una fecha). Entran los que:
  *   (a) ya tienen fila en «Nuevos» (para que su cuadrícula no se congele, como en _alimentarNuevosDesdeCorrecciones_()); no se pide rango ni Admin, porque si la fila sigue
  *       en la hoja es que _purgarNuevosEstablecidos() y _purgarNuevosExpulsados() todavía no la borraron; o
- *   (b) ingresaron hace NUEVOS_PERFIL_DIAS_INGRESO días o menos (Fecha_ing), con rango Miembro y sin Admin, igual que _sembrarNuevosDesdeDirectorio_().
+ *   (b) ingresaron hace INGRESO_RECIENTE_DIAS días o menos (Fecha_ing), con rango Miembro y sin Admin (_cuentaParaNuevos_() e _ingresoDentroDeVentana_(), §PF580).
  * No se usa _tagIngresoRecienteDeFilaDir_() porque pide V_Guerra, que está en Players y no en la hoja física del Directorio que lee esa lista (§PF042); por eso la rama (b)
  * mira solo la fecha. Tampoco se usa el mapa de semanas de guerra (_construirMapaSemanasGuerraTerna() lee toda la hoja Guerra y esa lista tiene el tiempo contado, §PF043):
  * un establecido que aún figure en «Nuevos» o ingresó hace poco solo cuesta una visita de perfil de más.
@@ -2114,8 +2106,7 @@ function _tagsNuevosParaPerfil_(infoJugadores) {
     Logger.log('[Nuevos-Perfil] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) + '); solo se consideran los ingresos recientes por fecha.');
     tagsEnHoja = {};
   }
-  var ahora = new Date().getTime();
-  var limiteMs = NUEVOS_PERFIL_DIAS_INGRESO * 86400000;
+  var hoy = new Date();
   var vistos = {};
   for (var i = 0; i < infoJugadores.length; i++) {
     var j = infoJugadores[i] || {};
@@ -2123,11 +2114,7 @@ function _tagsNuevosParaPerfil_(infoJugadores) {
     var clave = tag.toUpperCase();
     if (!tag || vistos[clave]) continue;
     var entra = tagsEnHoja[clave] === true;
-    if (!entra && String(j.rango || '').trim() === 'Miembro' && String(j.admin || '').trim() !== 'Sí' &&
-        j.fechaIng instanceof Date && !isNaN(j.fechaIng.getTime())) {
-      var transcurrido = ahora - j.fechaIng.getTime();
-      entra = transcurrido >= 0 && transcurrido <= limiteMs;
-    }
+    if (!entra) entra = _cuentaParaNuevos_(j.rango, j.admin) && _ingresoDentroDeVentana_(j.fechaIng, hoy);
     if (!entra) continue;
     vistos[clave] = true;
     salida.push(tag);
