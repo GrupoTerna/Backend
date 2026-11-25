@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/11/2026 01:21:26 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/11/2026 08:30:27 */
 
 
 
@@ -86005,11 +86005,13 @@ function _vcrrResumenJugadorSemana_(temporada, semana, tag) {
  * 60_Control_Medallas_API.gs — Control de medallas por clan y día contra la API (§PF584, 24-nov-2026, pedido de la usuaria)
  *
  * Índice del orden (criterios de 0.9 de la skill):
- *   1. Funciones que la usuaria corre a mano: estadoControlMedallasApi() (solo lectura; parte 2) y actualizarControlMedallasWeb() (parte 3, escribe Control_Medallas_Web.csv; también la dispara el activador semanal de 08_Activadores.gs).
+ *   1. Funciones que la usuaria corre a mano: estadoControlMedallasApi() (solo lectura; parte 2), actualizarControlMedallasWeb() (parte 3, escribe Control_Medallas_Web.csv; también la dispara el activador semanal de 08_Activadores.gs)
+ *      e informeMedallasPorDiaContraApi() (parte 4, opción A: solo informa; escribe Control_Medallas_Dia.csv).
  *   2. No manuales, tema «control de medallas», en el orden en que se usan:
  *        _cmaControlClanes_() (parte 1, pura) -> _cmaFilasDeControl_() y _cmaMezclarFilas_() (parte 2, puras) -> _cmaCierreSemana_() y _cmaFilasDeCierre_() (cierre del domingo en el lunes, puras)
  *        -> _cmaGuardarControlDeCorrida_() (parte 2, escribe el CSV)
- *        -> _cmaNombreClanWeb_(), _cmaTotalesSemanaWeb_(), _cmaDiasApiPorSemana_(), _cmaFilasRespaldoWeb_() y _cmaMezclarFilasWeb_() (parte 3, puras).
+ *        -> _cmaNombreClanWeb_(), _cmaTotalesSemanaWeb_(), _cmaDiasApiPorSemana_(), _cmaFilasRespaldoWeb_() y _cmaMezclarFilasWeb_() (parte 3, puras)
+ *        -> _cmaMedallasDiaHoja_(), _cmaFilasMedallasDia_() y _cmaMezclarFilasDia_() (parte 4, opción A, puras).
  *      Quien la llama: updateGuerraSheet() (17_GuerraSheet.gs), una vez por corrida, junto a la corrección automática del cierre del día.
  *
  * Regla de la usuaria: la API manda siempre; la web solo es respaldo donde la API no da dato. Este archivo trabaja SOLO con el JSON de
@@ -86025,6 +86027,10 @@ var CMA_ENCABEZADOS = ['Temporada', 'SectionIndex', 'PeriodIndex', 'Dia', 'Clan'
 var CMW_CSV = 'Control_Medallas_Web.csv';
 var CMW_ENCABEZADOS = ['Temporada', 'Semana', 'Clan', 'Tag', 'Fuente', 'SumaFameWeb', 'Ataques', 'Jugadores', 'DiasApi', 'SumaPointsEarnedApi', 'Residuo',
   'Estado', 'DomingoRespaldo', 'PointsEarnedPorDia', 'Capturado'];
+
+// Parte 4 (opción A): medallas por clan y día de la hoja (Backup_Guerra.csv) contra el `pointsEarned` de la API. Solo informa. [→ Contexto_Base_Web.md §PF584]
+var CMD_CSV = 'Control_Medallas_Dia.csv';
+var CMD_ENCABEZADOS = ['Temporada', 'Semana', 'Dia', 'Clan', 'Tag', 'SumaHoja', 'PointsEarnedApi', 'Residuo', 'Estado', 'Jugadores', 'DiasSinFila', 'Anomalias', 'Capturado'];
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -86080,6 +86086,36 @@ function actualizarControlMedallasWeb() {
     m.actualizadas + ' actualizada(s)' + ((m.nuevas + m.actualizadas) ? '.' : '; sin cambios, no se escribió.') +
     (calc.sinTag.length ? ' Clanes del historial sin Tag conocido (no se usaron): ' + calc.sinTag.join(', ') + '.' : '') +
     (difieren.length ? ' Difieren: ' + difieren.slice(-10).join(' | ') : ''));
+}
+
+/**
+ * informeMedallasPorDiaContraApi() [→ Contexto_Base_Web.md §PF584]
+ * Manual (proyecto Base): parte 4, opción A (pista para los repartos). SOLO INFORMA: no cambia ninguna hoja ni ninguna elección de reparto.
+ * Para cada clan Terna, semana y día de guerra, suma las medallas que la hoja repartió ese día entre todos los jugadores (Backup_Guerra.csv: `Fame` es
+ * acumulada por semana, así que la de un día es la diferencia con el día anterior de la misma serie) y la compara con el `pointsEarned` de la API que ya
+ * guarda Control_Medallas_API.csv (J, V, S y, desde el cierre del domingo, D). Escribe Control_Medallas_Dia.csv (una fila por clan, semana y día) solo si hay
+ * filas nuevas o distintas. Un residuo distinto de 0 en un día con el total de la semana igual es la pista: algún ataque quedó en otro día.
+ */
+function informeMedallasPorDiaContraApi() {
+  var textoHoja = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!textoHoja) { Logger.log('[Control medallas día] No se encontró Backup_Guerra.csv; no se hizo nada.'); return; }
+  var textoApi = _loadCSVFromDrive(CMA_CSV);
+  if (!textoApi) { Logger.log('[Control medallas día] Todavía no existe ' + CMA_CSV + '; no hay medallas de la API con las que comparar.'); return; }
+  var capturado = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+  var hoja = _cmaMedallasDiaHoja_(_parseCSV(textoHoja));
+  var diasApi = _cmaDiasApiPorSemana_(_parseCSV(textoApi));
+  var filas = _cmaFilasMedallasDia_(hoja, diasApi, CFG.TERNA_TAGS, capturado);
+  var textoPrev = _loadCSVFromDrive(CMD_CSV);
+  var m = _cmaMezclarFilasDia_(textoPrev ? _parseCSV(textoPrev) : [], filas);
+  if (!m.ok) { Logger.log('[Control medallas día] AVISO: ' + CMD_CSV + ' tiene otro encabezado que el esperado; no se escribió nada.'); return; }
+  if (m.nuevas + m.actualizadas > 0) _saveCSVToDrive(CMD_CSV, _encodeCSV(m.filas));
+  var porEstado = {};
+  filas.forEach(function (f) { porEstado[f[8]] = (porEstado[f[8]] || 0) + 1; });
+  var mayores = filas.filter(function (f) { return f[8] === 'difiere'; }).sort(function (a, b) { return Math.abs(Number(b[7])) - Math.abs(Number(a[7])); }).slice(0, 10)
+    .map(function (f) { return 'T' + f[0] + ' S' + f[1] + ' ' + f[2] + ' ' + f[3] + ' residuo ' + f[7]; });
+  Logger.log('[Control medallas día] ' + filas.length + ' clan-día(s) de clanes Terna; por estado: ' + JSON.stringify(porEstado) + '; ' + m.nuevas + ' fila(s) nueva(s), ' +
+    m.actualizadas + ' actualizada(s)' + ((m.nuevas + m.actualizadas) ? '.' : '; sin cambios, no se escribió.') +
+    (mayores.length ? ' Mayores residuos: ' + mayores.join(' | ') : ' Ningún día difiere.'));
 }
 
 // =============================================================================
@@ -86455,6 +86491,118 @@ function _cmaMezclarFilasWeb_(existentes, nuevas) {
     for (var c = 0; c < ultimo; c++) { if (viejo[c] !== f[c]) { igual = false; break; } }
     if (igual) return;
     if ((Number(viejo[8]) || 0) > (Number(f[8]) || 0) && viejo[5] === f[5]) return;
+    base[pos] = f; res.actualizadas++;
+  });
+  res.filas = base;
+  return res;
+}
+
+// ----- Control de medallas: medallas por día de la hoja contra la API (parte 4, opción A; puras) -----
+
+/**
+ * _cmaMedallasDiaHoja_(filas) — suma, por clan, temporada, semana y día, las medallas que la hoja repartió entre los jugadores (§PF584 parte 4, opción A). Función pura.
+ * `filas`: Backup_Guerra.csv ya leído, con el encabezado en la posición 0. Solo cuentan las filas de `Etapa` = `Guerra` con `Día` J, V, S o D y un Clan_Tag.
+ * `Fame` de esa hoja es ACUMULADA por semana: la de un día es la diferencia con el día anterior de la misma serie (jugador, clan, temporada y semana).
+ * Si a una serie le falta la fila de un día, la diferencia cae en el siguiente día con fila y se cuenta en `diasSinFila` (la hoja no sabe de qué día fue);
+ * si la fame baja respecto del día anterior (corrección), ese día suma 0, se conserva el máximo anterior y se cuenta en `anomalias`.
+ * Devuelve { 'TAG|temporada|semana': { clanTag, temporada, semana, nombre, dias: [J, V, S, D], jugadores, diasSinFila, anomalias } }.
+ * Límite conocido: solo ve a los jugadores con fila en la hoja; las medallas de quien salió del clan antes de la captura no están y salen como residuo negativo (hoja − API).
+ */
+function _cmaMedallasDiaHoja_(filas) {
+  var salida = {};
+  if (!filas || filas.length < 2) return salida;
+  var enc = filas[0].map(function (c) { return String(c || '').trim(); });
+  var ix = {};
+  ['Temporada', 'Semana', 'Día', 'Etapa', 'Clan', 'Tag', 'Fame', 'Clan_Tag'].forEach(function (c) { ix[c] = enc.indexOf(c); });
+  for (var c in ix) { if (ix[c] < 0) return salida; }
+  var series = {}, ordenSeries = [];
+  for (var i = 1; i < filas.length; i++) {
+    var f = filas[i];
+    if (!f || f.length <= ix.Clan_Tag) continue;
+    if (String(f[ix.Etapa] || '').trim() !== 'Guerra') continue;
+    var off = CMA_LETRAS_DIAS.indexOf(String(f[ix['Día']] || '').trim());
+    var clanTag = String(f[ix.Clan_Tag] || '').trim().toUpperCase();
+    var jugador = String(f[ix.Tag] || '').trim().toUpperCase();
+    var temporada = Number(f[ix.Temporada]), semana = Number(f[ix.Semana]);
+    if (off < 0 || !clanTag || !jugador || isNaN(temporada) || isNaN(semana)) continue;
+    var clave = clanTag + '|' + temporada + '|' + semana;
+    var ks = clave + '|' + jugador;
+    var s = series[ks];
+    if (!s) { s = series[ks] = { clave: clave, fame: [null, null, null, null] }; ordenSeries.push(ks); }
+    s.fame[off] = Number(f[ix.Fame]) || 0;
+    var g = salida[clave];
+    if (!g) g = salida[clave] = { clanTag: clanTag, temporada: temporada, semana: semana, nombre: '', dias: [0, 0, 0, 0], jugadores: 0, diasSinFila: 0, anomalias: 0 };
+    g.nombre = String(f[ix.Clan] || '').trim() || g.nombre;
+  }
+  ordenSeries.forEach(function (ks) {
+    var s = series[ks], g = salida[s.clave];
+    g.jugadores++;
+    var previo = 0, vistoAlguno = false, huecos = 0;
+    var ultimo = -1;
+    for (var d = 0; d < 4; d++) { if (s.fame[d] !== null) ultimo = d; }
+    for (var d2 = 0; d2 <= ultimo; d2++) {
+      if (s.fame[d2] === null) { huecos++; continue; }
+      var delta = s.fame[d2] - previo;
+      if (delta < 0) { g.anomalias++; delta = 0; } else previo = s.fame[d2];
+      g.dias[d2] += delta;
+      vistoAlguno = true;
+    }
+    if (vistoAlguno) g.diasSinFila += huecos;
+  });
+  return salida;
+}
+
+/**
+ * _cmaFilasMedallasDia_(hoja, diasApi, ternaTags, capturado) — arma las filas de Control_Medallas_Dia.csv (§PF584 parte 4, opción A). Función pura.
+ * `hoja`: lo que devuelve _cmaMedallasDiaHoja_(); `diasApi`: lo que devuelve _cmaDiasApiPorSemana_() ({ 'TAG|temporada|semana': { J, V, S, D } }, solo clanes Terna).
+ * Una fila por clan Terna, semana y día con medallas en la hoja o con dato de la API. Estado: `cuadra` o `difiere` (residuo = hoja − API) si la API tiene ese día;
+ * `sin dato api` si no (semanas anteriores a la parte 2, o el domingo antes del cierre). Orden: temporada, semana, clan y día.
+ */
+function _cmaFilasMedallasDia_(hoja, diasApi, ternaTags, capturado) {
+  var filas = [];
+  var propios = {};
+  (ternaTags || []).forEach(function (t) { propios[String(t || '').trim().toUpperCase()] = true; });
+  var claves = Object.keys(hoja || {}).filter(function (k) { return propios[hoja[k].clanTag]; }).sort(function (a, b) {
+    var x = hoja[a], y = hoja[b];
+    return (x.temporada - y.temporada) || (x.semana - y.semana) || (x.clanTag < y.clanTag ? -1 : (x.clanTag > y.clanTag ? 1 : 0));
+  });
+  claves.forEach(function (k) {
+    var g = hoja[k], api = (diasApi && diasApi[k]) || {};
+    for (var d = 0; d < 4; d++) {
+      var letra = CMA_LETRAS_DIAS.charAt(d);
+      var tieneApi = api[letra] !== undefined;
+      if (!tieneApi && !g.dias[d]) continue;
+      var residuo = tieneApi ? g.dias[d] - api[letra] : '';
+      filas.push([g.temporada, g.semana, letra, g.nombre, g.clanTag, g.dias[d], tieneApi ? api[letra] : '', residuo,
+        tieneApi ? (residuo === 0 ? 'cuadra' : 'difiere') : 'sin dato api', g.jugadores, g.diasSinFila, g.anomalias, capturado]);
+    }
+  });
+  return filas;
+}
+
+/**
+ * _cmaMezclarFilasDia_(existentes, nuevas) — une las filas nuevas con las de Control_Medallas_Dia.csv (§PF584 parte 4, opción A). Función pura.
+ * Clave = Tag + Temporada + Semana + Día. Fila nueva: se agrega. Misma clave: solo cambia si algún valor es distinto (`Capturado` no cuenta, para que una corrida
+ * sin novedades no reescriba el archivo). Las filas del archivo que esta corrida no recalcula se conservan.
+ * Devuelve { ok, filas, nuevas, actualizadas }; ok = false si el encabezado del archivo no es el esperado (no se toca: se avisa).
+ */
+function _cmaMezclarFilasDia_(existentes, nuevas) {
+  var res = { ok: true, filas: [], nuevas: 0, actualizadas: 0 };
+  var enc = CMD_ENCABEZADOS.join('\t');
+  var base = (existentes && existentes.length) ? existentes.map(function (f) { return f.slice(); }) : [CMD_ENCABEZADOS.slice()];
+  if (base[0].join('\t') !== enc) { res.ok = false; res.filas = base; return res; }
+  var indice = {};
+  for (var i = 1; i < base.length; i++) indice[String(base[i][4]) + '|' + String(base[i][0]) + '|' + String(base[i][1]) + '|' + String(base[i][2])] = i;
+  var ultimo = CMD_ENCABEZADOS.length - 1;   // Capturado
+  (nuevas || []).forEach(function (n) {
+    var f = n.map(function (v) { return (v === null || v === undefined) ? '' : String(v); });
+    var k = f[4] + '|' + f[0] + '|' + f[1] + '|' + f[2];
+    var pos = indice[k];
+    if (pos === undefined) { base.push(f); indice[k] = base.length - 1; res.nuevas++; return; }
+    var viejo = base[pos].map(String);
+    var igual = true;
+    for (var c = 0; c < ultimo; c++) { if (viejo[c] !== f[c]) { igual = false; break; } }
+    if (igual) return;
     base[pos] = f; res.actualizadas++;
   });
   res.filas = base;
