@@ -4,7 +4,8 @@
  * Índice del orden (criterios de 0.9 de la skill):
  *   1. Funciones que la usuaria corre a mano: estadoControlMedallasApi() (solo lectura; parte 2) y actualizarControlMedallasWeb() (parte 3, escribe Control_Medallas_Web.csv).
  *   2. No manuales, tema «control de medallas», en el orden en que se usan:
- *        _cmaControlClanes_() (parte 1, pura) -> _cmaFilasDeControl_() y _cmaMezclarFilas_() (parte 2, puras) -> _cmaGuardarControlDeCorrida_() (parte 2, escribe el CSV)
+ *        _cmaControlClanes_() (parte 1, pura) -> _cmaFilasDeControl_() y _cmaMezclarFilas_() (parte 2, puras) -> _cmaCierreSemana_() y _cmaFilasDeCierre_() (cierre del domingo en el lunes, puras)
+ *        -> _cmaGuardarControlDeCorrida_() (parte 2, escribe el CSV)
  *        -> _cmaNombreClanWeb_(), _cmaTotalesSemanaWeb_(), _cmaDiasApiPorSemana_(), _cmaFilasRespaldoWeb_() y _cmaMezclarFilasWeb_() (parte 3, puras).
  *      Quien la llama: updateGuerraSheet() (17_GuerraSheet.gs), una vez por corrida, junto a la corrección automática del cierre del día.
  *
@@ -12,7 +13,7 @@
  * currentriverrace de la API. [→ Contexto_Base_Web.md §PF584]
  */
 
-var CMA_CSV = 'Control_Medallas_API.csv';   // CSV propio en Drive (raíz de CSV; precedente §PF362 punto 9). Una fila por clan, temporada y día en curso. [→ Contexto_Base_Web.md §PF584]
+var CMA_CSV = 'Control_Medallas_API.csv';   // CSV propio en Drive (raíz de CSV; precedente §PF362 punto 9). Una fila por clan, temporada y día en curso; y, de lunes a miércoles, una fila `L` con el cierre de la semana anterior. [→ Contexto_Base_Web.md §PF584]
 var CMA_LETRAS_DIAS = 'JVSD';                 // desplazamiento 0..3 = jueves a domingo (periodIndex % 7 - 3)
 var CMA_ENCABEZADOS = ['Temporada', 'SectionIndex', 'PeriodIndex', 'Dia', 'Clan', 'Tag', 'Tipo', 'Fuente', 'SumaFame', 'PeriodPoints',
   'SumaPointsEarned', 'DiasEsperados', 'DiasConDato', 'Residuo', 'Estado', 'PointsEarnedPorDia', 'Capturado'];
@@ -155,7 +156,7 @@ function _cmaControlClanes_(rr) {
 
 /**
  * _cmaFilasDeControl_(controles, temporada, ternaTags, capturado) — convierte lo que devuelve _cmaControlClanes_() en filas del CSV (§PF584 parte 2).
- * Función pura. Solo guarda días de guerra (`warDay`): coliseo y entrenamiento no tienen medallas que comprobar (la parte 3 agrega el respaldo).
+ * Función pura. Solo guarda días de guerra (`warDay`): coliseo y entrenamiento no tienen medallas que comprobar (la parte 3 agrega el respaldo; el entrenamiento solo aporta el cierre del domingo, _cmaCierreSemana_).
  * Una fila por clan de la carrera (también los rivales), con el periodIndex del día EN CURSO al capturar: durante ese día `periodLogs` ya trae el
  * anterior cerrado, así que ahí se cierra la verificación del día anterior. `Fuente` es siempre 'api'.
  */
@@ -213,6 +214,81 @@ function _cmaMezclarFilas_(existentes, nuevas) {
   return res;
 }
 
+// ----- Control de medallas: cierre del domingo con la captura del lunes (puras) -----
+
+/**
+ * _cmaCierreSemana_(rr) — toma de una captura de ENTRENAMIENTO (lunes, martes o miércoles) los `pointsEarned` de los 4 días de guerra de la semana
+ * anterior, domingo incluido (§PF584, hueco del domingo). Función pura: solo lee `rr`; no usa Drive ni hojas.
+ * Por qué: el `pointsEarned` del domingo recién llega en la captura del lunes (el día en curso no está en `periodLogs`) y la parte 2 solo guardaba
+ * días de guerra, así que Control_Medallas_API.csv nunca tenía los 4 días y toda semana normal salía `respaldo` con `DomingoRespaldo`.
+ * Solo aplica a `training` con sectionIndex >= 1 y periodIndex dentro de esa semana (7 * sectionIndex a +2): en la primera semana de la temporada
+ * no hay semana anterior y la del coliseo nunca se cierra aquí (después viene otra temporada, con sectionIndex 0). Vale para cualquiera de los 3 días de
+ * entrenamiento: todos traen el mismo cierre, y así una captura del lunes que falte la cubre la del martes.
+ * Devuelve una lista (un objeto por clan, también rivales):
+ *   { tag, nombre, periodIndex (el del lunes: 7 * sectionIndex, para que las capturas de los 3 días caigan en la misma clave), sectionIndex (de la semana
+ *     CERRADA, o sea el de la captura menos 1; así `Semana` = sectionIndex + 1 coincide con la web), porDia: [{ periodIndex, pointsEarned }],
+ *     sumaPointsEarned, diasEsperados: 4, diasConDato, estado: 'cierre' (los 4 días) o 'sin dato' (falta alguno: no se inventa), fuente: 'api' }
+ */
+function _cmaCierreSemana_(rr) {
+  var salida = [];
+  if (!rr || String(rr.periodType || '') !== 'training') return salida;
+  var pi = Number(rr.periodIndex), sec = Number(rr.sectionIndex);
+  if (!isFinite(pi) || !isFinite(sec) || sec < 1 || pi < sec * 7 || pi > sec * 7 + 2) return salida;
+  var primerDia = (sec - 1) * 7 + CMA_PRIMER_DIA_GUERRA_OFFSET;
+  var clanes = (rr.clans && rr.clans.length) ? rr.clans : (rr.clan ? [rr.clan] : []);   // clan-por-nombre-ok: lista de clanes de la carrera, no compara nombres
+  var logs = rr.periodLogs || [];
+  for (var c = 0; c < clanes.length; c++) {
+    var clan = clanes[c] || {};
+    var tag = String(clan.tag || '').trim().toUpperCase();
+    if (!tag) continue;
+    var fila = { tag: tag, nombre: String(clan.name || ''), periodIndex: sec * 7, sectionIndex: sec - 1, porDia: [], sumaPointsEarned: 0,
+      diasEsperados: CMA_DIAS_GUERRA_POR_SEMANA, diasConDato: 0, estado: 'sin dato', fuente: 'api' };
+    for (var d = primerDia; d < primerDia + CMA_DIAS_GUERRA_POR_SEMANA; d++) {
+      var encontrado = null;
+      for (var l = 0; l < logs.length && encontrado === null; l++) {
+        if (Number(logs[l].periodIndex) !== d) continue;
+        var items = logs[l].items || [];
+        for (var k = 0; k < items.length; k++) {
+          if (items[k] && items[k].clan && String(items[k].clan.tag || '').trim().toUpperCase() === tag) { encontrado = Number(items[k].pointsEarned) || 0; break; }
+        }
+      }
+      if (encontrado !== null) { fila.porDia.push({ periodIndex: d, pointsEarned: encontrado }); fila.sumaPointsEarned += encontrado; fila.diasConDato++; }
+    }
+    if (fila.diasConDato === fila.diasEsperados) fila.estado = 'cierre';
+    salida.push(fila);
+  }
+  return salida;
+}
+
+/**
+ * _cmaFilasDeCierre_(cierres, temporada, ternaTags, capturado) — convierte lo que devuelve _cmaCierreSemana_() en filas de Control_Medallas_API.csv
+ * (mismas columnas que _cmaFilasDeControl_; §PF584, hueco del domingo). Función pura.
+ * Fila de cierre: `Dia` = 'L' (lunes; la fila es del cierre de la semana anterior), `SectionIndex` = el de la semana cerrada, `PeriodIndex` = el del lunes,
+ * `SumaFame` y `PeriodPoints` vacíos (la fama de los participantes ya se reinició, o llega rezagada: no sirve para la identidad de la fama) y `Residuo` vacío.
+ * `PointsEarnedPorDia` trae J, V, S y D (por ejemplo `J:500|V:700|S:650|D:900`): _cmaDiasApiPorSemana_() lo lee sin cambios y la parte 3 pasa de
+ * `respaldo` a `cuadra` o `difiere`. `Estado` = `cierre` (4 días) o `sin dato`.
+ */
+function _cmaFilasDeCierre_(cierres, temporada, ternaTags, capturado) {
+  var filas = [];
+  var propios = {};
+  (ternaTags || []).forEach(function (t) { propios[String(t || '').trim().toUpperCase()] = true; });
+  for (var i = 0; i < (cierres || []).length; i++) {
+    var x = cierres[i];
+    if (!x || !x.tag || x.periodIndex === null || x.sectionIndex === null) continue;
+    var dias = (x.porDia || []).map(function (d) {
+      var off = (Number(d.periodIndex) % 7) - CMA_PRIMER_DIA_GUERRA_OFFSET;
+      return (off >= 0 && off < CMA_DIAS_GUERRA_POR_SEMANA ? CMA_LETRAS_DIAS.charAt(off) : '?') + ':' + d.pointsEarned;
+    }).join('|');
+    filas.push([
+      Number(temporada) || 0, x.sectionIndex, x.periodIndex, 'L',
+      x.nombre, x.tag, propios[x.tag] ? 'Terna' : 'Rival', 'api',
+      '', '', x.sumaPointsEarned, x.diasEsperados, x.diasConDato,
+      '', x.estado, dias, capturado
+    ]);
+  }
+  return filas;
+}
+
 // ----- Control de medallas: guardado en Drive (parte 2) -----
 
 /**
@@ -228,6 +304,7 @@ function _cmaGuardarControlDeCorrida_(items) {
   var nuevas = [];
   for (var i = 0; i < items.length; i++) {
     nuevas = nuevas.concat(_cmaFilasDeControl_(_cmaControlClanes_(items[i].rr), items[i].temporada, CFG.TERNA_TAGS, capturado));
+    nuevas = nuevas.concat(_cmaFilasDeCierre_(_cmaCierreSemana_(items[i].rr), items[i].temporada, CFG.TERNA_TAGS, capturado));   // lunes a miércoles: cierre de la semana anterior (domingo incluido)
   }
   if (!nuevas.length) return res;
   var texto = _loadCSVFromDrive(CMA_CSV);
@@ -243,7 +320,7 @@ function _cmaGuardarControlDeCorrida_(items) {
     _saveCSVToDrive(CMA_CSV, _encodeCSV(m.filas));
     res.guardado = true;
   }
-  Logger.log('[Control medallas API] ' + nuevas.length + ' clan(es) controlados; ' + m.nuevas + ' fila(s) nueva(s), ' + m.actualizadas + ' actualizada(s)' +
+  Logger.log('[Control medallas API] ' + nuevas.length + ' fila(s) de control (día de guerra o cierre del domingo); ' + m.nuevas + ' fila(s) nueva(s), ' + m.actualizadas + ' actualizada(s)' +
     (res.difieren ? '; ' + res.difieren + ' con residuo distinto de 0 (ver ' + CMA_CSV + ')' : '') + (res.guardado ? '.' : '; sin cambios, no se escribió.'));
   return res;
 }
