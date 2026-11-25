@@ -503,7 +503,7 @@ function _cmaMezclarFilasWeb_(existentes, nuevas) {
  * Si a una serie le falta la fila de un día, la diferencia cae en el siguiente día con fila y se cuenta en `diasSinFila` (la hoja no sabe de qué día fue);
  * si la fame baja respecto del día anterior (corrección), ese día suma 0, se conserva el máximo anterior y se cuenta en `anomalias`.
  * Devuelve { 'TAG|temporada|semana': { clanTag, temporada, semana, nombre, dias: [J, V, S, D], jugadores, diasSinFila, anomalias } }.
- * Límite conocido: solo ve a los jugadores con fila en la hoja; las medallas de quien salió del clan antes de la captura no están y salen como residuo positivo de la API.
+ * Límite conocido: solo ve a los jugadores con fila en la hoja; las medallas de quien salió del clan antes de la captura no están y salen como residuo negativo (hoja − API).
  */
 function _cmaMedallasDiaHoja_(filas) {
   var salida = {};
