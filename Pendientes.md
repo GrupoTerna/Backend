@@ -40,6 +40,11 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de pr
 
 ### A4. Programar lo que pediste
 
+- [ ] `PF584` — **Parte 1:** función pura de control de medallas por clan y día con el JSON de la API (Σ fama de participantes, `periodPoints`, `pointsEarned` por día cerrado, residuo y estado), probada en Node con las capturas reales. Detalle en `§PF584`.
+- [ ] `PF584` — **Parte 2:** guardar ese control en un CSV propio de Drive, una fila por clan y día, con fuente `api`, al cerrar cada día junto a la corrección automática; solo guarda y avisa. Detalle en `§PF584`.
+- [ ] `PF584` — **Parte 3:** respaldo con la suma de la web (marcado `respaldo`) para el último domingo de la temporada y coliseo, que la API no da; la API lo reemplaza si aparece. Detalle en `§PF584`.
+- [ ] `PF584` — **Parte 4:** usar `pointsEarned` de la API como pista al ubicar ataques de un día sin dato; solo después de ver los resultados de las partes 1 a 3. Detalle en `§PF584`.
+
 - [ ] `PF286` — Cambio de rango: los puntos (3) y (5) ya están investigados (21-nov-2026, `§PF286` punto 38), decididos (punto 39) y programados (punto 40; solo falta probarlos, fila de B7 y B8). Sin programar por decisión: `Backup_Guerra_Semanal.csv` (se acepta el desfase) e índices de clanes externos, ya leídos y programados (`§PF286` puntos 42 y 43: el índice no corre durante la reenumeración y esta descarta su avance parcial; solo falta probarlo, fila de B7 y B8); propiedades de script con clave literal y lado Web ya revisados el 21-nov-2026 (`§PF286` puntos 45 y 48; lo programado en el paso final de `47_Migraciones.gs` solo falta probarlo, fila de B7 y B8). El pedido del punto 17 (b) (notas por columna) ya está programado en todas las hojas: `Historial_A/D`, `Pendientes` y `Mensajes` (puntos 35 y 36), `Nuevos` y `Control` (punto 37) y `Directorio` (punto 47; solo falta probarlo, fila de B7 y B8); `Calendario` no lleva por ser una cuadrícula sin encabezados y el punto 25 (e) (si el motivo de los «excepcionales» debe decir qué requisito incumplían: **decidido el 21-nov-2026 no hacerlo por ahora**, por el costo de lecturas de guerra y API por cuenta, punto 36; se retoma solo si la usuaria lo pide). El modal del punto 17 (a) ya está programado (punto 34) y solo falta probarlo (grupos B y C). Lo programado antes está sin probar (sección B).
 
 ---
