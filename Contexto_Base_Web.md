@@ -595,6 +595,7 @@ Las secciones `### PFxxx` están repartidas por el archivo (no van en orden de n
 | `PF579` | **El conteo de semanas de guerra de «Nuevos» también lee `Backup_Guerra.csv`** (24-nov-2026, Lima; pedido de la usuaria: «¿no se puede hacer que se mire el csv por si la hoja… todavía no se ha actualizado?»; `Base/src/14_Nuevos_RoyaleAPI.gs`) |
 | `PF580` | **Menos visitas de perfil y un solo criterio de ingreso reciente en «Nuevos»** (24-nov-2026, Lima; los 4 puntos de la revisión de `§PF579` punto 5; `Base/src/14_Nuevos_RoyaleAPI.gs`, `37_Web_API.gs`, `05_Backup_CSV.gs`, `18_CorreccionGuerra.gs`, `Tampermonkey.md` v3.40; sin probar en Apps Script real) |
 | `PF581` | **El filtro de «Nuevos» no cubría las filas agregadas** (24-nov-2026, Lima; reporte de la usuaria; `Base/src/14_Nuevos_RoyaleAPI.gs`, `_ajustarFiltroNuevos_`; sin probar en Apps Script real) |
+| `PF582` | **Embudos de orden y filtro en las tablas del cruce de roster** (24-nov-2026, Lima; pedido de la usuaria; `Web/admin.html`, `_tablaCruce`, `sw.js` v339; probado en navegador emulado, sin probar en celular real) |
 
 ## Equivalencias de nombres de archivo `.gs`
 
@@ -11499,3 +11500,11 @@ Criterio: se quita de una línea lo que su propio texto dice ya hecho o confirma
 2. **Causa (leída en el código).** `repararFormatoEncabezadosNuevos()` y la función que pinta los encabezados creaban el filtro solo si faltaba, y `_reajustarTituloGridNuevos()` lo recreaba desde la fila de encabezados sola. Las filas escritas después debajo del rango del filtro quedaban fuera. `_restaurarFiltros()` (`04_Formato_Comun.gs`) sí lo recrea completo, pero solo cuando corre su cadena.
 3. **Cambio.** `_ajustarFiltroNuevos_()`: si el filtro no llega a la última fila y columna con datos, lo recrea desde la fila 3 y repone los criterios por columna. La llaman los tres sitios del punto 2, el paso 3 del refresco y el final de `_aplicarImportacionNuevos()`.
 4. **Probado.** Validadores del repo y prueba en Node con una hoja simulada (filtro corto, completo, sin filtro y hoja vacía). El guion no se guardó. Pendiente: fila `PF581` de B5 en `Pendientes.md`.
+
+### PF582 — Embudos de orden y filtro en las tablas del cruce de roster (24-nov-2026, Lima; `Web` `aeb6045`: `admin.html`, `sw.js` v339)
+
+1. **Pedido (texto de la usuaria).** «en el cruce de roster, ponle los embudos de filtro y orden a las tablas / es en admin.html», con captura de las tablas de activos e inactivos.
+2. **Cambio.** Las tres tablas del cruce de un clan (miembros actuales que figuran en el roster, activos por clan nuestro e inactivos) usan el desplegable ya existente (`§PF286`) mediante `_tablaCruce()` y `_activarTablasCruce()`; estado en `_tablasCruce` (claves `cx-…`). Llevan embudo todas las columnas menos «N°», que se renumera. «Semanas» ordena por número y «Primera → última» por la primera semana (`_claveSemanaEx()`, compartida con «Clanes externos»). Cada pastilla de clan conserva su orden y filtro; una consulta nueva los borra.
+3. **No cambia.** Las tablas de la ficha de un jugador («¿Infiltrado?») siguen sin embudo. No se agregó caja de búsqueda (no se pidió). Los números de las pastillas y de los títulos cuentan el total, no lo filtrado.
+4. **Cambio de paso (decisión de Claude).** `.rt-filtro-pop` es opaco en todo `admin.html` (también «Verificar» y «Clanes externos»): en celular emulado se leía la tabla por debajo.
+5. **Probado.** `npm test` de `Web` (1347 pruebas, una nueva) y Chromium de escritorio y emulando un Pixel 7, con datos simulados: embudos, orden, cuadro dentro de la pantalla y sin desborde de la página. **No se probó con el backend real ni en celular real.** Pendiente: fila `PF582` en `Pendientes.md`.
