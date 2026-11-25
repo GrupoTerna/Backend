@@ -1802,6 +1802,27 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // Endpoint 'lecturasRiverRace' (Tampermonkey, fase riverrace del flujo de corrección; 25-nov-2026, §PF584 punto 13): guarda en Lecturas_RiverRace.csv lo leído de la página River Race, ex-miembros incluidos. Mismo token que el histórico. Solo guarda; no toca las hojas.
+  if (e && e.parameter && e.parameter.accion === 'lecturasRiverRace') {
+    if (e.parameter.token !== HISTORIAL_GUERRA_TOKEN) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'No autorizado', code: 401 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    try {
+      var payloadLRR = JSON.parse(e.postData.contents);
+      var resultadoLRR = _clrProcesarEnvio_(payloadLRR && payloadLRR.participantes);
+      _logTampermonkeyADrive('LecturasRiverRace', resultadoLRR, resultadoLRR && resultadoLRR.error ? resultadoLRR.error : null);
+      return ContentService
+        .createTextOutput(JSON.stringify(resultadoLRR))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (errLRR) {
+      _logTampermonkeyADrive('LecturasRiverRace', null, errLRR.toString());
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: 'Ocurrió un error interno. Si el problema persiste, avisa al administrador.', code: 500 }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   // Endpoint 'Verificar Semana en Curso' (fase race, Tampermonkey; ver 19_CorreccionRiverRace.gs): nunca escribe directo sobre Guerra/Control_2, solo deja discrepancias pendientes de aprobación manual (aprobarCorreccionesRiverRacePendientes()). [→ Contexto_Base_Web.md §38B099]
   if (e && e.parameter && e.parameter.accion === 'verificarSemanaActual') {
     if (e.parameter.token !== VERIFICAR_RIVERRACE_TOKEN) {
