@@ -90,6 +90,10 @@ var NUEVOS_RESTORE_LOTE_MAX = 5;
 // §PF575 (24-nov-2026): tope de miembros nuevos del Directorio que _sembrarNuevosDesdeDirectorio_() agrega a «Nuevos» en UNA corrida. Cada candidato nuevo cuesta como uno del botón de Nuevos (decenas de segundos por lote de 8, §PF311); lo que pasa del tope queda para la corrida siguiente.
 var NUEVOS_SEMBRAR_MAX_POR_CORRIDA = 8;
 
+// §PF580 (24-nov-2026): los tags ya «establecidos» se guardan en CacheService para las peticiones sueltas de Tampermonkey (lista de candidatos y lista de la Corrección de Guerra), que antes leían la hoja Guerra y el CSV cada vez. _csvCacheBorrar_('Backup_Guerra.csv') (05_Backup_CSV.gs) la borra. La purga y la siembra NO leen esta caché: arman el mapa fresco.
+var NUEVOS_ESTABLECIDOS_CACHE_KEY = 'NUEVOS_ESTABLECIDOS_v1';
+var NUEVOS_ESTABLECIDOS_CACHE_TTL_SEG = 10 * 60;
+
 // ===== PARTE 1 — Funciones que se corren a mano =====
 
 // ----- Reordenar la hoja y reparar el formato de los encabezados -----
@@ -1007,7 +1011,43 @@ function _construirMapaSemanasGuerraTerna() {
   for (var tag in semanasPorTag) {
     mapa[tag] = Object.keys(semanasPorTag[tag]).length;
   }
+  // §PF580: solo se guarda en CacheService un mapa armado con el CSV bien leído (la caché en memoria solo se llena en ese caso).
+  if (_CACHE_SEMANAS_CSV_ && _CACHE_SEMANAS_CSV_.datos === semanasCsv) _guardarEstablecidosEnCache_(mapa);
   return mapa;
+}
+
+/**
+ * _obtenerEstablecidosTerna_() (§PF580, 24-nov-2026; sin probar en Apps Script real)
+ * Devuelve { tags: { TAG: true }, desdeCache: bool } con los jugadores «ya establecidos» (_esEstablecidoEnTerna_()). Lee CacheService (hasta 10 minutos) y,
+ * si no hay nada guardado o no se puede leer, arma el mapa de semanas (que vuelve a llenar la caché). Es solo para consultas que no borran filas: con un
+ * dato atrasado, lo peor es ofrecer o visitar a alguien que acaba de volverse establecido, y la purga lo retira después.
+ */
+function _obtenerEstablecidosTerna_() {
+  try {
+    var crudo = CacheService.getScriptCache().get(NUEVOS_ESTABLECIDOS_CACHE_KEY);
+    var lista = crudo ? JSON.parse(crudo) : null;
+    if (Array.isArray(lista)) {
+      var guardados = {};
+      for (var i = 0; i < lista.length; i++) guardados[lista[i]] = true;
+      return { tags: guardados, desdeCache: true };
+    }
+  } catch (eCache) { /* sin caché: se calcula */ }
+  var mapa = _construirMapaSemanasGuerraTerna();
+  var tags = {};
+  for (var tag in mapa) {
+    if (_esEstablecidoEnTerna_(tag, mapa)) tags[tag] = true;
+  }
+  return { tags: tags, desdeCache: false };
+}
+
+// §PF580: guarda en CacheService solo los tags establecidos del mapa de semanas; ante cualquier fallo no hace nada.
+function _guardarEstablecidosEnCache_(mapa) {
+  try {
+    var lista = Object.keys(mapa).filter(function (tg) { return _esEstablecidoEnTerna_(tg, mapa); });
+    var json = JSON.stringify(lista);
+    if (json.length > 90000) return; // tope de CacheService: 100 KB por valor
+    CacheService.getScriptCache().put(NUEVOS_ESTABLECIDOS_CACHE_KEY, json, NUEVOS_ESTABLECIDOS_CACHE_TTL_SEG);
+  } catch (e) { /* sin caché: no pasa nada */ }
 }
 
 // §PF579: caché de las semanas leídas de Backup_Guerra.csv dentro de una misma ejecución (la purga, la siembra y la lista piden el mapa una tras otra; leer y analizar el CSV cada vez sería lento). Vence a los 2 minutos.
@@ -1768,8 +1808,8 @@ function _obtenerListaCandidatosNuevos() {
   var tagsEnNuevos = _obtenerTagsEnHojaNuevos(ss);
   var tTags = Date.now();
 
-  // §PF578 (24-nov-2026): la lista usa la misma regla de «establecido» que la purga y la siembra (_esEstablecidoEnTerna_()), con un mapa de semanas armado una sola vez. Antes usaba el mapa de Backup_Guerra.csv y las 3 últimas semanas cerradas con ataques y fame (§14B084, §14B085, §14B089).
-  var mapaSemanasTerna = _construirMapaSemanasGuerraTerna();
+  // §PF578 (24-nov-2026): la lista usa la misma regla de «establecido» que la purga y la siembra (_esEstablecidoEnTerna_()). Antes usaba el mapa de Backup_Guerra.csv y las 3 últimas semanas cerradas con ataques y fame (§14B084, §14B085, §14B089). §PF580: el resultado sale de CacheService si hay uno reciente.
+  var establecidos = _obtenerEstablecidosTerna_();
   var tMapa = Date.now();
 
   for (var i = 0; i < dirData.length; i++) {
@@ -1785,7 +1825,7 @@ function _obtenerListaCandidatosNuevos() {
     if (!tag) continue;
 
     // §PF578: ya establecido en Terna (3 o más semanas de guerra con ataques; misma regla que la purga) → no se envía a Tampermonkey. [→ Contexto_Base_Web.md §14B086]
-    if (_esEstablecidoEnTerna_(tag, mapaSemanasTerna)) continue;
+    if (establecidos.tags[tag.toUpperCase()]) continue;
 
     candidatos.push({
       tag: tag,
@@ -1796,7 +1836,7 @@ function _obtenerListaCandidatosNuevos() {
     });
   }
 
-  Logger.log('[Nuevos][Lista] ' + candidatos.length + ' candidato(s) · directorio ' + (tDir - tIni) + ' ms · hoja Nuevos ' + (tTags - tDir) + ' ms · mapa semanal ' + (tMapa - tTags) + ' ms · filtrado ' + (Date.now() - tMapa) + ' ms · total ' + (Date.now() - tIni) + ' ms');
+  Logger.log('[Nuevos][Lista] ' + candidatos.length + ' candidato(s) · directorio ' + (tDir - tIni) + ' ms · hoja Nuevos ' + (tTags - tDir) + ' ms · mapa semanal ' + (tMapa - tTags) + ' ms' + (establecidos.desdeCache ? ' (caché)' : '') + ' · filtrado ' + (Date.now() - tMapa) + ' ms · total ' + (Date.now() - tIni) + ' ms');
 
   return {
     ok: true,
@@ -2091,8 +2131,7 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
  *       en la hoja es que _purgarNuevosEstablecidos() y _purgarNuevosExpulsados() todavía no la borraron; o
  *   (b) ingresaron hace INGRESO_RECIENTE_DIAS días o menos (Fecha_ing), con rango Miembro y sin Admin (_cuentaParaNuevos_() e _ingresoDentroDeVentana_(), §PF580).
  * No se usa _tagIngresoRecienteDeFilaDir_() porque pide V_Guerra, que está en Players y no en la hoja física del Directorio que lee esa lista (§PF042); por eso la rama (b)
- * mira solo la fecha. Tampoco se usa el mapa de semanas de guerra (_construirMapaSemanasGuerraTerna() lee toda la hoja Guerra y esa lista tiene el tiempo contado, §PF043):
- * un establecido que aún figure en «Nuevos» o ingresó hace poco solo cuesta una visita de perfil de más.
+ * mira solo la fecha. §PF580: en la rama (b) se excluye a los ya establecidos (_obtenerEstablecidosTerna_(), con caché; se calcula solo si hay algún candidato en esa rama).
  * Devuelve los tags tal como vienen en infoJugadores (los mismos de jugadores[].tag, que Tampermonkey compara tal cual), sin repetidos y en el mismo orden. Si no se puede
  * leer la hoja «Nuevos», solo cuenta la rama (b); no lanza error por eso.
  */
@@ -2108,13 +2147,23 @@ function _tagsNuevosParaPerfil_(infoJugadores) {
   }
   var hoy = new Date();
   var vistos = {};
+  var establecidos = null; // §PF580: se pide solo si algún ingreso reciente sin fila lo necesita
   for (var i = 0; i < infoJugadores.length; i++) {
     var j = infoJugadores[i] || {};
     var tag = String(j.tag || '').trim();
     var clave = tag.toUpperCase();
     if (!tag || vistos[clave]) continue;
     var entra = tagsEnHoja[clave] === true;
-    if (!entra) entra = _cuentaParaNuevos_(j.rango, j.admin) && _ingresoDentroDeVentana_(j.fechaIng, hoy);
+    if (!entra && _cuentaParaNuevos_(j.rango, j.admin) && _ingresoDentroDeVentana_(j.fechaIng, hoy)) {
+      if (establecidos === null) {
+        try { establecidos = _obtenerEstablecidosTerna_().tags; }
+        catch (eEst) {
+          Logger.log('[Nuevos-Perfil] AVISO: no se pudo saber quién ya está establecido (' + (eEst.message || eEst) + '); no se excluye a nadie por ese motivo.');
+          establecidos = {};
+        }
+      }
+      entra = !establecidos[clave]; // §PF580: un regresado ya establecido no se visita (la siembra tampoco lo agrega)
+    }
     if (!entra) continue;
     vistos[clave] = true;
     salida.push(tag);

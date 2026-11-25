@@ -1295,7 +1295,7 @@ function _csvCacheBorrar_(filename) {
     var n = parseInt(cache.get(base + '_n') || '0', 10);
     var keys = [base + '_n'];
     for (var i = 0; i < Math.max(n, 0); i++) keys.push(base + '_' + i);
-    if (filename === 'Backup_Guerra.csv') keys.push(COBERTURA_GUERRA_CACHE_KEY); // PF042
+    if (filename === 'Backup_Guerra.csv') keys.push(COBERTURA_GUERRA_CACHE_KEY, NUEVOS_ESTABLECIDOS_CACHE_KEY); // PF042; §PF580
     cache.removeAll(keys);
   } catch (e) { /* nada que hacer */ }
 }
