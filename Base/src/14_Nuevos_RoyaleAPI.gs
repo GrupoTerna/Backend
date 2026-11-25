@@ -2127,15 +2127,15 @@ function _clanDeFilaEsTerna_(clanTag, nombreClan, nombresTerna) {
  * clan) no recibía visita de perfil y su fila, sembrada vacía por _sembrarNuevosDesdeDirectorio_() (§PF575), se quedaba sin historial.
  * infoJugadores: los jugadores de la lista de la corrección (todos Activos en un clan Terna por tag), cada uno { tag, rango, admin, fechaIng } con los valores de la hoja
  * física del Directorio (fechaIng es un Date si la celda es una fecha). Entran los que:
- *   (a) ya tienen fila en «Nuevos» (para que su cuadrícula no se congele, como en _alimentarNuevosDesdeCorrecciones_()); no se pide rango ni Admin, porque si la fila sigue
- *       en la hoja es que _purgarNuevosEstablecidos() y _purgarNuevosExpulsados() todavía no la borraron; o
- *   (b) ingresaron hace INGRESO_RECIENTE_DIAS días o menos (Fecha_ing), con rango Miembro y sin Admin (_cuentaParaNuevos_() e _ingresoDentroDeVentana_(), §PF580).
+ *   (a) tienen fila en «Nuevos» que todavía no está al día (§PF580: vacía, o sin la última semana cerrada ni en la cuadrícula ni en el histórico de Guerra;
+ *       _filasNuevosAlDia_()); no se pide rango ni Admin, porque si la fila sigue en la hoja es que _purgarNuevosEstablecidos() y _purgarNuevosExpulsados() todavía no la borraron; o
+ *   (b) no tienen fila e ingresaron hace INGRESO_RECIENTE_DIAS días o menos (Fecha_ing), con rango Miembro y sin Admin (_cuentaParaNuevos_() e _ingresoDentroDeVentana_(), §PF580).
  * No se usa _tagIngresoRecienteDeFilaDir_() porque pide V_Guerra, que está en Players y no en la hoja física del Directorio que lee esa lista (§PF042); por eso la rama (b)
  * mira solo la fecha. §PF580: en la rama (b) se excluye a los ya establecidos (_obtenerEstablecidosTerna_(), con caché; se calcula solo si hay algún candidato en esa rama).
  * Devuelve los tags tal como vienen en infoJugadores (los mismos de jugadores[].tag, que Tampermonkey compara tal cual), sin repetidos y en el mismo orden. Si no se puede
  * leer la hoja «Nuevos», solo cuenta la rama (b); no lanza error por eso.
  */
-function _tagsNuevosParaPerfil_(infoJugadores) {
+function _tagsNuevosParaPerfil_(infoJugadores, coberturaPorTag, ctx) {
   var salida = [];
   if (!infoJugadores || !infoJugadores.length) return salida;
   var tagsEnHoja = {};
@@ -2145,6 +2145,14 @@ function _tagsNuevosParaPerfil_(infoJugadores) {
     Logger.log('[Nuevos-Perfil] AVISO: no se pudo leer la lista de tags de «Nuevos» (' + (eTags.message || eTags) + '); solo se consideran los ingresos recientes por fecha.');
     tagsEnHoja = {};
   }
+  // §PF580: filas que ya no necesitan visita. Si no se puede saber, no se salta ninguna.
+  var alDia = {};
+  try {
+    alDia = _filasNuevosAlDia_(_getSs(), ctx, coberturaPorTag);
+  } catch (eAlDia) {
+    Logger.log('[Nuevos-Perfil] AVISO: no se pudo revisar qué filas de «Nuevos» están al día (' + (eAlDia.message || eAlDia) + '); se visitan todas.');
+    alDia = {};
+  }
   var hoy = new Date();
   var vistos = {};
   var establecidos = null; // §PF580: se pide solo si algún ingreso reciente sin fila lo necesita
@@ -2153,8 +2161,9 @@ function _tagsNuevosParaPerfil_(infoJugadores) {
     var tag = String(j.tag || '').trim();
     var clave = tag.toUpperCase();
     if (!tag || vistos[clave]) continue;
-    var entra = tagsEnHoja[clave] === true;
-    if (!entra && _cuentaParaNuevos_(j.rango, j.admin) && _ingresoDentroDeVentana_(j.fechaIng, hoy)) {
+    var tieneFila = tagsEnHoja[clave] === true;
+    var entra = tieneFila && alDia[clave] !== true;
+    if (!tieneFila && _cuentaParaNuevos_(j.rango, j.admin) && _ingresoDentroDeVentana_(j.fechaIng, hoy)) {
       if (establecidos === null) {
         try { establecidos = _obtenerEstablecidosTerna_().tags; }
         catch (eEst) {
@@ -2169,6 +2178,57 @@ function _tagsNuevosParaPerfil_(infoJugadores) {
     salida.push(tag);
   }
   return salida;
+}
+
+/**
+ * _filasNuevosAlDia_(ss, ctx, coberturaPorTag) (§PF580, 24-nov-2026; sin probar en Apps Script real)
+ * Devuelve { TAG: true } con las filas de «Nuevos» cuyo perfil no hace falta volver a leer: tienen algún dato en la cuadrícula Y la última semana de guerra
+ * cerrada ya está resuelta, porque (1) su bloque de fecha (domingo de esa semana) tiene datos en la fila, o (2) esa semana está en el histórico de Guerra
+ * del jugador (coberturaPorTag, de _construirCoberturaPorTag(): _alimentarNuevosDesdeCorrecciones_() no la escribe en la cuadrícula).
+ * Una fila vacía nunca está al día. No exige las 5 semanas: quien tiene poco historial se visitaría siempre. Sin ctx fiable (periodIndexSospechoso) devuelve {}.
+ * ctx: el de _getCtx().
+ */
+function _filasNuevosAlDia_(ss, ctx, coberturaPorTag) {
+  var alDia = {};
+  if (!ctx || ctx.periodIndexSospechoso) return alDia;
+  var pl = primerLunesTemporada(ctx.ref, ctx.temporada);
+  if (!pl || isNaN(pl.getTime())) return alDia;
+  var inicioEnCurso = new Date(pl.getFullYear(), pl.getMonth(), pl.getDate() + Number(ctx.sectionIndex) * 7); // lunes de la semana en curso
+  var inicioCerrada = new Date(inicioEnCurso.getFullYear(), inicioEnCurso.getMonth(), inicioEnCurso.getDate() - 7);
+  var domingoCerrado = new Date(inicioEnCurso.getFullYear(), inicioEnCurso.getMonth(), inicioEnCurso.getDate() - 1);
+  var ts = _fechaATemporadaSemana(domingoCerrado);
+  var etiqueta = ts ? (ts.temporadaPropia + _getTemporadaOffsetRoyaleApi()) + '-' + ts.semana : '';
+
+  var sh = ss.getSheetByName(CFG.SHEETS.NUEVOS);
+  if (!sh || sh.getLastRow() < NUEVOS_FILA_DATOS_INICIO) return alDia;
+  var anchoGrid = sh.getLastColumn() - COL_INICIO_GRID_NUEVOS + 1;
+  if (anchoGrid < GRID_BLOQUE_ANCHO_NUEVOS) return alDia; // sin cuadrícula: todas las filas están vacías
+  var numFilas = sh.getLastRow() - NUEVOS_FILA_DATOS_INICIO + 1;
+  var tags = sh.getRange(NUEVOS_FILA_DATOS_INICIO, NC.TAG, numFilas, 1).getValues();
+  var fechas = sh.getRange(NUEVOS_FILA_FECHAS, COL_INICIO_GRID_NUEVOS, 1, anchoGrid).getValues()[0];
+  var grid = sh.getRange(NUEVOS_FILA_DATOS_INICIO, COL_INICIO_GRID_NUEVOS, numFilas, anchoGrid).getValues();
+
+  var cubiertos = {};
+  Object.keys(coberturaPorTag || {}).forEach(function (k) {
+    if (etiqueta && (coberturaPorTag[k] || []).indexOf(etiqueta) >= 0) cubiertos[String(k).trim().toUpperCase()] = true;
+  });
+
+  var pendientes = {}; // un tag repetido está al día solo si todas sus filas lo están
+  for (var i = 0; i < numFilas; i++) {
+    var tag = String(tags[i][0] || '').trim().toUpperCase();
+    if (!tag) continue;
+    var tieneDatos = false, tieneCerrada = false;
+    for (var c = 0; c < anchoGrid; c++) {
+      if (grid[i][c] === '' || grid[i][c] === null) continue;
+      tieneDatos = true;
+      var fecha = fechas[c - (c % GRID_BLOQUE_ANCHO_NUEVOS)]; // la fecha vive en la primera columna del bloque
+      if (fecha instanceof Date && fecha >= inicioCerrada && fecha < inicioEnCurso) { tieneCerrada = true; break; }
+    }
+    if (tieneDatos && (tieneCerrada || cubiertos[tag] === true)) alDia[tag] = true;
+    else pendientes[tag] = true;
+  }
+  Object.keys(pendientes).forEach(function (tg) { delete alDia[tg]; });
+  return alDia;
 }
 
 /**

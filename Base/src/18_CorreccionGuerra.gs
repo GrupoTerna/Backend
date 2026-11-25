@@ -3220,7 +3220,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
   }
   var nuevosParaPerfil = [];
   if (!soloClanes) { // §PF576: quien ya está en «Nuevos» o es ingreso reciente se visita aunque Log/Analytics lo cubran; un fallo no frena la lista
-    try { nuevosParaPerfil = _tagsNuevosParaPerfil_(infoNuevosPerfil); }
+    try { nuevosParaPerfil = _tagsNuevosParaPerfil_(infoNuevosPerfil, coberturaPorTag, ctxActual); } // §PF580
     catch (eNp) { Logger.log('[CorreccionGuerra][Lista] AVISO: no se pudo calcular quién alimenta «Nuevos» (' + (eNp.message || eNp) + '); la lista sale sin ese campo.'); }
   }
   Logger.log('[CorreccionGuerra][Lista] modo=' + (soloClanes ? 'clanes' : 'completo') +
@@ -3247,7 +3247,7 @@ function _obtenerListaCorreccionGuerra(opciones) {
     sinPerfilEnCsv: sinPerfilEnCsv,
     // §PF314 (PF253 opción B): activos que salieron de los clanes Terna y regresaron, sin perfil leído desde el regreso. Tampermonkey v3.17 visita su perfil (todas las semanas) y el backend decide qué reemplaza o agrega.
     regresadosSinPerfil: regresadosSinPerfil,
-    // §PF576: activos que ya tienen fila en «Nuevos» o ingresaron hace 7 días o menos (rango Miembro, sin Admin). Tampermonkey visita su perfil sin backfill aunque Log/Analytics los cubran, para que _alimentarNuevosDesdeCorrecciones_() llene su fila. Sin el campo, Tampermonkey no visita a nadie de más.
+    // §PF576 y §PF580: activos cuya fila de «Nuevos» está vacía o sin la última semana cerrada, o ingresos de 7 días o menos sin fila y todavía no establecidos (rango Miembro, sin Admin). Tampermonkey visita su perfil sin backfill aunque Log/Analytics los cubran, para que _alimentarNuevosDesdeCorrecciones_() llene su fila. Sin el campo, Tampermonkey no visita a nadie de más.
     nuevosParaPerfil: nuevosParaPerfil
   };
 }
