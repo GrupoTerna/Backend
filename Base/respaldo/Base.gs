@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/11/2026 20:21:07 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/11/2026 20:33:48 */
 
 
 
@@ -68725,6 +68725,7 @@ function doPost(e) {
     try {
       var payloadLRR = JSON.parse(e.postData.contents);
       var resultadoLRR = _clrProcesarEnvio_(payloadLRR && payloadLRR.participantes);
+      resultadoLRR.clanesLog = _cdlProcesarEnvio_(payloadLRR && payloadLRR.clanes); // §PF584 punto 15: bloque `Detail` por clan y día
       _logTampermonkeyADrive('LecturasRiverRace', resultadoLRR, resultadoLRR && resultadoLRR.error ? resultadoLRR.error : null);
       return ContentService
         .createTextOutput(JSON.stringify(resultadoLRR))
@@ -68746,6 +68747,7 @@ function doPost(e) {
     try {
       var payloadRace = JSON.parse(e.postData.contents);
       var resultadoRace = _procesarVerificacionRiverRace(payloadRace && payloadRace.participantes);
+      resultadoRace.clanesLog = _cdlProcesarEnvio_(payloadRace && payloadRace.clanes); // §PF584 punto 15: bloque `Detail` por clan y día; se guarda aunque la verificación de jugadores se rechace (p. ej. lunes a miércoles)
       _logTampermonkeyADrive('VerificarSemanaActual', resultadoRace, null);
       return ContentService
         .createTextOutput(JSON.stringify(resultadoRace))
@@ -86041,7 +86043,8 @@ function _vcrrResumenJugadorSemana_(temporada, semana, tag) {
  *        -> _cmaGuardarControlDeCorrida_() (parte 2, escribe el CSV)
  *        -> _cmaNombreClanWeb_(), _cmaTotalesSemanaWeb_(), _cmaDiasApiPorSemana_(), _cmaFilasRespaldoWeb_() y _cmaMezclarFilasWeb_() (parte 3, puras)
  *        -> _cmaMedallasDiaHoja_(), _cmaFilasMedallasDia_() y _cmaMezclarFilasDia_() (parte 4, opción A, puras)
- *        -> _clrDiaDePagina_(), _clrResolverDia_(), _clrFilasLectura_() y _clrMezclarFilas_() (lecturas de la página River Race de RoyaleAPI, puras) -> _clrGuardarLecturas_() y _clrProcesarEnvio_() (escriben Lecturas_RiverRace.csv).
+ *        -> _clrDiaDePagina_(), _clrResolverDia_(), _clrFilasLectura_() y _clrMezclarFilas_() (lecturas de la página River Race de RoyaleAPI, puras) -> _clrGuardarLecturas_() y _clrProcesarEnvio_() (escriben Lecturas_RiverRace.csv)
+ *        -> _cdlFilasClanes_() y _cdlMezclarFilas_() (bloque `Detail` por clan y día, puras) -> _cdlGuardar_() y _cdlProcesarEnvio_() (escriben Lecturas_RiverRace_Clanes.csv).
  *      Quien la llama: updateGuerraSheet() (17_GuerraSheet.gs), una vez por corrida, junto a la corrección automática del cierre del día.
  *
  * Regla de la usuaria: la API manda siempre; la web solo es respaldo donde la API no da dato. Este archivo trabaja SOLO con el JSON de
@@ -86066,6 +86069,10 @@ var CMD_ENCABEZADOS = ['Temporada', 'Semana', 'Dia', 'Clan', 'Tag', 'SumaHoja', 
 // ex-miembros (`tr.not_current_member`), para aprovechar cada una al máximo. Una fila por clan, jugador, semana y día de guerra. [→ Contexto_Base_Web.md §PF584 punto 13]
 var CLR_CSV = 'Lecturas_RiverRace.csv';
 var CLR_ENCABEZADOS = ['Temporada', 'Semana', 'Dia', 'Clan', 'Clan_Tag', 'Tag', 'Nombre', 'Rol', 'ExMiembro', 'AtaquesHoy', 'AtaquesSemana', 'FameSemana', 'BarcosSemana', 'Capturado'];
+
+// Registro por clan y día de toda la temporada (los 5 clanes de la carrera, rivales incluidos), que la página River Race muestra al pulsar `Detail`. [→ Contexto_Base_Web.md §PF584 punto 15]
+var CDL_CSV = 'Lecturas_RiverRace_Clanes.csv';
+var CDL_ENCABEZADOS = ['Temporada', 'Semana', 'Dia', 'Clan_Tag', 'Clan', 'Puesto', 'FameDia', 'PremioPuesto', 'PremioDefensas', 'DefensasEnPie', 'Total', 'Capturado'];
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -86801,6 +86808,117 @@ function _clrProcesarEnvio_(participantes) {
   if (dia.aviso) Logger.log('[Lecturas River Race] AVISO: ' + dia.aviso);
   var r = _clrGuardarLecturas_(participantes, ctx.temporada, ctx.sectionIndex + 1, dia.offDia);
   return { ok: !r.error, error: r.error, guardado: r.guardado, lecturasGuardadas: r.filas, nuevas: r.nuevas, actualizadas: r.actualizadas, exMiembros: r.exMiembros, omitidos: r.omitidos, ceros: r.ceros, aviso: dia.aviso };
+}
+
+
+// ----- Registro por clan y día de toda la temporada, que la página River Race muestra al pulsar `Detail` (§PF584 punto 15) -----
+
+/**
+ * _cdlFilasClanes_(clanes, temporada, semanaMax, capturado) — convierte el bloque `Detail` de la página River Race (un objeto por clan y día de guerra) en filas de
+ * Lecturas_RiverRace_Clanes.csv (§PF584 punto 15). Función pura: no usa Drive ni hojas.
+ * clanes: [{ clanTag, clan, semana, dia (1 a 4 = jueves a domingo), puesto, premioPuesto, fameDia, premioDefensas, defensasEnPie, total }]. `fameDia` es el número entre
+ * paréntesis de `points` (la fama del clan ese día, igual que `pointsEarned` de la API); `premioPuesto` es el `+ N` de `points`; `premioDefensas` y `defensasEnPie` son el `+ N`
+ * y el número entre paréntesis de `defenses` (puntos de las defensas de barco que siguen sin destruir y cuántas son).
+ * semanaMax: la semana en curso (sectionIndex + 1); una fila de una semana posterior se descarta (`futuras`). Se omite (`sinDato`) la fila sin puesto, sin fama y sin premios
+ * (día todavía no registrado en la web, por ejemplo el domingo del propio clan), y (`omitidos`) la que no trae Tag de clan, semana o día válidos.
+ * Devuelve { filas, omitidos, sinDato, futuras }.
+ */
+function _cdlFilasClanes_(clanes, temporada, semanaMax, capturado) {
+  var res = { filas: [], omitidos: 0, sinDato: 0, futuras: 0 };
+  var num = function (v) { if (v === null || v === undefined || v === '') return 0; var n = Number(v); return isNaN(n) ? NaN : n; };
+  (clanes || []).forEach(function (c) {
+    c = c || {};
+    var tag = String(c.clanTag || '').trim().toUpperCase();
+    if (tag && tag.charAt(0) !== '#') tag = '#' + tag;
+    var sem = Number(c.semana), dia = Number(c.dia);
+    var okSem = sem >= 1 && sem === Math.floor(sem), okDia = dia >= 1 && dia <= 4 && dia === Math.floor(dia);
+    var puesto = num(c.puesto), fame = num(c.fameDia), pp = num(c.premioPuesto), pd = num(c.premioDefensas), pie = num(c.defensasEnPie), tot = num(c.total);
+    if (!tag || !okSem || !okDia || [puesto, fame, pp, pd, pie, tot].some(isNaN)) { res.omitidos++; return; }
+    if (typeof semanaMax === 'number' && sem > semanaMax) { res.futuras++; return; }
+    if (!puesto && !fame && !pp && !pd && !pie && !tot) { res.sinDato++; return; }
+    res.filas.push([temporada, sem, CMA_LETRAS_DIAS.charAt(dia - 1), tag, String(c.clan || '').trim(), puesto, fame, pp, pd, pie, tot, capturado]);
+  });
+  return res;
+}
+
+/**
+ * _cdlMezclarFilas_(existentes, nuevas) — mezcla las filas nuevas con las de Lecturas_RiverRace_Clanes.csv (§PF584 punto 15). Función pura.
+ * Clave: Clan_Tag + Temporada + Semana + Dia. Fila nueva: se agrega. Misma clave: solo cambia si algún valor es distinto (`Capturado` no cuenta, para que una lectura que no
+ * cambia nada no reescriba el archivo) y NUNCA se reemplaza una fama mayor que 0 por una fama 0 (la web a veces deja en 0 un día que todavía no registró). Si la web corrige
+ * un valor distinto de 0, se acepta lo último que dijo.
+ * Devuelve { ok, filas, nuevas, actualizadas }. ok = false si el encabezado del archivo no es el esperado (no se toca: se avisa).
+ */
+function _cdlMezclarFilas_(existentes, nuevas) {
+  var res = { ok: true, filas: [], nuevas: 0, actualizadas: 0 };
+  var enc = CDL_ENCABEZADOS.join('\t');
+  var base = (existentes && existentes.length) ? existentes.map(function (f) { return f.slice(); }) : [CDL_ENCABEZADOS.slice()];
+  if (base[0].join('\t') !== enc) { res.ok = false; res.filas = base; return res; }
+  var clave = function (f) { return f[3] + '|' + f[0] + '|' + f[1] + '|' + f[2]; };
+  var indice = {};
+  for (var i = 1; i < base.length; i++) indice[clave(base[i].map(String))] = i;
+  var ultimo = CDL_ENCABEZADOS.length - 1;   // Capturado
+  (nuevas || []).forEach(function (n) {
+    var f = n.map(function (v) { return (v === null || v === undefined) ? '' : String(v); });
+    var k = clave(f);
+    var pos = indice[k];
+    if (pos === undefined) { base.push(f); indice[k] = base.length - 1; res.nuevas++; return; }
+    var viejo = base[pos].map(String);
+    var igual = true;
+    for (var c = 0; c < ultimo; c++) { if (viejo[c] !== f[c]) { igual = false; break; } }
+    if (igual) return;
+    if ((Number(viejo[6]) || 0) > 0 && !(Number(f[6]) > 0)) return;   // FameDia: no se pisa un dato con un 0
+    base[pos] = f; res.actualizadas++;
+  });
+  res.filas = base;
+  return res;
+}
+
+/**
+ * _cdlGuardar_(clanes, temporada, semanaMax) — guarda en Lecturas_RiverRace_Clanes.csv el bloque `Detail` de una lectura (§PF584 punto 15). Solo guarda: no cambia ninguna hoja.
+ * Escribe solo si hay filas nuevas o cambiadas. Sin lock: la lectura siguiente corrige una escritura perdida. Nunca lanza.
+ * Devuelve { guardado, nuevas, actualizadas, filas, omitidos, sinDato, futuras, error? }.
+ */
+function _cdlGuardar_(clanes, temporada, semanaMax) {
+  var res = { guardado: false, nuevas: 0, actualizadas: 0, filas: 0, omitidos: 0, sinDato: 0, futuras: 0 };
+  try {
+    var capturado = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
+    var f = _cdlFilasClanes_(clanes, temporada, semanaMax, capturado);
+    res.filas = f.filas.length; res.omitidos = f.omitidos; res.sinDato = f.sinDato; res.futuras = f.futuras;
+    if (!f.filas.length) return res;
+    var texto = _loadCSVFromDrive(CDL_CSV);
+    var existentes = texto ? _parseCSV(texto) : [];
+    var m = _cdlMezclarFilas_(existentes, f.filas);
+    if (!m.ok) {
+      res.error = CDL_CSV + ' tiene otro encabezado que el esperado; no se escribió nada.';
+      Logger.log('[Detalle River Race] AVISO: ' + res.error);
+      return res;
+    }
+    res.nuevas = m.nuevas; res.actualizadas = m.actualizadas;
+    if (m.nuevas + m.actualizadas > 0) { _saveCSVToDrive(CDL_CSV, _encodeCSV(m.filas)); res.guardado = true; }
+    Logger.log('[Detalle River Race] ' + f.filas.length + ' fila(s) clan-día (' + f.sinDato + ' sin dato, ' + f.futuras + ' de semana futura, ' + f.omitidos + ' omitida(s)); ' +
+      m.nuevas + ' nueva(s), ' + m.actualizadas + ' actualizada(s)' + (res.guardado ? '.' : '; sin cambios, no se escribió.'));
+  } catch (e) {
+    res.error = String(e && e.message ? e.message : e);
+    Logger.log('[Detalle River Race] ERROR al guardar: ' + res.error);
+  }
+  return res;
+}
+
+/**
+ * _cdlProcesarEnvio_(clanes) — lo llaman los endpoints `verificarSemanaActual` y `lecturasRiverRace` con el campo `clanes` del envío de Tampermonkey (§PF584 punto 15).
+ * Usa el cache de clanes que la misma petición ya refrescó para saber la temporada y la semana en curso; a diferencia de las lecturas de jugadores, se guarda también de
+ * lunes a miércoles, porque el registro de días ya cerrados no se reinicia. Nunca lanza. Devuelve { guardado, filas, ... } o { guardado: false, motivo | error }.
+ */
+function _cdlProcesarEnvio_(clanes) {
+  if (!clanes || !clanes.length) return { guardado: false, filas: 0, motivo: 'el envío no trae el bloque Detail (Tampermonkey anterior a la v3.43, o la página no lo mostró a tiempo)' };
+  try {
+    var ctx = _getCtx();
+    if (ctx.sinCacheClanes) return { guardado: false, filas: 0, error: 'Sin contexto de temporada/semana disponible (sin cache de clanes).' };
+    if (ctx.periodIndexSospechoso) return { guardado: false, filas: 0, error: 'periodIndex sospechoso (posible dato stale de la API de Supercell).' };
+    return _cdlGuardar_(clanes, ctx.temporada, ctx.sectionIndex + 1);
+  } catch (e) {
+    return { guardado: false, filas: 0, error: String(e && e.message ? e.message : e) };
+  }
 }
 
 
