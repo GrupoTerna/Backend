@@ -3,7 +3,7 @@
   "backfillPerfilHecho": false,
   "ultimaTemporadaCubierta": null,
   "ultimaSemanaCubierta": null,
-  "fechaUltimaConsulta": "23/11/2026",
+  "fechaUltimaConsulta": "26/11/2026",
   "registros": [
     {
       "temporadaInterna": 38,
@@ -420,6 +420,34 @@
       "fuente": "riverrace",
       "cerrada": false,
       "clanTag": "#GYCU9YRG",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 3,
+      "clan": "FreeTime",
+      "ataques": 0,
+      "fame": 0,
+      "barcos": 0,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#PPULPQ2G",
+      "comentario": ""
+    },
+    {
+      "temporadaInterna": 39,
+      "temporadaRoyaleAPI": 138,
+      "semana": 2,
+      "clan": "FreeTime",
+      "ataques": 4,
+      "fame": 400,
+      "barcos": 2,
+      "fuente": "perfil",
+      "cerrada": true,
+      "externa": true,
+      "clanTag": "#PPULPQ2G",
       "comentario": ""
     }
   ],
