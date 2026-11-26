@@ -1,4 +1,5 @@
-// Prueba de la lectura de la página River Race en Tampermonkey (v3.41, §PF584 punto 13): leerLecturasPaginaRiverRace() y parsearParticipantesRace().
+// Prueba de la lectura de la página River Race en Tampermonkey (v3.41 a v3.43, §PF584 puntos 13 y 15): leerLecturasPaginaRiverRace(), parsearParticipantesRace(),
+// leerDiaPaginaRiverRace(), parsearClanesDetalleRiverRace() y expandirDetalleRiverRace() (el bloque `Detail`, que solo aparece después del clic).
 // Necesita jsdom (no está en el repo): npm i jsdom --prefix /tmp/jt y luego NODE_PATH=/tmp/jt/node_modules node "Consolidados de cambios/prueba_tampermonkey_lecturas.js"
 // Usa las dos filas reales que dio la usuaria (activo y `not_current_member`). Sale con código 1 si algo falla.
 const fs = require('fs'), path = require('path'), assert = require('assert');
@@ -16,8 +17,10 @@ const html = linea(2, 3) + `<table class="cw2_participant_flex_table sortable_pa
 <tr class="player not_current_member" data-href="/player/2JRUP89PU/battles"><td class="rank">50</td><td class="player_name"><div class="player_info"><a href="/player/2JRUP89PU/battles" class="player_name force_single_line_hidden">Combatiente</a><div class="player_role">--</div></div><div class="player_data"><div class="value_bg decks_used_today">2</div><div class="value_bg decks_used">6</div><div class="value_bg boat_attacks">1</div><div class="value_bg fame">800</div></div></td></tr>
 <tr class="player"><td>sin enlace</td></tr></tbody></table>`;
 const dom = new JSDOM(html); global.document = dom.window.document;
-const codigo = [bloque('function buscarTablaRiverRace'), bloque('function buscarTablaRace'), bloque('function leerDiaPaginaRiverRace'), bloque('function leerLecturasPaginaRiverRace'), bloque('function parsearParticipantesRace')].join('\n');
-const { leerLecturasPaginaRiverRace, parsearParticipantesRace, leerDiaPaginaRiverRace } = new Function(codigo + '; return { leerLecturasPaginaRiverRace, parsearParticipantesRace, leerDiaPaginaRiverRace };')();
+const codigo = [bloque('function buscarTablaRiverRace'), bloque('function buscarTablaRace'), bloque('function leerDiaPaginaRiverRace'), bloque('function leerLecturasPaginaRiverRace'), bloque('function parsearParticipantesRace'), bloque('function parsearClanesDetalleRiverRace'), bloque('async function expandirDetalleRiverRace')].join('\n');
+const esperarStub = (cond, ms) => new Promise(res => { let t = 0; const iv = setInterval(() => { const r = cond(); if (r) { clearInterval(iv); res(r); } else if ((t += 20) >= ms) { clearInterval(iv); res(null); } }, 20); });
+const { leerLecturasPaginaRiverRace, parsearParticipantesRace, leerDiaPaginaRiverRace, parsearClanesDetalleRiverRace, expandirDetalleRiverRace } =
+  new Function('esperar', 'DETALLE_WAIT_MS', codigo + '; return { leerLecturasPaginaRiverRace, parsearParticipantesRace, leerDiaPaginaRiverRace, parsearClanesDetalleRiverRace, expandirDetalleRiverRace };')(esperarStub, 600);
 
 assert.strictEqual(leerDiaPaginaRiverRace(), 3, 'Day 3 de la línea de tiempo');
 assert.strictEqual(new JSDOM(linea(5, 6)).window.document.querySelector('.day').textContent, 'Day 6');
@@ -34,4 +37,35 @@ assert.strictEqual(r.registros[0].diaPagina, 3, 'la fase race también manda el 
 assert.strictEqual(r.registros[1].nombre, '', 'el campo nombre sigue como antes'); assert.strictEqual(r.registros[1].nombreWeb, 'Combatiente'); assert.strictEqual(r.registros[1].exMiembro, true);
 // Lo que usa la comparación contra Guerra no cambia
 assert.deepStrictEqual([r.registros[1].decksHoy, r.registros[1].fameSemana, r.registros[1].barcosSemana], [2, 800, 1]);
-console.log('OK: prueba_tampermonkey_lecturas');
+
+// ---- v3.43: bloque `Detail` por clan y día (estructura real que dio la usuaria; valores de la temporada 39) ----
+const item = (w, d, rank, pm, pf, dm, dc, fin, inicio) => `<div class="period_log_items${inicio ? ' period_start' : ''}"><div class="week"><span class="i18n_duration_short uppercase">w</span>\n ${w}\n</div><div class="day"><span class="i18n_duration_short uppercase">d</span>\n ${d}\n</div><div class="rank">\n ${rank}\n</div><div class="progress points">\n + ${pm}\n (${pf})\n</div><div class="progress defenses">\n + ${dm}\n (${dc})\n</div><div class="progress end">\n = ${fin}\n</div></div>`;
+const cabecera = '<div class="period_log_items header"><div class="week"><i class="mini fitted calendar icon"></i></div><div class="day"><i class="mini fitted calendar icon"></i></div><div class="rank"><i class="mini fitted trophy icon"></i></div><div class="progress"></div></div>';
+const clan = (tag, nombre, activo, filas) => `<a href="/clan/${tag}/war/race" class="clan row${activo ? ' active_clan' : ''}"><div class="summary"><div class="clan name item"><div class="badge item"><img class="ui mini image" src="x"></div><div class="name item">\n ${nombre}\n</div></div><div class="boat value item">0</div><div class="medal value item">0</div><div class="trophy value item">4136</div></div><div class="outline cw2__standing_outline"><div class="item value decks_used_today">11 / 200</div></div>${cabecera}${filas}</a>`;
+const standings = '<div class="cw2__race_clan_standings"><div class="header row"><div class="summary"><div class="clan name item">Clan</div></div></div>' +
+  clan('P2UUVJCY', 'Adulti ITALIA', false, item(1, 1, 3, 1000, 28100, 376, 14, 1376, true)) +
+  clan('GCRG8L00', 'Grupo乂Terna™', true, item(1, 1, 1, 3000, 30750, 435, 15, 3435, true) + item(1, 2, 4, 600, 26300, 323, 13, 923) + item(3, 4, 0, 0, 0, 0, 0, 0)) + '</div>';
+const checkbox = '<div class="ui slider checkbox war_timeline_detail_checkbox"><input type="checkbox" name="timeline_detail" class="hidden"><label>Detail</label></div>';
+
+global.document = new JSDOM(standings).window.document;
+const det = parsearClanesDetalleRiverRace();
+assert.strictEqual(det.length, 4, 'la fila header no cuenta: 1 de Adulti y 3 de Terna');
+assert.deepStrictEqual(det[0], { clanTag: '#P2UUVJCY', clan: 'Adulti ITALIA', semana: 1, dia: 1, puesto: 3, premioPuesto: 1000, fameDia: 28100, premioDefensas: 376, defensasEnPie: 14, total: 1376 });
+assert.deepStrictEqual(det[1], { clanTag: '#GCRG8L00', clan: 'Grupo乂Terna™', semana: 1, dia: 1, puesto: 1, premioPuesto: 3000, fameDia: 30750, premioDefensas: 435, defensasEnPie: 15, total: 3435 });
+assert.deepStrictEqual([det[3].semana, det[3].dia, det[3].puesto, det[3].fameDia, det[3].defensasEnPie], [3, 4, 0, 0, 0], 'el domingo sin dato se lee como ceros; el backend lo omite');
+
+(async () => {
+  // Las filas ya están: no se pulsa nada
+  global.document = new JSDOM(standings + checkbox).window.document;
+  let clics = 0; global.document.querySelector('.war_timeline_detail_checkbox label').addEventListener('click', () => clics++);
+  assert.strictEqual((await expandirDetalleRiverRace()).length, 4); assert.strictEqual(clics, 0, 'si las filas ya están, no se pulsa Detail');
+  // Las filas aparecen solo después del clic (lo que dice la usuaria)
+  const dom2 = new JSDOM('<div id="raiz">' + checkbox + '<div id="hueco"></div></div>'); global.document = dom2.window.document;
+  global.document.querySelector('.war_timeline_detail_checkbox').addEventListener('click', () => setTimeout(() => { global.document.getElementById('hueco').innerHTML = standings; }, 60));
+  const tras = await expandirDetalleRiverRace();
+  assert.strictEqual(tras.length, 4, 'después del clic aparecen y se leen'); assert.strictEqual(tras[1].fameDia, 30750);
+  // Sin la casilla, o si el clic no trae las filas a tiempo: [] y la lectura sigue
+  global.document = new JSDOM('<p>sin casilla</p>').window.document; assert.deepStrictEqual(await expandirDetalleRiverRace(), []);
+  global.document = new JSDOM(checkbox).window.document; assert.deepStrictEqual(await expandirDetalleRiverRace(), [], 'el clic no trae nada: no cuelga, devuelve []');
+  console.log('OK: prueba_tampermonkey_lecturas');
+})().catch(e => { console.error(e); process.exit(1); });

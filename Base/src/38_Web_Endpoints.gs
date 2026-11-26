@@ -1812,6 +1812,7 @@ function doPost(e) {
     try {
       var payloadLRR = JSON.parse(e.postData.contents);
       var resultadoLRR = _clrProcesarEnvio_(payloadLRR && payloadLRR.participantes);
+      resultadoLRR.clanesLog = _cdlProcesarEnvio_(payloadLRR && payloadLRR.clanes); // §PF584 punto 15: bloque `Detail` por clan y día
       _logTampermonkeyADrive('LecturasRiverRace', resultadoLRR, resultadoLRR && resultadoLRR.error ? resultadoLRR.error : null);
       return ContentService
         .createTextOutput(JSON.stringify(resultadoLRR))
@@ -1833,6 +1834,7 @@ function doPost(e) {
     try {
       var payloadRace = JSON.parse(e.postData.contents);
       var resultadoRace = _procesarVerificacionRiverRace(payloadRace && payloadRace.participantes);
+      resultadoRace.clanesLog = _cdlProcesarEnvio_(payloadRace && payloadRace.clanes); // §PF584 punto 15: bloque `Detail` por clan y día; se guarda aunque la verificación de jugadores se rechace (p. ej. lunes a miércoles)
       _logTampermonkeyADrive('VerificarSemanaActual', resultadoRace, null);
       return ContentService
         .createTextOutput(JSON.stringify(resultadoRace))

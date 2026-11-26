@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Familia Terna - Corrección de Guerra + Miembros Nuevos + Verificar Semana (RoyaleAPI)
 // @namespace    familia-terna-correccion-guerra
-// @version      3.42
+// @version      3.43
 // @description  Corrección de guerra (Ataques/Fame/Barcos de clanes Terna), detección de miembros nuevos (historial en otro clan) y verificación de la semana en curso contra /war/race (cuarto flujo independiente, deja discrepancias pendientes de aprobación manual) desde RoyaleAPI. Corrección de guerra: PRIMERO lee las 4 páginas "War Log" (fuente principal, con Barcos, sin pegar nada a mano), usa "War Analytics" SOLO de respaldo para los clanes cuyo Log no cargó, y SOLO para los jugadores que sigan sin cubrirse recurre al método anterior (perfil por perfil). v2.3: los tokens ya no van escritos en el script; se guardan en Tampermonkey (botón 🔑 del panel) y un 401 del backend se reporta como tal. v2.4: los tokens se piden en un formulario dentro de la página (no se cierra al cambiar de pestaña) y los 3 botones muestran «Cargando». v2.5: si Cloudflare pide verificación, el proceso se queda en espera (sin recargar ni saltar jugadores), te avisa con notificación/sonido/título parpadeante y continúa solo al resolverla. v2.6: un 401 ya no borra el token guardado (un solo rechazo puntual dejaba todos los envíos siguientes con token vacío), los lotes que fallan se conservan en cola en vez de perderse, y tras repetidos rechazos/fallos el proceso se pausa solo en vez de seguir sin poder guardar. v2.7: botón 🩺 que prueba la URL y cada token (sin tocar datos) y limpia lo que se pega en el formulario de tokens (comillas, «NOMBRE=», espacios invisibles). v2.8 (pedido usuario): el panel ahora se puede redimensionar a voluntad arrastrando su esquina inferior derecha (como cualquier ventana), y el tamaño elegido se recuerda entre páginas aunque el script navegue constantemente. Además, la verificación de Cloudflare ya NO reproduce sonido ni muestra notificación de escritorio — el aviso queda solo en el título de la pestaña (parpadeante) y el banner rojo en pantalla. v2.9 (pedido usuario, Fase 15a del plan): el Log pasa a ser la fuente principal y Analytics queda solo de respaldo (se visita únicamente si el Log de algún clan no cargó); si un jugador aparece en el Log de 2 o más clanes Terna la misma semana, ataques/fame/barcos se SUMAN antes de enviarlos (antes la segunda fila pisaba a la primera); y el Perfil ya no reenvía semanas que Log/Analytics aportaron en la misma corrida. v3.0 (pedido usuario, Fase 15 tanda 2): el script DEJA DE SUMAR entre clanes; cada fila de Log/Analytics se envía por separado con su clanTag (una fila por jugador, semana y clan) y el backend hace la suma para Control/Control_2. Las filas del Perfil siguen saliendo sin clanTag. v3.1 (pedido usuaria, Verificar semana en curso sin respuesta): ese botón ya no pide la lista completa de jugadores (pide solo los clanes, modo=clanes) y su envío final tiene un tiempo máximo con aviso en el panel. [→ Contexto_Base_Web.md §PF041] v3.2 (pedido usuaria, formato ancho de Correcciones_Guerra.csv, §PF164): cada fila del Perfil sale marcada con fuente:'perfil' (el backend guarda así de dónde salió la columna RoyaleAPI: «perfil» o «desconocido»), y al iniciar la Corrección de Guerra se puede FORZAR la lectura del perfil de ciertos jugadores (las cuentas con varios clanes o los tags que se escriban): se visita su perfil aunque Log/Analytics ya los cubrieran y se reenvían TODAS sus semanas, aunque ya estén guardadas, para llenar de verdad la columna RoyaleAPI. v3.4 (pedido usuaria, 24-oct-2026, §PF234): cuarto botón «Corrección de jugadores elegidos»: escribes los tags y lee la semana en curso (River Race), el Log, Analytics y el perfil, pero guarda y envía SOLO a esos jugadores; al final lista las diferencias entre fuentes. Antes, forzar perfiles solo cambiaba la fase de Perfiles y el Log y Analytics enviaban a toda la comunidad. v3.5 (pedido usuaria, 25-oct-2026, §PF236): cuando se visita un perfil se envían TODAS sus filas (ya no se descartan las semanas cubiertas por Log/Analytics ni las ya guardadas) y el backend decide qué conserva: una fila igual a la guardada no se reescribe. v3.6 (pedido usuaria, 25-oct-2026, §PF237): el panel muestra «REVISAR PERFIL» cuando el backend reemplaza un valor del perfil ya guardado por otro distinto (antes/ahora), y el perfil ya no envía la semana en curso. v3.8 (pedido usuaria, 25-oct-2026, §PF243): el botón de miembros nuevos manda TODO lo que lee de cada perfil visitado (las semanas del perfil de todos los candidatos, no solo de los que cuentan como nuevos) y el backend decide qué guarda en la hoja «Nuevos» y qué en Correcciones_Guerra.csv; el panel muestra cuántas filas del perfil se aplicaron, cuántas estaban sin cambios y los avisos «REVISAR PERFIL». v3.15 (pedido usuaria, 30-oct-2026, §PF303): los cuatro botones del panel se ordenan de arriba abajo: Verificar Semana en Curso, miembros nuevos, jugadores elegidos y Corrección de Guerra completa. v3.20 (pedido usuaria, 2-nov-2026, §PF341): el perfil que visitan «Miembros nuevos» y «Corrección de jugadores elegidos» también se envía a los JSON individuales (Histórico de Guerra), incluso el de quien ya no está en los clanes Terna (solo en su JSON individual); «Miembros nuevos» ahora pide también el token del Histórico de Guerra. v3.21: el histórico de Guerra (JSON individual) manda el tag del clan en todas las filas, también las del Log, Analytics y River Race. v3.22: el nombre del clan de las filas del perfil sale limpio (sin la fecha pegada) también en las de clanes Terna. v3.24 (pedido usuaria, 4-nov-2026, §PF363): el botón «Corrección de Guerra» ya no abre el cuadro de perfiles a forzar (VARIOS o tags): trabaja con todos los jugadores; elegir perfiles es cosa de «Corrección de jugadores elegidos». v3.23 (pedido usuaria, 4-nov-2026, §PF362): al leer el Log de cada clan, los botones «Corrección de Guerra» y «Corrección de jugadores elegidos» también leen la tabla resumen de arriba (puesto, barcos, cambio de trofeos y trofeos finales de cada semana de cada temporada) y la envían al backend, que la guarda en Trofeos_Guerra_RoyaleAPI.csv y la compara con Guerra_Logs. v3.27 (§PF474): «Verificar Semana en Curso» manda el Tag de cada clan (clanTag) junto con el nombre en cada jugador, para que el backend compare cada clan contra lo que Guerra tiene de ESE clan y deje la diferencia con el clan al que corresponde. v3.34 (§PF507): si al visitar un perfil RoyaleAPI responde con la página 404 «Player tag … not found» (cuenta baneada o tag sin ningún registro), el script lo detecta de inmediato, manda el tag al backend (Tags_Sin_Perfil en Drive) y pasa al siguiente jugador, en lugar de esperar el botón, reintentar tres veces y saltarlo sin dejar marca. v3.39 (pedido usuaria, 24-nov-2026, §PF576): la Corrección de Guerra sin backfill también visita el perfil de los ingresos recientes y de quienes siguen en la hoja «Nuevos» (campo nuevosParaPerfil de la lista del backend), aunque Log o Analytics ya los cubran, para que la hoja «Nuevos» reciba su historial.
 // @author       Familia Terna
 // @match        https://royaleapi.com/*
@@ -519,6 +519,7 @@
   // Apps Script no respondía, el panel se quedaba en «Cargando…» para
   // siempre. Un Web App lento puede tardar 10-30 s; 90 s ya es "no responde".
   var LISTA_TIMEOUT_MS = 90000;
+  var DETALLE_WAIT_MS = 8000;   // v3.43 (§PF584 punto 15): cuánto se espera a que aparezcan las filas del bloque Detail después de pulsar la casilla
   var RACE_ENVIO_TIMEOUT_MS = 120000;   // PF041: tope del envío final de Verificar semana en curso (sin tope el panel se quedaba mudo)
 
   // FIX (21-sep-2026): envíos al backend (ver _postBackend()).
@@ -995,6 +996,7 @@
       // batching): se acumulan aquí y se mandan de una sola vez al terminar
       // el recorrido de los 4 clanes -- ver terminarRace().
       participantesAcumulados: [],
+      clanesDetalleAcumulados: [], // v3.43 (§PF584 punto 15): registro por clan y día (bloque Detail) de las páginas leídas en esta corrida
       totalDiscrepancias: 0,  // se completa con resp.discrepancias al terminar
       totalProcesados: 0,     // se completa con resp.procesados al terminar
       detalleBackend: null,   // v3.30 (§PF478): {aRevisar, cerradasResueltas, cerradasNoVigentes, sinLeer} de §PF477; null si el backend no los manda (versión vieja)
@@ -1479,8 +1481,8 @@
   // =========================================================================
   // COMUNICACIÓN CON EL BACKEND — VERIFICAR SEMANA EN CURSO (NUEVO)
   // =========================================================================
-  function enviarVerificacionRace(participantes, callback) {
-    _postBackend('verificarSemanaActual', 'race', JSON.stringify({ participantes: participantes }),
+  function enviarVerificacionRace(participantes, callback, clanes) {
+    _postBackend('verificarSemanaActual', 'race', JSON.stringify({ participantes: participantes, clanes: clanes || [] }),
       'Respuesta inválida del backend al verificar semana en curso', 'Error de red verificando semana en curso: ', callback,
       { timeoutMs: RACE_ENVIO_TIMEOUT_MS });
   }
@@ -2701,6 +2703,89 @@
   }
 
   /**
+   * parsearClanesDetalleRiverRace() (v3.43, §PF584 punto 15) — lee el bloque `div.cw2__race_clan_standings` con el registro de cada clan de la carrera (los 5, rivales
+   * incluidos) por día de guerra de toda la temporada. Una fila `.period_log_items` (sin la `.header`) por día: `.week` (w 1), `.day` (d 1 a 4 = jueves a domingo), `.rank`,
+   * `.progress.points` (`+ 1000` y entre paréntesis `(28100)`: la fama del clan ese día), `.progress.defenses` (`+ 376` y entre paréntesis `(14)`: puntos y cantidad de defensas
+   * de barco que siguen en pie) y `.progress.end` (`= 1376`). Solo aparece después de pulsar `Detail` (ver expandirDetalleRiverRace). Devuelve [] si no hay bloque.
+   */
+  function parsearClanesDetalleRiverRace() {
+    var out = [];
+    var clanes = document.querySelectorAll('.cw2__race_clan_standings a.clan.row');
+    for (var c = 0; c < clanes.length; c++) {
+      var a = clanes[c];
+      var m = (a.getAttribute('href') || '').match(/\/clan\/([A-Z0-9]+)/i);
+      if (!m) continue;
+      var elNombre = a.querySelector('.summary .clan.name .name.item');
+      var nombre = elNombre ? (elNombre.textContent || '').trim() : '';
+      var filas = a.querySelectorAll('.period_log_items:not(.header)');
+      for (var f = 0; f < filas.length; f++) {
+        var fila = filas[f];
+        var entero = function (sel) {
+          var el = fila.querySelector(sel);
+          var mm = el ? (el.textContent || '').match(/\d+/) : null;
+          return mm ? parseInt(mm[0], 10) : null;
+        };
+        var par = function (sel) { // `+ 1000 (28100)` -> { mas: 1000, entre: 28100 }
+          var el = fila.querySelector(sel);
+          var mm = el ? (el.textContent || '').match(/\+\s*(\d+)\s*\(\s*(\d+)\s*\)/) : null;
+          return mm ? { mas: parseInt(mm[1], 10), entre: parseInt(mm[2], 10) } : null;
+        };
+        var semana = entero('.week'), dia = entero('.day');
+        var pts = par('.progress.points'), def = par('.progress.defenses');
+        var elFin = fila.querySelector('.progress.end');
+        var mf = elFin ? (elFin.textContent || '').match(/=\s*(\d+)/) : null;
+        if (semana === null || dia === null || !pts) continue;
+        out.push({
+          clanTag: '#' + m[1].toUpperCase(),
+          clan: nombre,
+          semana: semana,
+          dia: dia,
+          puesto: entero('.rank'),
+          premioPuesto: pts.mas,
+          fameDia: pts.entre,
+          premioDefensas: def ? def.mas : null,
+          defensasEnPie: def ? def.entre : null,
+          total: mf ? parseInt(mf[1], 10) : null
+        });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * expandirDetalleRiverRace() (v3.43, §PF584 punto 15) — devuelve parsearClanesDetalleRiverRace(), pulsando antes la casilla `Detail` (`.war_timeline_detail_checkbox`)
+   * si las filas todavía no están: según la usuaria, solo aparecen después del clic. Espera hasta DETALLE_WAIT_MS; si no aparecen, devuelve [] y la lectura sigue sin ese bloque.
+   */
+  async function expandirDetalleRiverRace() {
+    var hayFilas = function () { return document.querySelector('.cw2__race_clan_standings .period_log_items:not(.header)') ? true : null; };
+    if (!hayFilas()) {
+      var casilla = document.querySelector('.war_timeline_detail_checkbox');
+      var clicable = casilla ? (casilla.querySelector('label') || casilla) : null;
+      if (!clicable) return [];
+      clicable.click();
+      var aparecio = await esperar(hayFilas, DETALLE_WAIT_MS);
+      if (!aparecio) return [];
+    }
+    return parsearClanesDetalleRiverRace();
+  }
+
+  // v3.43 (§PF584 punto 15): suma las filas clan-día de una página al estado de la fase race (sin repetir clan, semana y día: queda la última lectura).
+  function _acumularClanesDetalle(estado, filas) {
+    var mapa = {};
+    (estado.clanesDetalleAcumulados || []).concat(filas || []).forEach(function (c) { mapa[c.clanTag + '|' + c.semana + '|' + c.dia] = c; });
+    estado.clanesDetalleAcumulados = Object.keys(mapa).map(function (k) { return mapa[k]; });
+  }
+
+  // v3.43 (§PF584 punto 15): texto del panel con lo que el backend guardó del bloque Detail (`clanesLog` de la respuesta). '' si el backend no lo trae (backend viejo).
+  function _textoClanesLog(cl) {
+    if (!cl) return '';
+    if (cl.error) return '⚠ Detalle de la temporada: no se pudo guardar (' + cl.error + ').';
+    if (cl.motivo) return 'ℹ Detalle de la temporada: no se guardó (' + cl.motivo + ').';
+    return 'Detalle de la temporada: ' + (cl.filas || 0) + ' fila(s) clan-día (' + (cl.sinDato || 0) + ' sin dato en la web), ' + (cl.nuevas || 0) + ' nueva(s), ' +
+      (cl.actualizadas || 0) + ' actualizada(s).';
+  }
+
+  /**
    * leerDiaPaginaRiverRace() (v3.42, §PF584 punto 13) — día de la semana que la propia página de RoyaleAPI marca en su línea de tiempo (`.cw2__period .timeline`: el punto
    * `.dot.active` y su `div.day`, «Day 3»). 1 a 3 = entrenamiento, 4 a 7 = jueves a domingo. null si no aparece (el backend entonces usa su propio cálculo).
    */
@@ -2805,16 +2890,19 @@
     // v3.41 (§PF584 punto 13): además del histórico, la lectura entera de la página (ex-miembros incluidos) va al backend. Se espera la respuesta antes de navegar al
     // siguiente clan (si no, el cambio de página cancelaría el envío). Un fallo aquí solo se anota: no frena la corrección.
     var lecturasRR = leerLecturasPaginaRiverRace(clanNombreRiverRace, tagClan);
+    var clanesRR = await expandirDetalleRiverRace(); // v3.43 (§PF584 punto 15): pulsa `Detail` y lee el registro por clan y día de toda la temporada
     var seguirRiverRace = function () {
       estado.riverraceIndiceClan++;
       guardarEstado(estado);
       setTimeout(function () { irAlSiguienteClanRiverRace(estado); }, PAUSA_ENTRE_CLANES_MS);
     };
-    if (!lecturasRR.length) { seguirRiverRace(); return; }
+    if (!lecturasRR.length && !clanesRR.length) { seguirRiverRace(); return; }
     var exRR = lecturasRR.filter(function (l) { return l.exMiembro; }).length;
-    _postBackend('lecturasRiverRace', 'historial', JSON.stringify({ participantes: lecturasRR }),
+    _postBackend('lecturasRiverRace', 'historial', JSON.stringify({ participantes: lecturasRR, clanes: clanesRR }),
       'Respuesta inválida del backend al guardar lecturas de River Race', 'Error de red guardando lecturas de River Race: ',
       function (errLec, respLec) {
+        var txtClanes = _textoClanesLog(respLec && respLec.clanesLog);
+        if (txtClanes) log(estado, '  ' + (txtClanes.charAt(0) === '⚠' || txtClanes.charAt(0) === 'ℹ' ? '' : '✔ [Detalle] ') + txtClanes);
         if (errLec || !respLec || !respLec.ok) {
           log(estado, '  ⚠ [Lecturas] ' + (errLec || (respLec && respLec.error) || 'respuesta inválida del backend') + ' (no se guardó esta lectura; la corrección sigue).');
         } else if (respLec.motivo) {
@@ -3758,8 +3846,13 @@
       if (estado.raceTagsEncontrados.indexOf(t) === -1) estado.raceTagsEncontrados.push(t);
     }
 
+    // v3.43 (§PF584 punto 15): además de los jugadores, se pulsa `Detail` y se lee el registro por clan y día de la temporada; se manda junto en el envío final.
+    var clanesDetRace = await expandirDetalleRiverRace();
+    _acumularClanesDetalle(estado, clanesDetRace);
+
     estado.raceTotalClanesOk++;
-    logRace(estado, '  ✔ ' + Object.keys(resultado.tagsEncontrados).length + ' jugador(es) leído(s).');
+    logRace(estado, '  ✔ ' + Object.keys(resultado.tagsEncontrados).length + ' jugador(es) leído(s); detalle de la temporada: ' + clanesDetRace.length + ' fila(s) clan-día' +
+      (clanesDetRace.length ? '.' : ' (la página no lo mostró a tiempo).'));
 
     estado.raceIndiceClan++;
     guardarEstadoRace(estado);
@@ -3809,6 +3902,8 @@
     logRace(estado, 'Enviando ' + participantes.length + ' jugador(es) al backend para comparar contra Guerra...');
     enviarVerificacionRace(participantes, function (err, resp) {
       estado.enviandoDesde = 0; // v3.32 (§PF484): terminó la espera, con o sin error
+      var txtClanesRace = _textoClanesLog(resp && resp.clanesLog); // v3.43 (§PF584 punto 15): se muestra aunque la verificación de jugadores se rechace
+      if (txtClanesRace) logRace(estado, txtClanesRace);
       if (err || !resp || !resp.ok) {
         logRace(estado, '⚠ ' + (err || (resp && resp.error) || 'respuesta inválida del backend') +
           ' -- nada se guardó como pendiente. La próxima corrida vuelve a intentar desde cero.' +
@@ -3852,7 +3947,7 @@
       }
       guardarEstadoRace(estado);
       pintarPanel();
-    });
+    }, estado.clanesDetalleAcumulados || []); // v3.43 (§PF584 punto 15): el registro por clan y día va en el mismo envío
   }
 
   // =========================================================================
