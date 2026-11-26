@@ -55,10 +55,19 @@ assert.deepStrictEqual(det[1], { clanTag: '#GCRG8L00', clan: 'Grupo乂Terna™',
 assert.deepStrictEqual([det[3].semana, det[3].dia, det[3].puesto, det[3].fameDia, det[3].defensasEnPie], [3, 4, 0, 0, 0], 'el domingo sin dato se lee como ceros; el backend lo omite');
 
 (async () => {
-  // Las filas ya están: no se pulsa nada
+  // v3.44: casilla sin marcar con las filas ya en el HTML (ocultas): se pulsa igual, una sola vez, para que quede activa
   global.document = new JSDOM(standings + checkbox).window.document;
   let clics = 0; global.document.querySelector('.war_timeline_detail_checkbox label').addEventListener('click', () => clics++);
-  assert.strictEqual((await expandirDetalleRiverRace()).length, 4); assert.strictEqual(clics, 0, 'si las filas ya están, no se pulsa Detail');
+  assert.strictEqual((await expandirDetalleRiverRace()).length, 4); assert.strictEqual(clics, 1, 'casilla apagada: se pulsa aunque las filas ya estén');
+  assert.strictEqual(detalleModoUltimo, 'pulsado');
+  // Casilla ya marcada: no se pulsa (pulsar otra vez la apagaría)
+  global.document = new JSDOM(standings + checkbox.replace('class="hidden"', 'class="hidden" checked')).window.document;
+  clics = 0; global.document.querySelector('.war_timeline_detail_checkbox label').addEventListener('click', () => clics++);
+  assert.strictEqual((await expandirDetalleRiverRace()).length, 4); assert.strictEqual(clics, 0, 'casilla ya activa: no se pulsa'); assert.strictEqual(detalleModoUltimo, 'ya activa');
+  // Sin `input` y con las filas ya visibles: criterio anterior, no se pulsa
+  global.document = new JSDOM(standings + '<div class="war_timeline_detail_checkbox"><label>Detail</label></div>').window.document;
+  clics = 0; global.document.querySelector('.war_timeline_detail_checkbox label').addEventListener('click', () => clics++);
+  assert.strictEqual((await expandirDetalleRiverRace()).length, 4); assert.strictEqual(clics, 0); assert.strictEqual(detalleModoUltimo, 'filas ya visibles');
   // Las filas aparecen solo después del clic (lo que dice la usuaria)
   const dom2 = new JSDOM('<div id="raiz">' + checkbox + '<div id="hueco"></div></div>'); global.document = dom2.window.document;
   global.document.querySelector('.war_timeline_detail_checkbox').addEventListener('click', () => setTimeout(() => { global.document.getElementById('hueco').innerHTML = standings; }, 60));
