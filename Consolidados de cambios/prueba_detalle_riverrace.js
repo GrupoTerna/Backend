@@ -47,4 +47,28 @@ const P = [59, 53, 47, 43, 41, 37, 31, 29, 23, 19, 17, 13, 11, 7, 5];
 assert.strictEqual(P.reduce((a, b) => a + b, 0), 435);
 // En los valores reales de Grupo Terna (435/15, 323/13, 233/11, 192/10) lo que queda en pie es siempre lo de menos puntos: las más altas caen primero
 for (const r of terna) assert.strictEqual(r.premioDefensas, P.slice(15 - r.defensasEnPie).reduce((a, b) => a + b, 0), r.clan + ' d' + r.dia);
+// 4) Validación de defensas (§PF585): _defensasEvaluarPar_ y _defensasTablaSumas_
+assert.deepStrictEqual(DEF_PUNTOS_PUESTO, P, 'la constante es la lista de la usuaria');
+// La tabla de sumas coincide con la fuerza bruta (todas las combinaciones de 15 puestos: 32768)
+const bruta = Array.from({ length: 16 }, () => new Set());
+for (let m = 0; m < (1 << 15); m++) { let n = 0, sum = 0; for (let i = 0; i < 15; i++) if (m & (1 << i)) { n++; sum += P[i]; } bruta[n].add(sum); }
+const tabla = _defensasTablaSumas_();
+for (let n = 0; n <= 15; n++) assert.deepStrictEqual(Object.keys(tabla[n]).map(Number).sort((a, b) => a - b), [...bruta[n]].sort((a, b) => a - b), 'n=' + n);
+// Casos de los datos reales y límites
+for (const [n, pts] of [[15, 435], [14, 376], [14, 424], [14, 428], [13, 323], [13, 365], [11, 233], [10, 192], [0, 0], [2, 112], [1, 59]]) assert.strictEqual(_defensasEvaluarPar_(n, pts).valido, true, n + ' (' + pts + ')');
+let e = _defensasEvaluarPar_(14, 377); assert.deepStrictEqual([e.valido, e.min, e.max, e.motivo], [false, 376, 430, 'no es suma de n puestos distintos']);
+assert.strictEqual(_defensasEvaluarPar_(14, 435).motivo, 'fuera de rango'); assert.strictEqual(_defensasEvaluarPar_(14, 375).motivo, 'fuera de rango');
+assert.strictEqual(_defensasEvaluarPar_(0, 5).valido, false); assert.strictEqual(_defensasEvaluarPar_(15, 434).valido, false);
+assert.strictEqual(_defensasEvaluarPar_(16, 435).motivo, 'cantidad fuera de 0 a 15'); assert.strictEqual(_defensasEvaluarPar_(-1, 0).motivo, 'cantidad fuera de 0 a 15');
+assert.strictEqual(_defensasEvaluarPar_(null, 435).motivo, 'sin dato'); assert.strictEqual(_defensasEvaluarPar_(14, '').motivo, 'sin dato'); assert.strictEqual(_defensasEvaluarPar_(undefined, undefined).motivo, 'sin dato');
+assert.strictEqual(_defensasEvaluarPar_('x', 1).motivo, 'no numérico'); assert.strictEqual(_defensasEvaluarPar_(1.5, 59).motivo, 'no numérico');
+assert.strictEqual(_defensasEvaluarPar_('14', '376').valido, true, 'acepta números como texto (vienen de un CSV)');
+// En _cdlFilasClanes_: los datos reales no dan incoherencias; una fila mala se cuenta pero SE GUARDA igual
+const sin = _cdlFilasClanes_([...terna, vacio, adulti], 39, 3, 'x'); assert.strictEqual(sin.incoherentes, 0); assert.deepStrictEqual(sin.incoherentesDetalle, []);
+const mala = _cdlFilasClanes_([terna[0], c('#GCRG8L00', 'Grupo乂Terna™', 1, 2, 4, 600, 26300, 330, 13, 930)], 39, 3, 'x');
+assert.strictEqual(mala.filas.length, 2, 'la incoherente no se descarta'); assert.strictEqual(mala.incoherentes, 1);
+assert.strictEqual(mala.incoherentesDetalle[0], '#GCRG8L00 S1 V: 330 (13) no es suma de n puestos distintos');
+const muchas = _cdlFilasClanes_(Array.from({ length: 8 }, (_, i) => c('#GCRG8L00', 'T', 1, 1 + (i % 4), 1, 3000, 1000 + i, 434, 14, 3434 + i)).map((x, i) => Object.assign(x, { semana: 1 + Math.floor(i / 4) })), 39, 9, 'x');
+assert.strictEqual(muchas.incoherentes, 8); assert.strictEqual(muchas.incoherentesDetalle.length, 5, 'el detalle se limita a 5');
+
 console.log('OK: prueba_detalle_riverrace');
