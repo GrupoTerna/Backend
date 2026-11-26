@@ -9,22 +9,28 @@ function bloque(inicio) {   // texto de una función completa a partir de su cab
   let d = 0, j = src.indexOf('{', i);
   for (let k = j; k < src.length; k++) { if (src[k] === '{') d++; else if (src[k] === '}') { d--; if (d === 0) return src.slice(i, k + 1); } }
 }
-const html = `<table class="cw2_participant_flex_table sortable_participant"><tbody>
+// Línea de tiempo real de la página (miércoles, «Day 3»), tal como la dio la usuaria
+const linea = (activo, dia) => `<div class="cw2__period"><div class="timeline"><ul>` + [0,1,2,3,4,5,6].map(i => `<li><div class="text_top  "></div><div class="dot ${i === activo ? 'active' : (i < activo ? 'training_past' : '')}"></div><div class="text">${i === activo ? `<div class="day">Day ${dia}</div>` : ''}</div></li>`).join('') + `</ul></div></div>`;
+const html = linea(2, 3) + `<table class="cw2_participant_flex_table sortable_participant"><tbody>
 <tr class="player" data-href="/player/9CJY8RU20/battles"><td class="rank">49</td><td class="player_name"><div class="player_info"><a href="/player/9CJY8RU20/battles" class="player_name force_single_line_hidden">ZupeRey</a><div class="player_role">Member</div></div><div class="player_data"><div class="value_bg decks_used_today">3</div><div class="value_bg decks_used">11</div><div class="value_bg boat_attacks">0</div><div class="value_bg fame">2250</div></div></td></tr>
 <tr class="player not_current_member" data-href="/player/2JRUP89PU/battles"><td class="rank">50</td><td class="player_name"><div class="player_info"><a href="/player/2JRUP89PU/battles" class="player_name force_single_line_hidden">Combatiente</a><div class="player_role">--</div></div><div class="player_data"><div class="value_bg decks_used_today">2</div><div class="value_bg decks_used">6</div><div class="value_bg boat_attacks">1</div><div class="value_bg fame">800</div></div></td></tr>
 <tr class="player"><td>sin enlace</td></tr></tbody></table>`;
 const dom = new JSDOM(html); global.document = dom.window.document;
-const codigo = [bloque('function buscarTablaRiverRace'), bloque('function buscarTablaRace'), bloque('function leerLecturasPaginaRiverRace'), bloque('function parsearParticipantesRace')].join('\n');
-const { leerLecturasPaginaRiverRace, parsearParticipantesRace } = new Function(codigo + '; return { leerLecturasPaginaRiverRace, parsearParticipantesRace };')();
+const codigo = [bloque('function buscarTablaRiverRace'), bloque('function buscarTablaRace'), bloque('function leerDiaPaginaRiverRace'), bloque('function leerLecturasPaginaRiverRace'), bloque('function parsearParticipantesRace')].join('\n');
+const { leerLecturasPaginaRiverRace, parsearParticipantesRace, leerDiaPaginaRiverRace } = new Function(codigo + '; return { leerLecturasPaginaRiverRace, parsearParticipantesRace, leerDiaPaginaRiverRace };')();
 
+assert.strictEqual(leerDiaPaginaRiverRace(), 3, 'Day 3 de la línea de tiempo');
+assert.strictEqual(new JSDOM(linea(5, 6)).window.document.querySelector('.day').textContent, 'Day 6');
+const docAnterior = global.document; global.document = new JSDOM(linea(5, 6)).window.document; assert.strictEqual(leerDiaPaginaRiverRace(), 6); global.document = new JSDOM('<p>sin línea</p>').window.document; assert.strictEqual(leerDiaPaginaRiverRace(), null); global.document = docAnterior;
 const l = leerLecturasPaginaRiverRace('Grupo Terna', '#GCRG8L00');
 assert.strictEqual(l.length, 2, 'la fila sin enlace se descarta');
-assert.deepStrictEqual(l[0], { tag: '#9CJY8RU20', nombreWeb: 'ZupeRey', rol: 'Member', exMiembro: false, clan: 'Grupo Terna', clanTag: '#GCRG8L00', decksHoy: 3, ataquesSemana: 11, fameSemana: 2250, barcosSemana: 0 });
-assert.deepStrictEqual(l[1], { tag: '#2JRUP89PU', nombreWeb: 'Combatiente', rol: '--', exMiembro: true, clan: 'Grupo Terna', clanTag: '#GCRG8L00', decksHoy: 2, ataquesSemana: 6, fameSemana: 800, barcosSemana: 1 });
+assert.deepStrictEqual(l[0], { tag: '#9CJY8RU20', nombreWeb: 'ZupeRey', rol: 'Member', exMiembro: false, clan: 'Grupo Terna', clanTag: '#GCRG8L00', decksHoy: 3, ataquesSemana: 11, fameSemana: 2250, barcosSemana: 0, diaPagina: 3 });
+assert.deepStrictEqual(l[1], { tag: '#2JRUP89PU', nombreWeb: 'Combatiente', rol: '--', exMiembro: true, clan: 'Grupo Terna', clanTag: '#GCRG8L00', decksHoy: 2, ataquesSemana: 6, fameSemana: 800, barcosSemana: 1, diaPagina: 3 });
 
 const r = parsearParticipantesRace({ jugadorPorTag: { '#9CJY8RU20': { nombre: 'Zupe' } } }, 'Grupo Terna', '#GCRG8L00');
 assert.strictEqual(r.registros.length, 2);
 assert.strictEqual(r.registros[0].nombre, 'Zupe'); assert.strictEqual(r.registros[0].exMiembro, false); assert.strictEqual(r.registros[0].ataquesSemana, 11);
+assert.strictEqual(r.registros[0].diaPagina, 3, 'la fase race también manda el día de la página');
 assert.strictEqual(r.registros[1].nombre, '', 'el campo nombre sigue como antes'); assert.strictEqual(r.registros[1].nombreWeb, 'Combatiente'); assert.strictEqual(r.registros[1].exMiembro, true);
 // Lo que usa la comparación contra Guerra no cambia
 assert.deepStrictEqual([r.registros[1].decksHoy, r.registros[1].fameSemana, r.registros[1].barcosSemana], [2, 800, 1]);

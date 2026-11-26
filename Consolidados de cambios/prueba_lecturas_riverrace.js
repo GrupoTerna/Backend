@@ -39,4 +39,27 @@ assert.strictEqual(_clrMezclarFilas_(guardada, _clrFilasLectura_([ex], 39, 4, 1,
 assert.strictEqual(_clrMezclarFilas_(guardada, _clrFilasLectura_([Object.assign({}, ex, { clanTag: '#OTRO' })], 39, 3, 1, 'x').filas).nuevas, 1, 'otro clan');
 // Encabezado distinto: no se toca
 assert.strictEqual(_clrMezclarFilas_([['A', 'B']], f.filas).ok, false);
+
+// 3) Ex-miembros en cero no se guardan; los activos en cero sí
+const exCero = { tag: '#ZZZ', exMiembro: true, clanTag: '#GCRG8L00', decksHoy: 0, ataquesSemana: 0, fameSemana: 0, barcosSemana: 0 };
+const actCero = Object.assign({}, exCero, { tag: '#YYY', exMiembro: false });
+const fz = _clrFilasLectura_([exCero, actCero, ex], 39, 3, 0, 'x');
+assert.strictEqual(fz.ceros, 1); assert.strictEqual(fz.filas.length, 2); assert.strictEqual(fz.exMiembros, 1);
+assert.ok(fz.filas.some(r => r[5] === '#YYY'), 'el activo en cero se guarda');
+assert.strictEqual(_clrFilasLectura_([Object.assign({}, exCero, { barcosSemana: 1 })], 39, 3, 0, 'x').filas.length, 1, 'con un solo barco ya no es cero');
+
+// 4) Día de la página
+assert.strictEqual(_clrDiaDePagina_([{ diaPagina: 3 }, { diaPagina: '3' }, {}]), 3);
+assert.strictEqual(_clrDiaDePagina_([{ diaPagina: 3 }, { diaPagina: 5 }]), null, 'si no coinciden, no se confía');
+assert.strictEqual(_clrDiaDePagina_([{}, { diaPagina: null }]), null);
+assert.strictEqual(_clrDiaDePagina_([{ diaPagina: 9 }]), null); assert.strictEqual(_clrDiaDePagina_([{ diaPagina: 2.5 }]), null); assert.strictEqual(_clrDiaDePagina_(null), null);
+let d = _clrResolverDia_(3, 1, false);
+assert.strictEqual(d.offDia, null); assert.ok(d.motivo.indexOf('entrenamiento') >= 0, 'Day 3 = miércoles: no se guarda');
+d = _clrResolverDia_(5, 1, false); assert.strictEqual(d.offDia, 1); assert.strictEqual(d.aviso, '', 'Day 5 = viernes (V), igual que el backend');
+d = _clrResolverDia_(5, 0, false); assert.strictEqual(d.offDia, 1); assert.ok(d.aviso.indexOf('V') >= 0 && d.aviso.indexOf('J') >= 0, 'no coinciden: manda la página y se avisa');
+d = _clrResolverDia_(4, 0, true); assert.strictEqual(d.offDia, 0, 'dentro de la ventana, si la página dice el día, se guarda');
+d = _clrResolverDia_(7, NaN, false); assert.strictEqual(d.offDia, 3, 'Day 7 = domingo (D)');
+d = _clrResolverDia_(null, 2, false); assert.strictEqual(d.offDia, 2); assert.strictEqual(d.fuente, 'backend');
+d = _clrResolverDia_(null, 2, true); assert.strictEqual(d.offDia, null); assert.ok(d.motivo.indexOf('ventana') >= 0);
+d = _clrResolverDia_(undefined, -1, false); assert.strictEqual(d.offDia, null); assert.strictEqual(d.motivo, 'no es día de guerra');
 console.log('OK: prueba_lecturas_riverrace');

@@ -367,7 +367,8 @@ function _procesarVerificacionRiverRace(participantesPayload) {
 
   // §PF584 punto 13 (25-nov-2026): Tampermonkey no se lee a diario, así que cada lectura se guarda ENTERA (activos y ex-miembros, con la clase `not_current_member`) en
   // Lecturas_RiverRace.csv, además de comparar. Solo guarda; un fallo aquí no frena la comparación (_clrGuardarLecturas_ nunca lanza).
-  var lecturas = _clrGuardarLecturas_(participantesPayload, temporada, semana, offDiaHoy);
+  var diaLec = _clrResolverDia_(_clrDiaDePagina_(participantesPayload), offDiaHoy, false); // el día que marca la página manda; en entrenamiento no se guarda
+  var lecturas = diaLec.offDia === null ? { filas: 0, exMiembros: 0, nuevas: 0, actualizadas: 0, error: '' } : _clrGuardarLecturas_(participantesPayload, temporada, semana, diaLec.offDia);
 
   var guerraData = _getDatosGuerraDesdeHojaParaControl(ctx); // 22_ControlCalendario.gs
   // §PF474 (15-nov-2026): lo mismo que guerraData pero separado por clan (por Tag), para comparar cada clan contra lo que Guerra tiene de ESE clan.
@@ -556,7 +557,8 @@ function _procesarVerificacionRiverRace(participantesPayload) {
   return { ok: true, procesados: procesados, discrepancias: discrepancias, yaResueltas: yaResueltas, omitidos: omitidos, tagsEnVariosClanes: tagsEnVariosClanes,
     tagsPorClan: tagsPorClan, tagsPorTotal: tagsPorTotal, discrepanciasPorClan: discrepanciasPorClan, supersedidas: supersedidas,
     aRevisar: aRevisar, cerradasResueltas: cerradasResueltas, cerradasNoVigentes: cerradasNoVigentes, sinLeer: sinLeer,
-    lecturasGuardadas: lecturas.filas, lecturasExMiembros: lecturas.exMiembros, lecturasNuevas: lecturas.nuevas, lecturasActualizadas: lecturas.actualizadas, lecturasError: lecturas.error || '' };
+    lecturasGuardadas: lecturas.filas, lecturasExMiembros: lecturas.exMiembros, lecturasNuevas: lecturas.nuevas, lecturasActualizadas: lecturas.actualizadas, lecturasError: lecturas.error || '',
+    lecturasMotivo: diaLec.motivo || '', lecturasAviso: diaLec.aviso || '' };
 }
 
 /**

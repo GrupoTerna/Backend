@@ -9,7 +9,7 @@
  *        -> _cmaGuardarControlDeCorrida_() (parte 2, escribe el CSV)
  *        -> _cmaNombreClanWeb_(), _cmaTotalesSemanaWeb_(), _cmaDiasApiPorSemana_(), _cmaFilasRespaldoWeb_() y _cmaMezclarFilasWeb_() (parte 3, puras)
  *        -> _cmaMedallasDiaHoja_(), _cmaFilasMedallasDia_() y _cmaMezclarFilasDia_() (parte 4, opción A, puras)
- *        -> _clrFilasLectura_() y _clrMezclarFilas_() (lecturas de la página River Race de RoyaleAPI, puras) -> _clrGuardarLecturas_() y _clrProcesarEnvio_() (escriben Lecturas_RiverRace.csv).
+ *        -> _clrDiaDePagina_(), _clrResolverDia_(), _clrFilasLectura_() y _clrMezclarFilas_() (lecturas de la página River Race de RoyaleAPI, puras) -> _clrGuardarLecturas_() y _clrProcesarEnvio_() (escriben Lecturas_RiverRace.csv).
  *      Quien la llama: updateGuerraSheet() (17_GuerraSheet.gs), una vez por corrida, junto a la corrección automática del cierre del día.
  *
  * Regla de la usuaria: la API manda siempre; la web solo es respaldo donde la API no da dato. Este archivo trabaja SOLO con el JSON de
@@ -615,15 +615,52 @@ function _cmaMezclarFilasDia_(existentes, nuevas) {
 // ----- Lecturas de la página River Race de RoyaleAPI, incluidos los ex-miembros (§PF584 punto 13) -----
 
 /**
+ * _clrDiaDePagina_(participantes) — día de la semana que la página de RoyaleAPI marcaba al leerla (`diaPagina`, 1 a 7; §PF584 punto 13). Tampermonkey lo manda en cada
+ * fila. Devuelve el número si todas las filas que lo traen coinciden; null si ninguna lo trae (Tampermonkey anterior a la v3.42, o la página no lo mostró) o si no coinciden.
+ */
+function _clrDiaDePagina_(participantes) {
+  var visto = null;
+  for (var i = 0; i < (participantes || []).length; i++) {
+    var q = participantes[i] || {};
+    if (q.diaPagina === null || q.diaPagina === undefined || q.diaPagina === '') continue;
+    var n = Number(q.diaPagina);
+    if (!(n >= 1 && n <= 7) || n !== Math.floor(n)) return null;
+    if (visto === null) visto = n; else if (visto !== n) return null;
+  }
+  return visto;
+}
+
+/**
+ * _clrResolverDia_(diaPagina, offDiaBackend, enVentana) — decide a qué día de guerra pertenece una lectura (§PF584 punto 13). Función pura.
+ * Si la página dijo el día (1 a 7) manda ella, porque es el día de los números que muestra: 1 a 3 es entrenamiento (los números semanales vuelven a 0, no se guarda) y
+ * 4 a 7 es jueves a domingo (offDia 0 a 3), también dentro de la ventana de 04:00 a 05:00. Si no lo dijo, se usa el del backend (offDiaBackend, 0 a 3) y nada se guarda
+ * en la ventana de cambio de día ni fuera de día de guerra. Devuelve { offDia (0 a 3 o null si no se guarda), fuente: 'pagina' o 'backend', motivo (por qué no se guarda),
+ * aviso (si la página y el backend no coinciden; se guarda igual con el día de la página) }.
+ */
+function _clrResolverDia_(diaPagina, offDiaBackend, enVentana) {
+  var hayBackend = typeof offDiaBackend === 'number' && offDiaBackend >= 0 && offDiaBackend <= 3;
+  var d = Number(diaPagina);
+  if (diaPagina !== null && diaPagina !== undefined && diaPagina !== '' && d >= 1 && d <= 7) {
+    if (d <= 3) return { offDia: null, fuente: 'pagina', motivo: 'la página marca el día ' + d + ' (entrenamiento: los números semanales vuelven a 0)', aviso: '' };
+    var off = d - 4;
+    return { offDia: off, fuente: 'pagina', motivo: '',
+      aviso: (hayBackend && off !== offDiaBackend) ? 'la página marca el día ' + d + ' (' + CMA_LETRAS_DIAS.charAt(off) + ') y el backend calcula ' + CMA_LETRAS_DIAS.charAt(offDiaBackend) + '; se usó el de la página' : '' };
+  }
+  if (!hayBackend) return { offDia: null, fuente: 'backend', motivo: 'no es día de guerra', aviso: '' };
+  if (enVentana) return { offDia: null, fuente: 'backend', motivo: 'ventana de cambio de día (04:00 a 05:00 de Lima) y la página no indicó el día', aviso: '' };
+  return { offDia: offDiaBackend, fuente: 'backend', motivo: '', aviso: '' };
+}
+
+/**
  * _clrFilasLectura_(participantes, temporada, semana, offDia, capturado) — convierte lo que Tampermonkey leyó de la página River Race en filas de Lecturas_RiverRace.csv
  * (§PF584 punto 13). Función pura: no usa Drive ni hojas.
  * participantes: [{ tag, nombre, nombreWeb, rol, exMiembro, clan, clanTag, decksHoy, ataquesSemana, fameSemana, barcosSemana }]. `exMiembro` es true si la fila de la página
  * tenía la clase `not_current_member` (ya no está en el clan); si el envío no trae el campo (Tampermonkey anterior a la v3.41) la columna queda vacía, no «No».
  * offDia: 0 a 3 = jueves a domingo (la letra J, V, S o D va en la columna `Dia`). Una fila sin Tag o con la fama inválida se omite.
- * Devuelve { filas, omitidos, exMiembros } (exMiembros = cuántas filas son de ex-miembros).
+ * Devuelve { filas, omitidos, exMiembros, ceros } (exMiembros = cuántas filas guardables son de ex-miembros; ceros = filas de ex-miembros con todo en cero, que no se guardan).
  */
 function _clrFilasLectura_(participantes, temporada, semana, offDia, capturado) {
-  var res = { filas: [], omitidos: 0, exMiembros: 0 };
+  var res = { filas: [], omitidos: 0, exMiembros: 0, ceros: 0 };
   var dia = CMA_LETRAS_DIAS.charAt(offDia);
   if (!dia) return res;
   var num = function (v) { if (v === null || v === undefined || v === '') return ''; var n = Number(v); return isNaN(n) ? NaN : n; };
@@ -639,6 +676,9 @@ function _clrFilasLectura_(participantes, temporada, semana, offDia, capturado) 
     var rol = String(q.rol || '').trim();
     if (rol === '--') rol = '';
     var ex = q.exMiembro === true ? 'Sí' : (q.exMiembro === false ? 'No' : '');
+    // La página lista a todos los de la temporada (187 en un clan), la mayoría ex-miembros que no atacaron esta semana: una fila de ex-miembro con todo en cero no dice
+    // nada que no diga la lista, y llenaría el archivo. Las de activos en cero sí se guardan (no atacó).
+    if (ex === 'Sí' && !fame && !(Number(hoy) > 0) && !(Number(sem) > 0) && !(Number(bar) > 0)) { res.ceros++; return; }
     if (ex === 'Sí') res.exMiembros++;
     var clanTag = String(q.clanTag || '').trim().toUpperCase();
     if (clanTag && clanTag.charAt(0) !== '#') clanTag = '#' + clanTag;
@@ -686,11 +726,11 @@ function _clrMezclarFilas_(existentes, nuevas) {
  * Devuelve { guardado, nuevas, actualizadas, filas, exMiembros, omitidos, error? }; nunca lanza (un fallo aquí no debe frenar la verificación que lo llama).
  */
 function _clrGuardarLecturas_(participantes, temporada, semana, offDia) {
-  var res = { guardado: false, nuevas: 0, actualizadas: 0, filas: 0, exMiembros: 0, omitidos: 0 };
+  var res = { guardado: false, nuevas: 0, actualizadas: 0, filas: 0, exMiembros: 0, omitidos: 0, ceros: 0 };
   try {
     var capturado = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
     var f = _clrFilasLectura_(participantes, temporada, semana, offDia, capturado);
-    res.filas = f.filas.length; res.exMiembros = f.exMiembros; res.omitidos = f.omitidos;
+    res.filas = f.filas.length; res.exMiembros = f.exMiembros; res.omitidos = f.omitidos; res.ceros = f.ceros;
     if (!f.filas.length) return res;
     var texto = _loadCSVFromDrive(CLR_CSV);
     var existentes = texto ? _parseCSV(texto) : [];
@@ -702,7 +742,7 @@ function _clrGuardarLecturas_(participantes, temporada, semana, offDia) {
     }
     res.nuevas = m.nuevas; res.actualizadas = m.actualizadas;
     if (m.nuevas + m.actualizadas > 0) { _saveCSVToDrive(CLR_CSV, _encodeCSV(m.filas)); res.guardado = true; }
-    Logger.log('[Lecturas River Race] ' + f.filas.length + ' fila(s) leída(s) (' + f.exMiembros + ' de ex-miembros, ' + f.omitidos + ' omitida(s)); ' + m.nuevas + ' nueva(s), ' +
+    Logger.log('[Lecturas River Race] ' + f.filas.length + ' fila(s) leída(s) (' + f.exMiembros + ' de ex-miembros, ' + f.omitidos + ' omitida(s), ' + f.ceros + ' de ex-miembros en cero sin guardar); ' + m.nuevas + ' nueva(s), ' +
       m.actualizadas + ' actualizada(s)' + (res.guardado ? '.' : '; sin cambios, no se escribió.'));
   } catch (e) {
     res.error = String(e && e.message ? e.message : e);
@@ -713,8 +753,8 @@ function _clrGuardarLecturas_(participantes, temporada, semana, offDia) {
 
 /**
  * _clrProcesarEnvio_(participantes) — endpoint `lecturasRiverRace` (Tampermonkey, fase `riverrace` del flujo de corrección; §PF584 punto 13). Calcula el día de guerra de hoy
- * con el mismo contexto que _procesarVerificacionRiverRace() y guarda las lecturas con _clrGuardarLecturas_(). Solo se guarda en día de guerra y fuera de la ventana de cambio
- * de día (04:00 a 05:00 de Lima), porque fuera de eso no se sabe a qué día pertenece lo leído. Devuelve { ok, ... } o { ok: false, error }.
+ * con el mismo contexto que _procesarVerificacionRiverRace() y guarda las lecturas con _clrGuardarLecturas_(). El día lo dice la página (`diaPagina`, _clrResolverDia_()); si no lo trajo,
+ * solo se guarda en día de guerra y fuera de la ventana de cambio de día (04:00 a 05:00 de Lima), porque entonces no se sabe a qué día pertenece lo leído. Devuelve { ok, ... } o { ok: false, error }.
  */
 function _clrProcesarEnvio_(participantes) {
   if (!participantes || !participantes.length) return { ok: false, error: 'Sin participantes en el payload.', lecturasGuardadas: 0 };
@@ -724,9 +764,9 @@ function _clrProcesarEnvio_(participantes) {
   var ctx = _getCtx();
   if (ctx.sinCacheClanes) return { ok: false, error: 'Sin contexto de temporada/semana disponible (sin cache de clanes).', lecturasGuardadas: 0 };
   if (ctx.periodIndexSospechoso) return { ok: false, error: 'periodIndex sospechoso (posible dato stale de la API de Supercell).', lecturasGuardadas: 0 };
-  var offDia = (ctx.periodIndex % 7) - 3;
-  if (offDia < 0 || offDia > 3) return { ok: true, guardado: false, lecturasGuardadas: 0, motivo: 'no es día de guerra' };
-  if (_enVentanaCambioDiaGuerra_()) return { ok: true, guardado: false, lecturasGuardadas: 0, motivo: 'ventana de cambio de día (04:00 a 05:00 de Lima)' };
-  var r = _clrGuardarLecturas_(participantes, ctx.temporada, ctx.sectionIndex + 1, offDia);
-  return { ok: !r.error, error: r.error, guardado: r.guardado, lecturasGuardadas: r.filas, nuevas: r.nuevas, actualizadas: r.actualizadas, exMiembros: r.exMiembros, omitidos: r.omitidos };
+  var dia = _clrResolverDia_(_clrDiaDePagina_(participantes), (ctx.periodIndex % 7) - 3, _enVentanaCambioDiaGuerra_());
+  if (dia.offDia === null) return { ok: true, guardado: false, lecturasGuardadas: 0, motivo: dia.motivo };
+  if (dia.aviso) Logger.log('[Lecturas River Race] AVISO: ' + dia.aviso);
+  var r = _clrGuardarLecturas_(participantes, ctx.temporada, ctx.sectionIndex + 1, dia.offDia);
+  return { ok: !r.error, error: r.error, guardado: r.guardado, lecturasGuardadas: r.filas, nuevas: r.nuevas, actualizadas: r.actualizadas, exMiembros: r.exMiembros, omitidos: r.omitidos, ceros: r.ceros, aviso: dia.aviso };
 }
