@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 25/11/2026 20:33:48 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 25/11/2026 21:41:13 */
 
 
 
@@ -24313,8 +24313,10 @@ GUERRA_LOGS_NOTAS_AVANCE[GLC.ESTADO] =
   'VACÍO = origen desconocido (fila anterior a esta columna): NO se asume Leído.';
 
 GUERRA_LOGS_NOTAS_AVANCE[GLC.PROG_DEFENSES] =
-  'Bono de avance por defensas (progressEarnedFromDefenses del JSON). Se lee tal cual: NO es una función exacta ' +
-  'de las defensas restantes (con las 15 activas siempre es 435).\n' +
+  'Bono de avance por defensas (progressEarnedFromDefenses del JSON). Se lee tal cual. Es la suma de los puntos de las defensas ' +
+  'que siguen sin destruir; los puestos 1 a 15 valen 59, 53, 47, 43, 41, 37, 31, 29, 23, 19, 17, 13, 11, 7 y 5 (las 15 suman 435). ' +
+  'Por eso depende de CUÁLES quedan y no solo de cuántas: con 14 restantes puede ser 376 (sin la de 59), 424 (sin la de 11), etc.\n' +
+  'Un clan que ya cruzó la meta ya no gana medallas ni puntos de defensas: queda en 0.\n' +
   'ProgressStartOfDay + ProgressEarned + este bono = ProgressEndOfDay (con tope en 10000).\n' +
   'VACÍO = el día todavía no cierra (o el dato no se guardó). 0 = dato real.';
 
@@ -86073,6 +86075,9 @@ var CLR_ENCABEZADOS = ['Temporada', 'Semana', 'Dia', 'Clan', 'Clan_Tag', 'Tag', 
 // Registro por clan y día de toda la temporada (los 5 clanes de la carrera, rivales incluidos), que la página River Race muestra al pulsar `Detail`. [→ Contexto_Base_Web.md §PF584 punto 15]
 var CDL_CSV = 'Lecturas_RiverRace_Clanes.csv';
 var CDL_ENCABEZADOS = ['Temporada', 'Semana', 'Dia', 'Clan_Tag', 'Clan', 'Puesto', 'FameDia', 'PremioPuesto', 'PremioDefensas', 'DefensasEnPie', 'Total', 'Capturado'];
+// Puntos de las 15 defensas del barco según su puesto (puesto 1 a 15; suman 435). Contexto_Base_Web.md §PF585 punto 1. El premio de defensas de un clan es la suma de los puntos de las que siguen sin destruir.
+var DEF_PUNTOS_PUESTO = [59, 53, 47, 43, 41, 37, 31, 29, 23, 19, 17, 13, 11, 7, 5];
+var DEF_TABLA_SUMAS_ = null;   // caché de _defensasTablaSumas_()
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO
@@ -86814,6 +86819,46 @@ function _clrProcesarEnvio_(participantes) {
 // ----- Registro por clan y día de toda la temporada, que la página River Race muestra al pulsar `Detail` (§PF584 punto 15) -----
 
 /**
+ * _defensasTablaSumas_() — tabla de sumas posibles: t[k] es el conjunto (objeto {suma: true}) de las sumas de k puestos DISTINTOS de DEF_PUNTOS_PUESTO, para k de 0 a 15.
+ * Función pura con caché (§PF585 punto 5). Mochila 0/1: se recorre k de mayor a menor para no usar un mismo puesto dos veces.
+ */
+function _defensasTablaSumas_() {
+  if (DEF_TABLA_SUMAS_) return DEF_TABLA_SUMAS_;
+  var t = [{ 0: true }];
+  for (var k = 1; k <= DEF_PUNTOS_PUESTO.length; k++) t.push({});
+  DEF_PUNTOS_PUESTO.forEach(function (w) {
+    for (var j = DEF_PUNTOS_PUESTO.length; j >= 1; j--) {
+      Object.keys(t[j - 1]).forEach(function (suma) { t[j][Number(suma) + w] = true; });
+    }
+  });
+  DEF_TABLA_SUMAS_ = t;
+  return t;
+}
+
+/**
+ * _defensasEvaluarPar_(restantes, puntos) — comprueba si el par (defensas que siguen en pie, premio de defensas) es posible según los puntos por puesto (§PF585).
+ * Función pura. NO calcula un «valor esperado»: el premio depende de CUÁLES quedan, no de cuántas (con 14 restantes puede ser 376, 424 u otros 13 valores).
+ * Devuelve { valido, min, max, motivo }: min y max son la suma de las `restantes` defensas de menos y de más puntos; `motivo` explica por qué no es válido
+ * ('sin dato', 'no numérico', 'cantidad fuera de 0 a 15', 'fuera de rango' o 'no es suma de n puestos distintos'). Un par sin dato NO es válido pero tampoco una
+ * incoherencia: quien llama lo distingue por `motivo`. No descarta ni corrige nada.
+ */
+function _defensasEvaluarPar_(restantes, puntos) {
+  var r = { valido: false, min: null, max: null, motivo: '' };
+  if (restantes === null || restantes === undefined || restantes === '' || puntos === null || puntos === undefined || puntos === '') { r.motivo = 'sin dato'; return r; }
+  var n = Number(restantes), p = Number(puntos);
+  if (isNaN(n) || isNaN(p) || n !== Math.floor(n) || p !== Math.floor(p)) { r.motivo = 'no numérico'; return r; }
+  if (n < 0 || n > DEF_PUNTOS_PUESTO.length) { r.motivo = 'cantidad fuera de 0 a 15'; return r; }
+  var orden = DEF_PUNTOS_PUESTO.slice().sort(function (a, b) { return a - b; });
+  var suma = function (arr) { return arr.reduce(function (acc, v) { return acc + v; }, 0); };
+  r.min = suma(orden.slice(0, n));
+  r.max = suma(orden.slice(orden.length - n));
+  if (p < r.min || p > r.max) { r.motivo = 'fuera de rango'; return r; }
+  if (!_defensasTablaSumas_()[n][p]) { r.motivo = 'no es suma de n puestos distintos'; return r; }
+  r.valido = true;
+  return r;
+}
+
+/**
  * _cdlFilasClanes_(clanes, temporada, semanaMax, capturado) — convierte el bloque `Detail` de la página River Race (un objeto por clan y día de guerra) en filas de
  * Lecturas_RiverRace_Clanes.csv (§PF584 punto 15). Función pura: no usa Drive ni hojas.
  * clanes: [{ clanTag, clan, semana, dia (1 a 4 = jueves a domingo), puesto, premioPuesto, fameDia, premioDefensas, defensasEnPie, total }]. `fameDia` es el número entre
@@ -86821,10 +86866,11 @@ function _clrProcesarEnvio_(participantes) {
  * y el número entre paréntesis de `defenses` (puntos de las defensas de barco que siguen sin destruir y cuántas son).
  * semanaMax: la semana en curso (sectionIndex + 1); una fila de una semana posterior se descarta (`futuras`). Se omite (`sinDato`) la fila sin puesto, sin fama y sin premios
  * (día todavía no registrado en la web, por ejemplo el domingo del propio clan), y (`omitidos`) la que no trae Tag de clan, semana o día válidos.
- * Devuelve { filas, omitidos, sinDato, futuras }.
+ * Devuelve { filas, omitidos, sinDato, futuras, incoherentes, incoherentesDetalle }. `incoherentes` cuenta las filas (que SÍ se guardan) cuyo par (defensasEnPie, premioDefensas) no es una suma
+ * posible según _defensasEvaluarPar_() (§PF585): aviso de un posible parseo roto de la página, nunca motivo para descartar la fila. `incoherentesDetalle` trae hasta 5 como texto.
  */
 function _cdlFilasClanes_(clanes, temporada, semanaMax, capturado) {
-  var res = { filas: [], omitidos: 0, sinDato: 0, futuras: 0 };
+  var res = { filas: [], omitidos: 0, sinDato: 0, futuras: 0, incoherentes: 0, incoherentesDetalle: [] };
   var num = function (v) { if (v === null || v === undefined || v === '') return 0; var n = Number(v); return isNaN(n) ? NaN : n; };
   (clanes || []).forEach(function (c) {
     c = c || {};
@@ -86836,6 +86882,11 @@ function _cdlFilasClanes_(clanes, temporada, semanaMax, capturado) {
     if (!tag || !okSem || !okDia || [puesto, fame, pp, pd, pie, tot].some(isNaN)) { res.omitidos++; return; }
     if (typeof semanaMax === 'number' && sem > semanaMax) { res.futuras++; return; }
     if (!puesto && !fame && !pp && !pd && !pie && !tot) { res.sinDato++; return; }
+    var ev = _defensasEvaluarPar_(pie, pd);
+    if (!ev.valido) {
+      res.incoherentes++;
+      if (res.incoherentesDetalle.length < 5) res.incoherentesDetalle.push(tag + ' S' + sem + ' ' + CMA_LETRAS_DIAS.charAt(dia - 1) + ': ' + pd + ' (' + pie + ') ' + ev.motivo);
+    }
     res.filas.push([temporada, sem, CMA_LETRAS_DIAS.charAt(dia - 1), tag, String(c.clan || '').trim(), puesto, fame, pp, pd, pie, tot, capturado]);
   });
   return res;
@@ -86879,11 +86930,13 @@ function _cdlMezclarFilas_(existentes, nuevas) {
  * Devuelve { guardado, nuevas, actualizadas, filas, omitidos, sinDato, futuras, error? }.
  */
 function _cdlGuardar_(clanes, temporada, semanaMax) {
-  var res = { guardado: false, nuevas: 0, actualizadas: 0, filas: 0, omitidos: 0, sinDato: 0, futuras: 0 };
+  var res = { guardado: false, nuevas: 0, actualizadas: 0, filas: 0, omitidos: 0, sinDato: 0, futuras: 0, incoherentes: 0, incoherentesDetalle: [] };
   try {
     var capturado = Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd HH:mm:ss');
     var f = _cdlFilasClanes_(clanes, temporada, semanaMax, capturado);
     res.filas = f.filas.length; res.omitidos = f.omitidos; res.sinDato = f.sinDato; res.futuras = f.futuras;
+    res.incoherentes = f.incoherentes; res.incoherentesDetalle = f.incoherentesDetalle;
+    if (f.incoherentes) Logger.log('[Detalle River Race] AVISO: ' + f.incoherentes + ' fila(s) con defensas incoherentes (el premio no es una suma posible de esa cantidad de puestos; §PF585): ' + f.incoherentesDetalle.join(' | '));
     if (!f.filas.length) return res;
     var texto = _loadCSVFromDrive(CDL_CSV);
     var existentes = texto ? _parseCSV(texto) : [];
