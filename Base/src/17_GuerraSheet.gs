@@ -219,8 +219,10 @@ GUERRA_LOGS_NOTAS_AVANCE[GLC.ESTADO] =
   'VACÍO = origen desconocido (fila anterior a esta columna): NO se asume Leído.';
 
 GUERRA_LOGS_NOTAS_AVANCE[GLC.PROG_DEFENSES] =
-  'Bono de avance por defensas (progressEarnedFromDefenses del JSON). Se lee tal cual: NO es una función exacta ' +
-  'de las defensas restantes (con las 15 activas siempre es 435).\n' +
+  'Bono de avance por defensas (progressEarnedFromDefenses del JSON). Se lee tal cual. Es la suma de los puntos de las defensas ' +
+  'que siguen sin destruir; los puestos 1 a 15 valen 59, 53, 47, 43, 41, 37, 31, 29, 23, 19, 17, 13, 11, 7 y 5 (las 15 suman 435). ' +
+  'Por eso depende de CUÁLES quedan y no solo de cuántas: con 14 restantes puede ser 376 (sin la de 59), 424 (sin la de 11), etc.\n' +
+  'Un clan que ya cruzó la meta ya no gana medallas ni puntos de defensas: queda en 0.\n' +
   'ProgressStartOfDay + ProgressEarned + este bono = ProgressEndOfDay (con tope en 10000).\n' +
   'VACÍO = el día todavía no cierra (o el dato no se guardó). 0 = dato real.';
 
