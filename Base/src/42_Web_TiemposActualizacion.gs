@@ -17,7 +17,7 @@ var TIEMPOS_PROP_MENSAJES = 'TIEMPOS_MENSAJES';
 
 // Categorias de la hoja Mensajes que reconstruye generarTodosMensajes() (el resto sale de plantillas de Drive y su
 // "hora de elaboracion" no aplica). El frontend las usa para decidir si muestra la hora junto al contenido.
-var TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS = ['Mensaje de Guerra', 'Guerra fuera del clan', 'Celular', 'Etiqueta de miembro']; // 14-nov-2026 (§PF462): se agregó «Guerra fuera del clan»
+var TIEMPOS_CATEGORIAS_MENSAJES_GENERADOS = ['Mensaje de Guerra', 'Guerra fuera del clan', 'Guerra en el juego', 'Celular', 'Etiqueta de miembro']; // 14-nov-2026 (§PF462): se agregó «Guerra fuera del clan»; 28-nov-2026 (§PF588): «Guerra en el juego»
 
 // =============================================================================
 // PARTE 1 — FUNCIONES QUE SE CORREN A MANO

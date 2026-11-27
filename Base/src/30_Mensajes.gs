@@ -31,6 +31,12 @@ var CLAN_CHAT_GENERAL = 'ᴳ乂ᵀ ⚜️ Familia Terna';
 // 14-nov-2026 (pedido de la usuaria, §PF462): categoría del mensaje de las cuentas «fuera del clan» con ataques hoy (pendientes y completos). Va después de «Mensaje de Guerra» en CFG.MENSAJES_ORDEN_CATEGORIAS.
 var CATEGORIA_GUERRA_FUERA_CLAN = 'Guerra fuera del clan';
 
+// 28-nov-2026 (pedido de la usuaria, §PF588): categoría de los mensajes de guerra para el chat del clan DENTRO del juego: texto plano, solo nombre y ataques pendientes, partido en mensajes que caben en el límite de caracteres del chat. Va después de «Guerra fuera del clan» en CFG.MENSAJES_ORDEN_CATEGORIAS. No reemplaza al «Mensaje de Guerra».
+var CATEGORIA_GUERRA_JUEGO = 'Guerra en el juego';
+
+// 28-nov-2026 (§PF588): máximo de caracteres de cada mensaje de «Guerra en el juego». Valor SUPUESTO, no confirmado: se dejó en 100 para quedar por debajo de cualquier límite probable; si el chat del juego admite más, súbelo aquí y los mensajes saldrán en menos partes. Se cuenta con la longitud del texto de JavaScript (un emoji cuenta 2), que es el lado seguro.
+var JUEGO_LIMITE_CARACTERES_MENSAJE = 100;
+
 // Categorías que no deben verse al copiar/enviar el chat (se ocultan [→ Contexto_Base_Web.md §30B002]
 var CATEGORIAS_OCULTAS_MENSAJES = [];
 
@@ -162,6 +168,15 @@ function generarTodosMensajes() {
       }
       msjClan += '🕒 Generado: ' + horaGeneracionMsj;
       bloques.push({ categoria: 'Mensaje de Guerra', subcategoria: 'Particular', clan: clanName, contenido: msjClan });
+    }
+
+    // --- «Guerra en el juego» (§PF588, 28-nov-2026, pedido de la usuaria): para pegar en el chat del clan dentro del juego, que limita los caracteres. Solo nombre y ataques pendientes, sin formato de WhatsApp ni emojis, en una o más filas por clan (cada fila es un mensaje que cabe en JUEGO_LIMITE_CARACTERES_MENSAJE). Un clan que ya cruzó la meta no recibe pedidos de ataque (§PF558): no genera filas. Es adicional: no cambia el «Mensaje de Guerra» ni se muestra en la web ni en el bot (igual que §PF462). ---
+    for (var cjg = 0; cjg < clanesPend.length; cjg++) {
+      if (_clanCruzoMetaPorTag(clanesPend[cjg].clanTag)) continue;
+      var partesJuego = _textoGuerraJuegoPartes_(clanesPend[cjg].lista, JUEGO_LIMITE_CARACTERES_MENSAJE);
+      for (var pjg = 0; pjg < partesJuego.length; pjg++) {
+        bloques.push({ categoria: CATEGORIA_GUERRA_JUEGO, subcategoria: 'Particular', clan: clanesPend[cjg].clan, contenido: partesJuego[pjg] });
+      }
     }
 
     // --- Fila general (Subcategoría = Chat General) ---
@@ -970,6 +985,47 @@ function _textoGruposPendientesGuerra_(miembros, celularPorTag, prestamoPorTag, 
     t += _negritaWsp_('🔒 RESERVADAS ACTIVAS CON ATAQUES PENDIENTES (' + reservadas.length + ')') + '\n↳ ' + fraseReserv + '\n' + lineas(reservadas);
   }
   return t;
+}
+
+/**
+ * _textoGuerraJuegoPartes_(miembros, limite) [→ Contexto_Base_Web.md §PF588]
+ * Función pura (no toca hojas ni Drive). miembros: pendientes de UN clan, cada uno { nombre, faltantes, rango, tag }. limite: máximo de caracteres de cada mensaje (por defecto JUEGO_LIMITE_CARACTERES_MENSAJE; nunca menos de 30).
+ * Devuelve un arreglo de textos planos (sin formato de WhatsApp ni emojis), cada uno de largo <= limite. Si todo cabe: «Pendientes: Ana 4, Luis 3». Si no: «Pendientes 1/3: …», «Pendientes 2/3: …». Orden: más faltantes primero, luego rango y nombre (el del Mensaje de Guerra). Un jugador nunca se parte entre dos mensajes; un nombre más largo que el espacio disponible se corta. Sin pendientes devuelve [].
+ */
+function _textoGuerraJuegoPartes_(miembros, limite) {
+  var lim = Math.floor(Number(limite)) || JUEGO_LIMITE_CARACTERES_MENSAJE;
+  if (lim < 30) lim = 30;
+  var lista = (miembros || []).slice().sort(function (a, b) {
+    var fa = Number(a.faltantes) || 0, fb = Number(b.faltantes) || 0;
+    if (fb !== fa) return fb - fa;
+    var rA = _ordenRango(a.rango), rB = _ordenRango(b.rango);
+    if (rA !== rB) return rA - rB;
+    return String(a.nombre || '').localeCompare(String(b.nombre || ''));
+  });
+  var items = lista.map(function (m) {
+    var nom = String(m.nombre === undefined || m.nombre === null ? '' : m.nombre).replace(/\s+/g, ' ').trim();
+    if (!nom) nom = String(m.tag || '').trim();
+    return { nom: nom, cola: ' ' + (Number(m.faltantes) || 0) };
+  });
+  if (!items.length) return [];
+  var SEP = ', ';
+  var textoItem = function (it, max) {
+    var nom = it.nom;
+    if (max && nom.length + it.cola.length > max) nom = nom.substring(0, Math.max(1, max - it.cola.length));
+    return nom + it.cola;
+  };
+  var entero = 'Pendientes: ' + items.map(function (it) { return textoItem(it, 0); }).join(SEP);
+  if (entero.length <= lim) return [entero];
+  var RESERVA = 'Pendientes 99/99: '.length;
+  var cuerpoMax = lim - RESERVA;
+  var partes = [], actual = '';
+  items.forEach(function (it) {
+    var t = textoItem(it, cuerpoMax);
+    if (actual && actual.length + SEP.length + t.length > cuerpoMax) { partes.push(actual); actual = t; }
+    else actual = actual ? actual + SEP + t : t;
+  });
+  if (actual) partes.push(actual);
+  return partes.map(function (p, i) { return 'Pendientes ' + (i + 1) + '/' + partes.length + ': ' + p; });
 }
 
 /**

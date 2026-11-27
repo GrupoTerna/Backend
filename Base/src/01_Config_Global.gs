@@ -207,6 +207,7 @@ var CFG = {
   // Orden de categorías EXCLUSIVO para la generación de mensajes diarios [→ Contexto_Base_Web.md §01B025]
   MENSAJES_ORDEN_CATEGORIAS: [
   'Defensas de barcos','Día de guerra','Mensaje de Guerra','Guerra fuera del clan', // 14-nov-2026 (§PF462): el mensaje de cuentas fuera del clan va justo después del Mensaje de Guerra
+  'Guerra en el juego', // 28-nov-2026 (§PF588): mensajes cortos de guerra para el chat del clan dentro del juego
   'Etiqueta de miembro','Celular','Mazos','iPhone',
 ],
 
@@ -455,6 +456,7 @@ var CFG = {
   MENSAJES_TIPO_BG: {
     'Mensaje de Guerra':    '#ffcdd2', // rosado pastel
     'Guerra fuera del clan': '#f8bbd0', // rosa pastel más fuerte (14-nov-2026, §PF462)
+    'Guerra en el juego':   '#ffe0b2', // naranja pastel (28-nov-2026, §PF588)
     'Defensas de barcos':   '#bbdefb', // azul pastel
     'Celular':              '#fff9c4', // amarillo pastel
     'Etiqueta de miembro':  '#e1bee7', // lila pastel
