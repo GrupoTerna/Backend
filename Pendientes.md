@@ -34,6 +34,10 @@ Ninguno abierto: se decidieron el 21-nov-2026 (`§PF549`). Lo que queda de esos 
 
 - [ ] `PF571` — Decidir qué hacer con las series que el informe de `§PF571` marca como «Probable error» (75) y «Revisar» (15), con el `Backup_Guerra.csv` del 24-nov-2026: tienen ceros reconstruidos antes de la primera fila real y señal de otro clan (otra serie de la hoja con dato real esos días, o ataques en otro clan en el JSON); ni el Historial (`§PF568`) ni la revisión de A2 (`§PF569`) las cubren. Las 1 080 «Se conserva» no tienen señal y no se tocan. Hoy no hay función de borrado para ellas.
 
+- [ ] `PF585` — Decidir si los informes (`informeMedallasPorDiaContraApi()` y la reconstrucción por días) deben marcar como anomalía un barco o fama posteriores al día del cruce (después de cruzar no hay medallas ni opción de atacar barcos), y si usan el criterio del domingo en 0: es un cruce real si la suma de los `end` de la semana ya llegó a 10000 el sábado o antes; si no, hay que sospechar de la captura. Está como «por decidir» en `§PF585` puntos 6 y 7; no se programó.
+
+- [ ] `PF585` — Informe `informeDefensasContraFuentes()` (opción 2 de la tanda del 25-nov-2026, sin programar a propósito): comparar por clan y día las defensas en pie y el premio de defensas de la API (`Backup_Guerra_Logs`, columnas `NumOfDefensesRemaining` y `ProgressEarnedFromDefenses`) con los de la web (`Lecturas_RiverRace_Clanes.csv`), y marcar pares inválidos (`_defensasEvaluarPar_`), diferencias entre fuentes y días donde premio de puesto + premio de defensas no da el total. Solo informaría, sin escribir en hojas. Ya hay lecturas: `Lecturas_RiverRace_Clanes.csv` en Drive trae 120 filas (10 clanes, temporada 39, semanas 1 a 3, una captura del 25-nov-2026; `§PF585` punto 12), aunque la copia de `Datos descargados/` aún no la incluye. **Falta decidir si se programa ahora o se espera a tener más capturas.**
+
 ### A3. Nuevos, reenumeración y migraciones
 
 Ninguno abierto: se decidieron el 21-nov-2026 (`§PF550`). Lo que queda es de prueba (B7) o de vigilancia (D).
@@ -256,7 +260,7 @@ Cada fila termina con su **Revisión**. Solo tres tienen fecha (`PF441` y `PF439
 
 - [ ] `PF557` — Medir la hora de cambio de `periodIndex` de GrupoXTerna™2 con las capturas nuevas de `Capturas_Continuas` desde las 04:00 Lima (`§PF557` punto 26) y, si la usuaria guarda una página de guerra de RoyaleAPI con una semana completa, contrastarla. La lectura web de `PF557` terminó (`§PF557` punto 30). **Revisión:** sin fecha; siete días después de que la usuaria corra `reiniciarCapturaContinuaCRR()` (fila de E).
 
-- [ ] `PF585` — Informe `informeDefensasContraFuentes()` (opción 2 de la tanda del 25-nov-2026, sin programar a propósito): comparar por clan y día las defensas en pie y el premio de defensas de la API (`Backup_Guerra_Logs`, columnas `NumOfDefensesRemaining` y `ProgressEarnedFromDefenses`) con los de la web (`Lecturas_RiverRace_Clanes.csv`), y marcar pares inválidos (`_defensasEvaluarPar_`), diferencias entre fuentes y días donde premio de puesto + premio de defensas no da el total. Solo informaría, sin escribir en hojas. **Revisión:** sin fecha; cuando `Lecturas_RiverRace_Clanes.csv` tenga filas reales de varias semanas (hoy aún no hay lecturas guardadas).
+- [ ] `PF585` — Caídas de defensas fuera de orden: 5 de 15 series de la carrera de `GrupoXTerna™2` (semanas 0 y 1), ninguna en la de `Grupo乂Terna™`. No tienen causa probada; las salidas de jugadores en guerra quedaron descartadas (ZURICAT, 26-nov-2026). Se avanza con un caso concreto del juego (clan, día y captura de una defensa caída que no sea la más alta), que se cruza con los `periodLogs` cuando cierre ese día (`§PF585` puntos 10 y 11). **Revisión:** cuando la usuaria vea un caso; sin fecha.
 
 ---
 
