@@ -1,4 +1,241 @@
 Corrida,Tags,Linea
+2026-11-26 23:12:21,,"[10:31:15 p.m.] ℹ 2 clan(es) sin guerra abierta según el backend (dato de hace 13 min): se omiten en River Race, que es solo de la semana en curso. El Log y las demás fuentes los siguen leyendo."
+2026-11-26 23:12:21,,[10:31:17 p.m.] [River Race] Clan 1/4: #GCRG8L00
+2026-11-26 23:12:21,,[10:31:18 p.m.]   → [HistorialGuerra] Enviando lote de 192 jugador(es) en 2 envíos seguidos de hasta 150 jugadores…
+2026-11-26 23:12:21,,"[10:31:18 p.m.]   ✔ 192 jugador(es) leído(s) — semana en curso (Temporada 138, Semana 4), provisional."
+2026-11-26 23:12:21,,[10:31:19 p.m.]   ℹ [Detail] pulsado (60 fila(s) clan-día).
+2026-11-26 23:12:21,,"[10:32:30 p.m.]   ✔ [Detalle] Detalle de la temporada: 59 fila(s) clan-día (1 sin dato en la web), 0 nueva(s), 0 actualizada(s)."
+2026-11-26 23:12:21,,[10:32:30 p.m.]   ℹ [Lecturas] No se guardó: la página marca el día 1 (entrenamiento: los números semanales vuelven a 0).
+2026-11-26 23:12:21,,[10:34:05 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 150 registro(s) de 150 jugador(es) — faltan 42 de este lote (total acumulado: 150).
+2026-11-26 23:12:21,,[10:34:51 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 42 registro(s) de 42 jugador(es) (total acumulado: 192).
+2026-11-26 23:12:21,,[10:34:56 p.m.] [River Race] Clan 2/4: #GYCU9YRG
+2026-11-26 23:12:21,,[10:34:57 p.m.]   → [HistorialGuerra] Enviando lote de 270 jugador(es) en 2 envíos seguidos de hasta 150 jugadores…
+2026-11-26 23:12:21,,"[10:34:57 p.m.]   ✔ 270 jugador(es) leído(s) — semana en curso (Temporada 138, Semana 4), provisional."
+2026-11-26 23:12:21,,[10:34:58 p.m.]   ℹ [Detail] pulsado (60 fila(s) clan-día).
+2026-11-26 23:12:21,,"[10:36:07 p.m.]   ✔ [Detalle] Detalle de la temporada: 59 fila(s) clan-día (1 sin dato en la web), 0 nueva(s), 0 actualizada(s)."
+2026-11-26 23:12:21,,[10:36:07 p.m.]   ℹ [Lecturas] No se guardó: la página marca el día 1 (entrenamiento: los números semanales vuelven a 0).
+2026-11-26 23:12:21,,[10:36:09 p.m.] [River Race] Clan 3/4: #GQQPPJGR — sin guerra abierta (no participa esta temporada). Se omite; no es un error.
+2026-11-26 23:12:21,,[10:36:09 p.m.] [River Race] Clan 4/4: #GG99LCJY — sin guerra abierta (no participa esta temporada). Se omite; no es un error.
+2026-11-26 23:12:21,,"[10:36:09 p.m.] [River Race] Fase terminada: 2 clan(es) OK, 2 sin guerra abierta (omitido(s), no es error) y 0 con error. Sigue el Log (4 clan(es)); Analytics solo si algún Log falla."
+2026-11-26 23:12:21,,[10:37:33 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 150 registro(s) de 150 jugador(es) — faltan 120 de este lote (total acumulado: 342).
+2026-11-26 23:12:21,,[10:38:11 p.m.] [Log] Clan 1/4: #GCRG8L00
+2026-11-26 23:12:21,,[10:38:15 p.m.]   … Log de #GCRG8L00: carga completa tras 2 intento(s).
+2026-11-26 23:12:21,,"[10:38:25 p.m.]   ✔ Trofeos del Log de #GCRG8L00: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 6 coinciden, 4 difieren, 0 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
+2026-11-26 23:12:21,,[10:38:25 p.m.]     ≠ T39 S3 Grupo乂Terna™: barcos 10000 vs 10034
+2026-11-26 23:12:21,,[10:38:25 p.m.]     ≠ T39 S1 Grupo乂Terna™: puesto 3 vs 1
+2026-11-26 23:12:21,,[10:38:25 p.m.]     ≠ T37 S4 Grupo乂Terna™: variación -50 vs 0
+2026-11-26 23:12:21,,[10:38:25 p.m.]     ≠ T37 S3 Grupo乂Terna™: trofeos 4206 (RoyaleAPI) vs 4156 (Guerra_Logs); variación -10 vs -60
+2026-11-26 23:12:21,,[10:38:25 p.m.]   → [HistorialGuerra] Enviando lote de 425 jugador(es) en 3 envíos seguidos de hasta 150 jugadores…
+2026-11-26 23:12:21,,"[10:38:25 p.m.]   ✔ 312 jugador(es) leído(s), 1119 semana(s) con Ataques+Fame+Barcos vía Log."
+2026-11-26 23:12:21,,[10:40:06 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 375 registro(s) de 150 jugador(es) — faltan 275 de este lote (total acumulado: 717).
+2026-11-26 23:12:21,,[10:41:09 p.m.] [Log] Clan 2/4: #GYCU9YRG
+2026-11-26 23:12:21,,[10:41:13 p.m.]   … Log de #GYCU9YRG: carga completa tras 2 intento(s).
+2026-11-26 23:12:21,,"[10:41:23 p.m.]   ✔ Trofeos del Log de #GYCU9YRG: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 5 coinciden, 5 difieren, 0 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
+2026-11-26 23:12:21,,[10:41:23 p.m.]     ≠ T39 S1 GrupoXTerna™2: puesto 3 vs 2
+2026-11-26 23:12:21,,[10:41:23 p.m.]     ≠ T38 S3 GrupoXTerna™2: puesto 4 vs 3
+2026-11-26 23:12:21,,[10:41:23 p.m.]     ≠ T38 S1 GrupoXTerna™2: puesto 2 vs 1
+2026-11-26 23:12:21,,[10:41:23 p.m.]     ≠ T37 S4 GrupoXTerna™2: variación -50 vs 0
+2026-11-26 23:12:21,,[10:41:23 p.m.]     ≠ T37 S3 GrupoXTerna™2: trofeos 3830 (RoyaleAPI) vs 3780 (Guerra_Logs); variación -5 vs -55; puesto 3 vs 4
+2026-11-26 23:12:21,,[10:41:23 p.m.]   → [HistorialGuerra] Enviando lote de 696 jugador(es) en 5 envíos seguidos de hasta 150 jugadores…
+2026-11-26 23:12:21,,"[10:41:23 p.m.]   ✔ 445 jugador(es) leído(s), 1383 semana(s) con Ataques+Fame+Barcos vía Log."
+2026-11-26 23:12:21,,[10:42:50 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 601 registro(s) de 150 jugador(es) — faltan 546 de este lote (total acumulado: 1318).
+2026-11-26 23:12:21,,[10:44:09 p.m.] [Log] Clan 3/4: #GQQPPJGR
+2026-11-26 23:12:21,,[10:44:12 p.m.]   … Log de #GQQPPJGR: carga completa tras 2 intento(s).
+2026-11-26 23:12:21,,"[10:44:28 p.m.]   ✔ Trofeos del Log de #GQQPPJGR: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 5 coinciden, 4 difieren, 1 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
+2026-11-26 23:12:21,,[10:44:28 p.m.]     ≠ T38 S3 GrupoXTerna™3: puesto 5 vs 4
+2026-11-26 23:12:21,,[10:44:28 p.m.]     ≠ T38 S1 GrupoXTerna™3: puesto 1 vs 2
+2026-11-26 23:12:21,,[10:44:28 p.m.]     ≠ T37 S3 GrupoXTerna™3: puesto 4 vs 3
+2026-11-26 23:12:21,,[10:44:28 p.m.]     ≠ T37 S1 GrupoXTerna™3: puesto 3 vs 2
+2026-11-26 23:12:21,,[10:44:28 p.m.]   → [HistorialGuerra] Enviando lote de 589 jugador(es) en 4 envíos seguidos de hasta 150 jugadores…
+2026-11-26 23:12:21,,"[10:44:28 p.m.]   ✔ 52 jugador(es) leído(s), 197 semana(s) con Ataques+Fame+Barcos vía Log."
+2026-11-26 23:12:21,,[10:45:53 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 579 registro(s) de 150 jugador(es) — faltan 439 de este lote (total acumulado: 1897).
+2026-11-26 23:12:21,,[10:47:08 p.m.] [Log] Clan 4/4: #GG99LCJY
+2026-11-26 23:12:21,,[10:47:11 p.m.]   … Log de #GG99LCJY: carga completa tras 2 intento(s).
+2026-11-26 23:12:21,,"[10:47:20 p.m.]   ✔ Trofeos del Log de #GG99LCJY: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 1 coinciden, 8 difieren, 1 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
+2026-11-26 23:12:21,,[10:47:20 p.m.]     ≠ T38 S3 Mini乂Ternas™: puesto 5 vs 4
+2026-11-26 23:12:21,,[10:47:20 p.m.]     ≠ T38 S2 Mini乂Ternas™: puesto 5 vs 4
+2026-11-26 23:12:21,,[10:47:20 p.m.]     ≠ T38 S1 Mini乂Ternas™: puesto 5 vs 4
+2026-11-26 23:12:21,,[10:47:20 p.m.]     ≠ T37 S4 Mini乂Ternas™: variación -100 vs 0
+2026-11-26 23:12:21,,[10:47:20 p.m.]     ≠ T37 S3 Mini乂Ternas™: trofeos 1816 (RoyaleAPI) vs 1716 (Guerra_Logs); variación -20 vs -120
+2026-11-26 23:12:21,,[10:47:20 p.m.]     ≠ T37 S2 Mini乂Ternas™: puesto 3 vs 2
+2026-11-26 23:12:21,,[10:47:20 p.m.]     ≠ T37 S1 Mini乂Ternas™: puesto 3 vs 5
+2026-11-26 23:12:21,,[10:47:20 p.m.]     ≠ T36 S4 Mini乂Ternas™: variación 20 vs 0
+2026-11-26 23:12:21,,[10:47:20 p.m.]   → [HistorialGuerra] Enviando lote de 491 jugador(es) en 4 envíos seguidos de hasta 150 jugadores…
+2026-11-26 23:12:21,,"[10:47:20 p.m.]   ✔ 60 jugador(es) leído(s), 211 semana(s) con Ataques+Fame+Barcos vía Log."
+2026-11-26 23:12:21,,"[10:47:22 p.m.] [Log] Fase terminada: 4 clan(es) OK, 0 con error. 814 jugador(es) cubiertos por Log."
+2026-11-26 23:12:21,,[10:47:22 p.m.] [Perfiles] 0 jugador(es) activo(s) cubiertos por Log/Analytics pero SIN ninguna fila de perfil en Correcciones_Guerra.csv: se visita su perfil (una sola vez). La lista del backend trae 186 tag(s) sin perfil; los que ya no están en los clanes Terna no se visitan (para esos usa «jugadores elegidos»).
+2026-11-26 23:12:21,,[10:47:22 p.m.] [Perfiles] 10 jugador(es) activo(s) tienen la fila de «Nuevos» incompleta o son ingresos recientes sin fila: se visita su perfil para alimentarla. La lista del backend trae 10 tag(s) (los que ya no están activos no se visitan).
+2026-11-26 23:12:21,,[10:47:22 p.m.] [Perfiles] 814 jugador(es) cubiertos por Log y 0 por Analytics. 14 jugador(es) pasan a Perfil (solo los que ni Log ni Analytics cubrieron).
+2026-11-26 23:12:21,,[10:47:22 p.m.]   ℹ 109 semana(s) de jugadores en 2 o más clanes Terna: se envían una fila por clan (el backend suma para Control).
+2026-11-26 23:12:21,,"[10:49:20 p.m.] ⚠ [HistorialGuerra] Error de red enviando historial de guerra: {""readyState"":0,""status"":0,""error"":""background shutdown"",""DONE"":4,""HEADERS_RECEIVED"":2,""LOADING"":3,""OPENED"":1,""UNSENT"":0,""RESPONSE_TYPE_TEXT"":""text"",""RESPONSE_TYPE_ARRAYBUFFER"":""arraybuffer"",""RESPONSE_TYPE_BLOB"":""blob"",""RESPONSE_TYPE_DOCUMENT"":""document"",""RESPONSE_TYPE_JSON"":""json"",""RESPONSE_TYPE_STREAM"":""stream""} (491 jugador(es) sin confirmar vuelven a la cola: se reenvían con el próximo lote)."
+2026-11-26 23:12:21,,"[10:49:20 p.m.] ⚠ Error de red enviando correcciones: {""readyState"":0,""status"":0,""error"":""background shutdown"",""DONE"":4,""HEADERS_RECEIVED"":2,""LOADING"":3,""OPENED"":1,""UNSENT"":0,""RESPONSE_TYPE_TEXT"":""text"",""RESPONSE_TYPE_ARRAYBUFFER"":""arraybuffer"",""RESPONSE_TYPE_BLOB"":""blob"",""RESPONSE_TYPE_DOCUMENT"":""document"",""RESPONSE_TYPE_JSON"":""json"",""RESPONSE_TYPE_STREAM"":""stream""} (el lote de Log/Analytics NO se pudo enviar: queda en cola y se reenvía con el próximo lote)."
+2026-11-26 23:12:21,,[10:49:23 p.m.] Procesando 1/14: alexis (#2QLVR0LR2)
+2026-11-26 23:12:21,,[10:49:28 p.m.]   → [HistorialGuerra] Enviando lote de 492 jugador(es) en 4 envíos seguidos de hasta 150 jugadores…
+2026-11-26 23:12:21,,"[10:49:28 p.m.]   → 131 semana(s) del perfil leídas (131 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,[10:51:07 p.m.] ⚠ El backend respondió con error: El sistema está ocupado guardando otra corrección. Intenta de nuevo en unos segundos. (se reintentará junto al próximo lote).
+2026-11-26 23:12:21,,[10:51:39 p.m.] Procesando 2/14: AnonymousX (#VPJPJ29R0)
+2026-11-26 23:12:21,,"[10:51:41 p.m.]   → 126 semana(s) del perfil leídas (126 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,"[10:56:41 p.m.]   ✔ Backend actualizado: 126 corrección(es) aplicada(s), 3041 sin cambios, 34 anterior(es) a T1 (total acumulado: 126)."
+2026-11-26 23:12:21,,[10:56:45 p.m.] Procesando 3/14: johnkings (#RC8P2U0J)
+2026-11-26 23:12:21,,"[10:56:49 p.m.]   → 127 semana(s) del perfil leídas (127 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,[10:56:55 p.m.] Procesando 4/14: Santiago (#C9RLCUJ8Y)
+2026-11-26 23:12:21,,[10:56:59 p.m.]   → [HistorialGuerra] Enviando lote de 3 jugador(es)…
+2026-11-26 23:12:21,,"[10:56:59 p.m.]   → 183 semana(s) del perfil leídas (183 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,"[10:57:25 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 436 registro(s) de 3 jugador(es) (436 de clan que no es Terna, solo en el JSON individual) (total acumulado: 2333)."
+2026-11-26 23:12:21,,[10:57:31 p.m.] Procesando 5/14: 边Ｆｒａｎｋ♥ (#L002PY0QJ)
+2026-11-26 23:12:21,,"[10:57:34 p.m.]   → 115 semana(s) del perfil leídas (115 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,"[11:00:52 p.m.]   ✔ Backend actualizado: 115 corrección(es) aplicada(s), 310 sin cambios, 134 anterior(es) a T1 (total acumulado: 241)."
+2026-11-26 23:12:21,,[11:01:04 p.m.] Procesando 6/14: REWEL (#9RCRU0LJJ)
+2026-11-26 23:12:21,,"[11:01:10 p.m.]   → 202 semana(s) del perfil leídas (201 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,[11:01:15 p.m.] Procesando 7/14: switch (#P8UYVGVPR)
+2026-11-26 23:12:21,,[11:01:19 p.m.]   → [HistorialGuerra] Enviando lote de 3 jugador(es)…
+2026-11-26 23:12:21,,"[11:01:19 p.m.]   → 121 semana(s) del perfil leídas (121 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,"[11:02:06 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 438 registro(s) de 3 jugador(es) (437 de clan que no es Terna, solo en el JSON individual) (total acumulado: 2771)."
+2026-11-26 23:12:21,,[11:02:08 p.m.] Procesando 8/14: gamerizi (#CJCV0V82R)
+2026-11-26 23:12:21,,"[11:02:12 p.m.]   → 169 semana(s) del perfil leídas (169 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,"[11:04:20 p.m.] ⚠ Error de red enviando correcciones: {""readyState"":0,""status"":0,""error"":""background shutdown"",""DONE"":4,""HEADERS_RECEIVED"":2,""LOADING"":3,""OPENED"":1,""UNSENT"":0,""RESPONSE_TYPE_TEXT"":""text"",""RESPONSE_TYPE_ARRAYBUFFER"":""arraybuffer"",""RESPONSE_TYPE_BLOB"":""blob"",""RESPONSE_TYPE_DOCUMENT"":""document"",""RESPONSE_TYPE_JSON"":""json"",""RESPONSE_TYPE_STREAM"":""stream""} (se reintentará junto al próximo lote)."
+2026-11-26 23:12:21,,[11:04:26 p.m.] Procesando 9/14: Reuben (#8QJ0U8JP9)
+2026-11-26 23:12:21,,"[11:04:29 p.m.]   → 133 semana(s) del perfil leídas (133 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,"[11:07:04 p.m.]   ✔ Backend actualizado: 133 corrección(es) aplicada(s), 492 sin cambios, 257 anterior(es) a T1 (total acumulado: 374)."
+2026-11-26 23:12:21,,[11:07:09 p.m.] Procesando 10/14: Gerson (#YPCCC920Y)
+2026-11-26 23:12:21,,"[11:07:12 p.m.]   → 67 semana(s) del perfil leídas (67 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,[11:07:18 p.m.] Procesando 11/14: WHITE 11 (#GQLCYCVPG)
+2026-11-26 23:12:21,,[11:07:25 p.m.]   → [HistorialGuerra] Enviando lote de 4 jugador(es)…
+2026-11-26 23:12:21,,"[11:07:25 p.m.]   → 53 semana(s) del perfil leídas (53 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,"[11:08:02 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 422 registro(s) de 4 jugador(es) (422 de clan que no es Terna, solo en el JSON individual) (total acumulado: 3193)."
+2026-11-26 23:12:21,,[11:08:06 p.m.] Procesando 12/14: fabriiii (#J9JGUVUVC)
+2026-11-26 23:12:21,,"[11:08:11 p.m.]   → 58 semana(s) del perfil leídas (58 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,[11:08:18 p.m.] Procesando 13/14: tomishi ganador (#VRJRGLPQL)
+2026-11-26 23:12:21,,"[11:08:21 p.m.]   → 66 semana(s) del perfil leídas (66 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,[11:08:26 p.m.] Procesando 14/14: brandommm (#J9JYLCGPR)
+2026-11-26 23:12:21,,"[11:08:29 p.m.]   → 77 semana(s) del perfil leídas (77 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 23:12:21,,[11:08:31 p.m.]   → [HistorialGuerra] Enviando lote de 3 jugador(es) (cierre de fase)…
+2026-11-26 23:12:21,,"[11:09:02 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 201 registro(s) de 3 jugador(es) (201 de clan que no es Terna, solo en el JSON individual) (total acumulado: 3394)."
+2026-11-26 23:12:21,,[11:12:17 p.m.] ✔ Último lote enviado (133 correcciones).
+2026-11-26 23:12:21,,[11:12:17 p.m.] ✅ Corrección terminada. Total de correcciones aplicadas: 507.
+2026-11-26 13:19:38,,"[12:43:24 p.m.] ℹ 2 clan(es) sin guerra abierta según el backend (dato de hace 2 min): se omiten en River Race, que es solo de la semana en curso. El Log y las demás fuentes los siguen leyendo."
+2026-11-26 13:19:38,,[12:43:28 p.m.] [River Race] Clan 1/4: #GCRG8L00
+2026-11-26 13:19:38,,[12:43:29 p.m.]   → [HistorialGuerra] Enviando lote de 190 jugador(es) en 2 envíos seguidos de hasta 150 jugadores…
+2026-11-26 13:19:38,,"[12:43:29 p.m.]   ✔ 190 jugador(es) leído(s) — semana en curso (Temporada 138, Semana 4), provisional."
+2026-11-26 13:19:38,,[12:43:30 p.m.]   ℹ [Detail] pulsado (60 fila(s) clan-día).
+2026-11-26 13:19:38,,"[12:44:41 p.m.]   ✔ [Detalle] Detalle de la temporada: 59 fila(s) clan-día (1 sin dato en la web), 0 nueva(s), 0 actualizada(s)."
+2026-11-26 13:19:38,,[12:44:41 p.m.]   ℹ [Lecturas] No se guardó: la página marca el día 1 (entrenamiento: los números semanales vuelven a 0).
+2026-11-26 13:19:38,,[12:46:03 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 150 registro(s) de 150 jugador(es) — faltan 40 de este lote (total acumulado: 150).
+2026-11-26 13:19:38,,[12:46:43 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 40 registro(s) de 40 jugador(es) (total acumulado: 190).
+2026-11-26 13:19:38,,[12:46:45 p.m.] [River Race] Clan 2/4: #GYCU9YRG
+2026-11-26 13:19:38,,[12:46:46 p.m.]   → [HistorialGuerra] Enviando lote de 265 jugador(es) en 2 envíos seguidos de hasta 150 jugadores…
+2026-11-26 13:19:38,,"[12:46:46 p.m.]   ✔ 265 jugador(es) leído(s) — semana en curso (Temporada 138, Semana 4), provisional."
+2026-11-26 13:19:38,,[12:46:47 p.m.]   ℹ [Detail] pulsado (60 fila(s) clan-día).
+2026-11-26 13:19:38,,"[12:47:58 p.m.]   ✔ [Detalle] Detalle de la temporada: 59 fila(s) clan-día (1 sin dato en la web), 0 nueva(s), 0 actualizada(s)."
+2026-11-26 13:19:38,,[12:47:58 p.m.]   ℹ [Lecturas] No se guardó: la página marca el día 1 (entrenamiento: los números semanales vuelven a 0).
+2026-11-26 13:19:38,,[12:48:00 p.m.] [River Race] Clan 3/4: #GQQPPJGR — sin guerra abierta (no participa esta temporada). Se omite; no es un error.
+2026-11-26 13:19:38,,[12:48:00 p.m.] [River Race] Clan 4/4: #GG99LCJY — sin guerra abierta (no participa esta temporada). Se omite; no es un error.
+2026-11-26 13:19:38,,"[12:48:00 p.m.] [River Race] Fase terminada: 2 clan(es) OK, 2 sin guerra abierta (omitido(s), no es error) y 0 con error. Sigue el Log (4 clan(es)); Analytics solo si algún Log falla."
+2026-11-26 13:19:38,,[12:49:30 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 150 registro(s) de 150 jugador(es) — faltan 115 de este lote (total acumulado: 340).
+2026-11-26 13:19:38,,[12:50:40 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 115 registro(s) de 115 jugador(es) (total acumulado: 455).
+2026-11-26 13:19:38,,[12:50:44 p.m.] [Log] Clan 1/4: #GCRG8L00
+2026-11-26 13:19:38,,[12:50:48 p.m.]   … Log de #GCRG8L00: carga completa tras 2 intento(s).
+2026-11-26 13:19:38,,"[12:51:01 p.m.]   ✔ Trofeos del Log de #GCRG8L00: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 6 coinciden, 4 difieren, 0 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
+2026-11-26 13:19:38,,[12:51:01 p.m.]     ≠ T39 S3 Grupo乂Terna™: barcos 10000 vs 10034
+2026-11-26 13:19:38,,[12:51:01 p.m.]     ≠ T39 S1 Grupo乂Terna™: puesto 3 vs 1
+2026-11-26 13:19:38,,[12:51:01 p.m.]     ≠ T37 S4 Grupo乂Terna™: variación -50 vs 0
+2026-11-26 13:19:38,,[12:51:01 p.m.]     ≠ T37 S3 Grupo乂Terna™: trofeos 4206 (RoyaleAPI) vs 4156 (Guerra_Logs); variación -10 vs -60
+2026-11-26 13:19:38,,[12:51:01 p.m.]   → [HistorialGuerra] Enviando lote de 312 jugador(es) en 3 envíos seguidos de hasta 150 jugadores…
+2026-11-26 13:19:38,,"[12:51:01 p.m.]   ✔ 312 jugador(es) leído(s), 1119 semana(s) con Ataques+Fame+Barcos vía Log."
+2026-11-26 13:19:38,,[12:52:48 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 675 registro(s) de 150 jugador(es) — faltan 162 de este lote (total acumulado: 1130).
+2026-11-26 13:19:38,,[12:54:18 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 432 registro(s) de 150 jugador(es) — faltan 12 de este lote (total acumulado: 1562).
+2026-11-26 13:19:38,,[12:54:42 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 12 registro(s) de 12 jugador(es) (total acumulado: 1574).
+2026-11-26 13:19:38,,[12:55:11 p.m.] [Log] Clan 2/4: #GYCU9YRG
+2026-11-26 13:19:38,,[12:55:14 p.m.]   … Log de #GYCU9YRG: carga completa tras 2 intento(s).
+2026-11-26 13:19:38,,"[12:55:24 p.m.]   ✔ Trofeos del Log de #GYCU9YRG: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 5 coinciden, 5 difieren, 0 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
+2026-11-26 13:19:38,,[12:55:24 p.m.]     ≠ T39 S1 GrupoXTerna™2: puesto 3 vs 2
+2026-11-26 13:19:38,,[12:55:24 p.m.]     ≠ T38 S3 GrupoXTerna™2: puesto 4 vs 3
+2026-11-26 13:19:38,,[12:55:24 p.m.]     ≠ T38 S1 GrupoXTerna™2: puesto 2 vs 1
+2026-11-26 13:19:38,,[12:55:24 p.m.]     ≠ T37 S4 GrupoXTerna™2: variación -50 vs 0
+2026-11-26 13:19:38,,[12:55:24 p.m.]     ≠ T37 S3 GrupoXTerna™2: trofeos 3830 (RoyaleAPI) vs 3780 (Guerra_Logs); variación -5 vs -55; puesto 3 vs 4
+2026-11-26 13:19:38,,[12:55:24 p.m.]   → [HistorialGuerra] Enviando lote de 445 jugador(es) en 3 envíos seguidos de hasta 150 jugadores…
+2026-11-26 13:19:38,,"[12:55:24 p.m.]   ✔ 445 jugador(es) leído(s), 1383 semana(s) con Ataques+Fame+Barcos vía Log."
+2026-11-26 13:19:38,,[12:57:07 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 616 registro(s) de 150 jugador(es) — faltan 295 de este lote (total acumulado: 2190).
+2026-11-26 13:19:38,,[12:58:11 p.m.] [Log] Clan 3/4: #GQQPPJGR
+2026-11-26 13:19:38,,[12:58:14 p.m.]   … Log de #GQQPPJGR: carga completa tras 2 intento(s).
+2026-11-26 13:19:38,,"[12:58:23 p.m.]   ✔ Trofeos del Log de #GQQPPJGR: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 5 coinciden, 4 difieren, 1 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
+2026-11-26 13:19:38,,[12:58:23 p.m.]     ≠ T38 S3 GrupoXTerna™3: puesto 5 vs 4
+2026-11-26 13:19:38,,[12:58:23 p.m.]     ≠ T38 S1 GrupoXTerna™3: puesto 1 vs 2
+2026-11-26 13:19:38,,[12:58:23 p.m.]     ≠ T37 S3 GrupoXTerna™3: puesto 4 vs 3
+2026-11-26 13:19:38,,[12:58:23 p.m.]     ≠ T37 S1 GrupoXTerna™3: puesto 3 vs 2
+2026-11-26 13:19:38,,[12:58:23 p.m.]   → [HistorialGuerra] Enviando lote de 347 jugador(es) en 3 envíos seguidos de hasta 150 jugadores…
+2026-11-26 13:19:38,,"[12:58:23 p.m.]   ✔ 52 jugador(es) leído(s), 197 semana(s) con Ataques+Fame+Barcos vía Log."
+2026-11-26 13:19:38,,[1:00:00 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 367 registro(s) de 150 jugador(es) — faltan 197 de este lote (total acumulado: 2557).
+2026-11-26 13:19:38,,[1:01:59 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 439 registro(s) de 150 jugador(es) — faltan 47 de este lote (total acumulado: 2996).
+2026-11-26 13:19:38,,[1:03:10 p.m.] [Log] Clan 4/4: #GG99LCJY
+2026-11-26 13:19:38,,[1:03:13 p.m.]   … Log de #GG99LCJY: carga completa tras 2 intento(s).
+2026-11-26 13:19:38,,"[1:03:22 p.m.]   ✔ Trofeos del Log de #GG99LCJY: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 1 coinciden, 8 difieren, 1 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
+2026-11-26 13:19:38,,[1:03:22 p.m.]     ≠ T38 S3 Mini乂Ternas™: puesto 5 vs 4
+2026-11-26 13:19:38,,[1:03:22 p.m.]     ≠ T38 S2 Mini乂Ternas™: puesto 5 vs 4
+2026-11-26 13:19:38,,[1:03:22 p.m.]     ≠ T38 S1 Mini乂Ternas™: puesto 5 vs 4
+2026-11-26 13:19:38,,[1:03:22 p.m.]     ≠ T37 S4 Mini乂Ternas™: variación -100 vs 0
+2026-11-26 13:19:38,,[1:03:22 p.m.]     ≠ T37 S3 Mini乂Ternas™: trofeos 1816 (RoyaleAPI) vs 1716 (Guerra_Logs); variación -20 vs -120
+2026-11-26 13:19:38,,[1:03:22 p.m.]     ≠ T37 S2 Mini乂Ternas™: puesto 3 vs 2
+2026-11-26 13:19:38,,[1:03:22 p.m.]     ≠ T37 S1 Mini乂Ternas™: puesto 3 vs 5
+2026-11-26 13:19:38,,[1:03:22 p.m.]     ≠ T36 S4 Mini乂Ternas™: variación 20 vs 0
+2026-11-26 13:19:38,,[1:03:22 p.m.]   → [HistorialGuerra] Enviando lote de 104 jugador(es)…
+2026-11-26 13:19:38,,"[1:03:22 p.m.]   ✔ 60 jugador(es) leído(s), 211 semana(s) con Ataques+Fame+Barcos vía Log."
+2026-11-26 13:19:38,,"[1:03:24 p.m.] [Log] Fase terminada: 4 clan(es) OK, 0 con error. 814 jugador(es) cubiertos por Log."
+2026-11-26 13:19:38,,[1:03:24 p.m.] [Perfiles] 0 jugador(es) activo(s) cubiertos por Log/Analytics pero SIN ninguna fila de perfil en Correcciones_Guerra.csv: se visita su perfil (una sola vez). La lista del backend trae 186 tag(s) sin perfil; los que ya no están en los clanes Terna no se visitan (para esos usa «jugadores elegidos»).
+2026-11-26 13:19:38,,[1:03:24 p.m.] [Perfiles] 8 jugador(es) activo(s) tienen la fila de «Nuevos» incompleta o son ingresos recientes sin fila: se visita su perfil para alimentarla. La lista del backend trae 8 tag(s) (los que ya no están activos no se visitan).
+2026-11-26 13:19:38,,[1:03:24 p.m.] [Perfiles] 814 jugador(es) cubiertos por Log y 0 por Analytics. 16 jugador(es) pasan a Perfil (solo los que ni Log ni Analytics cubrieron).
+2026-11-26 13:19:38,,[1:03:24 p.m.]   ℹ 109 semana(s) de jugadores en 2 o más clanes Terna: se envían una fila por clan (el backend suma para Control).
+2026-11-26 13:19:38,,[1:05:57 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 369 registro(s) de 104 jugador(es) (total acumulado: 3365).
+2026-11-26 13:19:38,,[1:06:37 p.m.] Procesando 1/16: alexis (#2QLVR0LR2)
+2026-11-26 13:19:38,,"[1:06:39 p.m.]   → 131 semana(s) del perfil leídas (131 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:06:43 p.m.] Procesando 2/16: johnkings (#RC8P2U0J)
+2026-11-26 13:19:38,,"[1:06:44 p.m.]   → 127 semana(s) del perfil leídas (127 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:06:47 p.m.] Procesando 3/16: Santiago (#C9RLCUJ8Y)
+2026-11-26 13:19:38,,[1:06:50 p.m.]   → [HistorialGuerra] Enviando lote de 3 jugador(es)…
+2026-11-26 13:19:38,,"[1:06:50 p.m.]   → 183 semana(s) del perfil leídas (183 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,"[1:07:20 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 441 registro(s) de 3 jugador(es) (441 de clan que no es Terna, solo en el JSON individual) (total acumulado: 3806)."
+2026-11-26 13:19:38,,[1:08:00 p.m.] ⚠ El backend respondió con error: El sistema está ocupado guardando otra corrección. Intenta de nuevo en unos segundos. (se reintentará junto al próximo lote).
+2026-11-26 13:19:38,,[1:08:05 p.m.] Procesando 4/16: Ysmael° (#C2U8YU8L0)
+2026-11-26 13:19:38,,"[1:08:07 p.m.]   → 159 semana(s) del perfil leídas (159 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:08:45 p.m.] ⚠ El backend respondió con error: El sistema está ocupado guardando otra corrección. Intenta de nuevo en unos segundos. (se reintentará junto al próximo lote).
+2026-11-26 13:19:38,,[1:08:49 p.m.] Procesando 5/16: switch (#P8UYVGVPR)
+2026-11-26 13:19:38,,"[1:08:51 p.m.]   → 121 semana(s) del perfil leídas (121 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:09:29 p.m.] ⚠ El backend respondió con error: El sistema está ocupado guardando otra corrección. Intenta de nuevo en unos segundos. (se reintentará junto al próximo lote).
+2026-11-26 13:19:38,,[1:09:33 p.m.] Procesando 6/16: gamerizi (#CJCV0V82R)
+2026-11-26 13:19:38,,[1:09:37 p.m.]   → [HistorialGuerra] Enviando lote de 3 jugador(es)…
+2026-11-26 13:19:38,,"[1:09:37 p.m.]   → 169 semana(s) del perfil leídas (169 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,"[1:10:08 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 449 registro(s) de 3 jugador(es) (449 de clan que no es Terna, solo en el JSON individual) (total acumulado: 4255)."
+2026-11-26 13:19:38,,"[1:12:07 p.m.] ⚠ Error de red enviando correcciones: {""readyState"":0,""status"":0,""error"":""background shutdown"",""DONE"":4,""HEADERS_RECEIVED"":2,""LOADING"":3,""OPENED"":1,""UNSENT"":0,""RESPONSE_TYPE_TEXT"":""text"",""RESPONSE_TYPE_ARRAYBUFFER"":""arraybuffer"",""RESPONSE_TYPE_BLOB"":""blob"",""RESPONSE_TYPE_DOCUMENT"":""document"",""RESPONSE_TYPE_JSON"":""json"",""RESPONSE_TYPE_STREAM"":""stream""} (se reintentará junto al próximo lote)."
+2026-11-26 13:19:38,,[1:12:11 p.m.] Procesando 7/16: fabio (#JPLQ00RGU)
+2026-11-26 13:19:38,,"[1:12:13 p.m.]   → 140 semana(s) del perfil leídas (140 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,"[1:14:11 p.m.]   ✔ Backend actualizado: 0 corrección(es) aplicada(s), 1030 sin cambios, 321 anterior(es) a T1 (total acumulado: 0)."
+2026-11-26 13:19:38,,[1:14:15 p.m.] Procesando 8/16: alejo (#CP0R9YUP0)
+2026-11-26 13:19:38,,"[1:14:17 p.m.]   → 107 semana(s) del perfil leídas (107 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:14:21 p.m.] Procesando 9/16: Fosh⚡GB⚡ (#9LRJ9U8V2)
+2026-11-26 13:19:38,,"[1:14:23 p.m.]   → 100 semana(s) del perfil leídas (100 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:14:27 p.m.] Procesando 10/16: WHITE 11 (#GQLCYCVPG)
+2026-11-26 13:19:38,,[1:14:30 p.m.]   → [HistorialGuerra] Enviando lote de 4 jugador(es)…
+2026-11-26 13:19:38,,"[1:14:30 p.m.]   → 53 semana(s) del perfil leídas (53 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,"[1:14:57 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 400 registro(s) de 4 jugador(es) (400 de clan que no es Terna, solo en el JSON individual) (total acumulado: 4655)."
+2026-11-26 13:19:38,,[1:15:00 p.m.] Procesando 11/16: TQ JulioKim (#VGUQCJYL0)
+2026-11-26 13:19:38,,"[1:15:03 p.m.]   → 104 semana(s) del perfil leídas (104 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:15:07 p.m.] Procesando 12/16: chaviss (#VL2Y0YL9G)
+2026-11-26 13:19:38,,"[1:15:09 p.m.]   → 23 semana(s) del perfil leídas (23 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:15:13 p.m.] Procesando 13/16: fabriiii (#J9JGUVUVC)
+2026-11-26 13:19:38,,"[1:15:16 p.m.]   → 58 semana(s) del perfil leídas (58 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,"[1:16:56 p.m.]   ✔ Backend actualizado: 0 corrección(es) aplicada(s), 445 sin cambios, 84 anterior(es) a T1 (total acumulado: 0)."
+2026-11-26 13:19:38,,[1:17:01 p.m.] Procesando 14/16: ZURICAT (#C2U8GUQG8)
+2026-11-26 13:19:38,,[1:17:03 p.m.]   → [HistorialGuerra] Enviando lote de 4 jugador(es)…
+2026-11-26 13:19:38,,"[1:17:03 p.m.]   → 42 semana(s) del perfil leídas (42 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,"[1:17:30 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 227 registro(s) de 4 jugador(es) (227 de clan que no es Terna, solo en el JSON individual) (total acumulado: 4882)."
+2026-11-26 13:19:38,,[1:17:33 p.m.] Procesando 15/16: brandommm (#J9JYLCGPR)
+2026-11-26 13:19:38,,"[1:17:36 p.m.]   → 77 semana(s) del perfil leídas (77 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:17:40 p.m.] Procesando 16/16: benj (#V2C9VCGL0)
+2026-11-26 13:19:38,,"[1:17:42 p.m.]   → 14 semana(s) del perfil leídas (14 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
+2026-11-26 13:19:38,,[1:17:44 p.m.]   → [HistorialGuerra] Enviando lote de 2 jugador(es) (cierre de fase)…
+2026-11-26 13:19:38,,"[1:18:07 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 91 registro(s) de 2 jugador(es) (91 de clan que no es Terna, solo en el JSON individual) (total acumulado: 4973)."
+2026-11-26 13:19:38,,[1:19:34 p.m.] ✔ Último lote enviado (0 correcciones).
+2026-11-26 13:19:38,,[1:19:34 p.m.] ✅ Corrección terminada. Total de correcciones aplicadas: 0.
 2026-11-24 21:39:57,,"[9:15:57 p.m.] ℹ 2 clan(es) sin guerra abierta según el backend (dato de hace 3 min): se omiten en River Race, que es solo de la semana en curso. El Log y las demás fuentes los siguen leyendo."
 2026-11-24 21:39:57,,[9:15:59 p.m.] [River Race] Clan 1/4: #GCRG8L00
 2026-11-24 21:39:57,,[9:16:00 p.m.]   → [HistorialGuerra] Enviando lote de 178 jugador(es) en 2 envíos seguidos de hasta 150 jugadores…
@@ -295,203 +532,3 @@ Corrida,Tags,Linea
 2026-11-24 19:02:11,,[6:59:12 p.m.]   → [HistorialGuerra] Enviando lote de 3 jugador(es) (cierre de fase)…
 2026-11-24 19:02:11,,"[6:59:39 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 165 registro(s) de 3 jugador(es) (165 de clan que no es Terna, solo en el JSON individual) (total acumulado: 4008)."
 2026-11-24 19:02:11,,[7:02:06 p.m.] ✅ Corrección terminada. Total de correcciones aplicadas: 0.
-2026-11-21 20:11:03,,[7:45:03 p.m.]     ≠ T25 S1 GrupoXTerna™2: puesto 3 vs 4
-2026-11-21 20:11:03,,[7:45:03 p.m.]   → [HistorialGuerra] Enviando lote de 358 jugador(es) en 3 envíos seguidos de hasta 150 jugadores…
-2026-11-21 20:11:03,,"[7:45:03 p.m.]   ✔ 358 jugador(es) leído(s), 1237 semana(s) con Ataques+Fame+Barcos vía Log."
-2026-11-21 20:11:03,,[7:46:40 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 600 registro(s) de 150 jugador(es) — faltan 208 de este lote (total acumulado: 2003).
-2026-11-21 20:11:03,,[7:47:25 p.m.] [Log] Clan 3/4: #GQQPPJGR
-2026-11-21 20:11:03,,[7:47:28 p.m.]   … Log de #GQQPPJGR: carga completa tras 2 intento(s).
-2026-11-21 20:11:03,,"[7:47:37 p.m.]   ✔ Trofeos del Log de #GQQPPJGR: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 5 coinciden, 4 difieren, 1 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
-2026-11-21 20:11:03,,[7:47:37 p.m.]     ≠ T26 S3 GrupoXTerna™3: puesto 5 vs 4
-2026-11-21 20:11:03,,[7:47:37 p.m.]     ≠ T26 S1 GrupoXTerna™3: puesto 1 vs 2
-2026-11-21 20:11:03,,[7:47:37 p.m.]     ≠ T25 S3 GrupoXTerna™3: puesto 4 vs 3
-2026-11-21 20:11:03,,[7:47:37 p.m.]     ≠ T25 S1 GrupoXTerna™3: puesto 3 vs 2
-2026-11-21 20:11:03,,[7:47:37 p.m.]   → [HistorialGuerra] Enviando lote de 260 jugador(es) en 2 envíos seguidos de hasta 150 jugadores…
-2026-11-21 20:11:03,,"[7:47:37 p.m.]   ✔ 52 jugador(es) leído(s), 197 semana(s) con Ataques+Fame+Barcos vía Log."
-2026-11-21 20:11:03,,[7:49:07 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 468 registro(s) de 150 jugador(es) — faltan 110 de este lote (total acumulado: 2471).
-2026-11-21 20:11:03,,[7:50:20 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 366 registro(s) de 110 jugador(es) (total acumulado: 2837).
-2026-11-21 20:11:03,,[7:50:21 p.m.] [Log] Clan 4/4: #GG99LCJY
-2026-11-21 20:11:03,,[7:50:23 p.m.]   … Log de #GG99LCJY: carga completa tras 2 intento(s).
-2026-11-21 20:11:03,,"[7:50:30 p.m.]   ✔ Trofeos del Log de #GG99LCJY: 10 semana(s) leídas; 0 nueva(s), 0 actualizada(s), 10 sin cambios. Contra Guerra_Logs: 1 coinciden, 8 difieren, 1 sin dato en Guerra_Logs (la última semana de cada temporada: aquí queda el valor de RoyaleAPI)."
-2026-11-21 20:11:03,,[7:50:30 p.m.]     ≠ T26 S3 Mini乂Ternas™: puesto 5 vs 4
-2026-11-21 20:11:03,,[7:50:30 p.m.]     ≠ T26 S2 Mini乂Ternas™: puesto 5 vs 4
-2026-11-21 20:11:03,,[7:50:30 p.m.]     ≠ T26 S1 Mini乂Ternas™: puesto 5 vs 4
-2026-11-21 20:11:03,,[7:50:30 p.m.]     ≠ T25 S4 Mini乂Ternas™: variación -100 vs 0
-2026-11-21 20:11:03,,[7:50:30 p.m.]     ≠ T25 S3 Mini乂Ternas™: trofeos 1816 (RoyaleAPI) vs 1716 (Guerra_Logs); variación -20 vs -120
-2026-11-21 20:11:03,,[7:50:30 p.m.]     ≠ T25 S2 Mini乂Ternas™: puesto 3 vs 2
-2026-11-21 20:11:03,,[7:50:30 p.m.]     ≠ T25 S1 Mini乂Ternas™: puesto 3 vs 5
-2026-11-21 20:11:03,,[7:50:30 p.m.]     ≠ T24 S4 Mini乂Ternas™: variación 20 vs 0
-2026-11-21 20:11:03,,[7:50:30 p.m.]   → [HistorialGuerra] Enviando lote de 60 jugador(es)…
-2026-11-21 20:11:03,,"[7:50:30 p.m.]   ✔ 60 jugador(es) leído(s), 211 semana(s) con Ataques+Fame+Barcos vía Log."
-2026-11-21 20:11:03,,"[7:50:31 p.m.] [Log] Fase terminada: 4 clan(es) OK, 0 con error. 703 jugador(es) cubiertos por Log."
-2026-11-21 20:11:03,,[7:50:31 p.m.] [Perfiles] 0 jugador(es) activo(s) cubiertos por Log/Analytics pero SIN ninguna fila de perfil en Correcciones_Guerra.csv: se visita su perfil (una sola vez). La lista del backend trae 144 tag(s) sin perfil; los que ya no están en los clanes Terna no se visitan (para esos usa «jugadores elegidos»).
-2026-11-21 20:11:03,,[7:50:31 p.m.] [Perfiles] 703 jugador(es) cubiertos por Log y 0 por Analytics. 18 jugador(es) pasan a Perfil (solo los que ni Log ni Analytics cubrieron).
-2026-11-21 20:11:03,,[7:50:31 p.m.]   ℹ 102 semana(s) de jugadores en 2 o más clanes Terna: se envían una fila por clan (el backend suma para Control).
-2026-11-21 20:11:03,,[7:51:14 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 211 registro(s) de 60 jugador(es) (total acumulado: 3048).
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ✔ Backend actualizado con Log/Analytics: 0 corrección(es), 2674 sin cambios (total: 0)."
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #UYU0PGUYJ: 2 clanes (#GCRG8L00=12, #GYCU9YRG=0), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #P8Y0CQ9VR: 2 clanes (#GCRG8L00=8, #GYCU9YRG=0), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #900PCRQ2R: 2 clanes (#GCRG8L00=8, #GYCU9YRG=0), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #U8G029GUQ: 2 clanes (#GCRG8L00=4, #GYCU9YRG=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #RR8CRJPUV: 2 clanes (#GCRG8L00=4, #GYCU9YRG=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #8YCLY8CRU: 2 clanes (#GCRG8L00=4, #GYCU9YRG=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #V9L9V9YV0: 2 clanes (#GCRG8L00=4, #GYCU9YRG=7), suma de ataques 11"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #UQJLQQ0L0: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #22C090RVJ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=8), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #ULP8PQCCQ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #L28JYY2J: 2 clanes (#GCRG8L00=0, #GYCU9YRG=16), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 2 #UQ2RJYLVQ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 1 #UYU0PGUYJ: 2 clanes (#GCRG8L00=8, #GYCU9YRG=0), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 1 #900PCRQ2R: 2 clanes (#GCRG8L00=8, #GYCU9YRG=4), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 1 #U8G029GUQ: 2 clanes (#GCRG8L00=5, #GYCU9YRG=0), suma de ataques 5"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 1 #8YCLY8CRU: 2 clanes (#GCRG8L00=4, #GYCU9YRG=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 1 #L28JYY2J: 2 clanes (#GCRG8L00=0, #GYCU9YRG=4), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 1 #ULP8PQCCQ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=2), suma de ataques 2"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T27 semana 1 #UQJLQQ0L0: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #L28JYY2J: 2 clanes (#GCRG8L00=16, #GYCU9YRG=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #8YCLY8CRU: 2 clanes (#GCRG8L00=12, #GYCU9YRG=4), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #RR8CRJPUV: 2 clanes (#GCRG8L00=12, #GYCU9YRG=0), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #P8Y0CQ9VR: 2 clanes (#GCRG8L00=8, #GYCU9YRG=0), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #U8G029GUQ: 3 clanes (#GCRG8L00=4, #GYCU9YRG=11, #GQQPPJGR=0), suma de ataques 15"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #UYU0PGUYJ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=16), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #JR9J0JCQ9: 2 clanes (#GCRG8L00=0, #GYCU9YRG=16), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #2Q8GJVR8V: 2 clanes (#GCRG8L00=0, #GYCU9YRG=4), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #UJY0PGPUV: 3 clanes (#GCRG8L00=0, #GYCU9YRG=4, #GQQPPJGR=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #JU00QL908: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #92QVLUGL2: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #JVVG9YUG0: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #VUVC9P8VL: 2 clanes (#GCRG8L00=0, #GYCU9YRG=4), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #CURRGR8QY: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #L28JYY2J: 2 clanes (#GCRG8L00=16, #GYCU9YRG=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #UJY0PGPUV: 3 clanes (#GCRG8L00=4, #GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #UYU0PGUYJ: 2 clanes (#GCRG8L00=4, #GYCU9YRG=8), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #U8G029GUQ: 3 clanes (#GCRG8L00=4, #GYCU9YRG=8, #GQQPPJGR=0), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #JVVG9YUG0: 2 clanes (#GCRG8L00=4, #GYCU9YRG=5), suma de ataques 9"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #JR9J0JCQ9: 2 clanes (#GCRG8L00=0, #GYCU9YRG=16), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #92QVLUGL2: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #8YCLY8CRU: 2 clanes (#GCRG8L00=0, #GYCU9YRG=12), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #P8Y0CQ9VR: 2 clanes (#GCRG8L00=0, #GYCU9YRG=4), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #VUVC9P8VL: 2 clanes (#GCRG8L00=0, #GYCU9YRG=3), suma de ataques 3"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 2 #L28JYY2J: 2 clanes (#GCRG8L00=12, #GYCU9YRG=0), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 2 #JR9J0JCQ9: 2 clanes (#GCRG8L00=0, #GYCU9YRG=8), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 2 #92QVLUGL2: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 2 #8YCLY8CRU: 2 clanes (#GCRG8L00=0, #GYCU9YRG=8), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 1 #8YCLY8CRU: 2 clanes (#GCRG8L00=16, #GYCU9YRG=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 1 #JR9J0JCQ9: 2 clanes (#GCRG8L00=16, #GYCU9YRG=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #P8Y0CQ9VR: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #U9G0GCRLC: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #UQ2RJYLVQ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #8YCLY8CRU: 2 clanes (#GCRG8L00=0, #GYCU9YRG=12), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 3 #P8Y0CQ9VR: 2 clanes (#GCRG8L00=0, #GYCU9YRG=8), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 3 #UQ2RJYLVQ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 3 #8YCLY8CRU: 2 clanes (#GCRG8L00=0, #GYCU9YRG=8), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 2 #UQ2RJYLVQ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 2 #8YCLY8CRU: 2 clanes (#GCRG8L00=0, #GYCU9YRG=16), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 2 #P8Y0CQ9VR: 2 clanes (#GCRG8L00=0, #GYCU9YRG=12), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 1 #UQ2RJYLVQ: 2 clanes (#GCRG8L00=0, #GYCU9YRG=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 1 #8YCLY8CRU: 2 clanes (#GCRG8L00=0, #GYCU9YRG=12), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #V0UJ0RPVP: 2 clanes (#GYCU9YRG=16, #GQQPPJGR=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #8VU0Y9LJ0: 2 clanes (#GYCU9YRG=16, #GQQPPJGR=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #V9P20U8RC: 2 clanes (#GYCU9YRG=16, #GQQPPJGR=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #20P2UP80UY: 2 clanes (#GYCU9YRG=16, #GQQPPJGR=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #20P80C9229: 2 clanes (#GYCU9YRG=4, #GG99LCJY=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #20080J8GRY: 2 clanes (#GYCU9YRG=4, #GG99LCJY=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #900PCRQ2R: 2 clanes (#GYCU9YRG=4, #GQQPPJGR=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 4 #VJQLY8JV8: 2 clanes (#GYCU9YRG=4, #GG99LCJY=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #8VU0Y9LJ0: 2 clanes (#GYCU9YRG=16, #GQQPPJGR=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #V0UJ0RPVP: 2 clanes (#GYCU9YRG=16, #GQQPPJGR=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #20P2UP80UY: 2 clanes (#GYCU9YRG=16, #GQQPPJGR=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 3 #V9P20U8RC: 2 clanes (#GYCU9YRG=16, #GQQPPJGR=0), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 2 #U8G029GUQ: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 2 #8VU0Y9LJ0: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=16), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T26 semana 1 #U8G029GUQ: 2 clanes (#GYCU9YRG=12, #GQQPPJGR=0), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #L28JYY2J: 2 clanes (#GYCU9YRG=7, #GQQPPJGR=0), suma de ataques 7"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #UJY0PGPUV: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #U8G029GUQ: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #22C090RVJ: 2 clanes (#GYCU9YRG=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #V9L9V9YV0: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #VUVC9P8VL: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 3 #U8G029GUQ: 2 clanes (#GYCU9YRG=12, #GQQPPJGR=0), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 3 #V9L9V9YV0: 2 clanes (#GYCU9YRG=8, #GQQPPJGR=0), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 3 #VUVC9P8VL: 2 clanes (#GYCU9YRG=8, #GQQPPJGR=0), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 3 #22C090RVJ: 2 clanes (#GYCU9YRG=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 3 #UJY0PGPUV: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 2 #V9L9V9YV0: 2 clanes (#GYCU9YRG=4, #GQQPPJGR=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 2 #U8G029GUQ: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 2 #22C090RVJ: 2 clanes (#GYCU9YRG=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 2 #VUVC9P8VL: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 1 #U8G029GUQ: 2 clanes (#GYCU9YRG=7, #GQQPPJGR=4), suma de ataques 11"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 1 #22C090RVJ: 2 clanes (#GYCU9YRG=4, #GG99LCJY=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 1 #VUVC9P8VL: 2 clanes (#GYCU9YRG=4, #GQQPPJGR=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 1 #V9L9V9YV0: 2 clanes (#GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T25 semana 4 #VRJYU8Q8P: 2 clanes (#GQQPPJGR=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #UJY0PGPUV: 4 clanes (#GCRG8L00=0, #GYCU9YRG=0, #GQQPPJGR=8, #GG99LCJY=0), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #VUVC9P8VL: 4 clanes (#GCRG8L00=0, #GYCU9YRG=0, #GQQPPJGR=8, #GG99LCJY=0), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #V9L9V9YV0: 3 clanes (#GCRG8L00=0, #GYCU9YRG=0, #GQQPPJGR=8), suma de ataques 8"
-2026-11-21 20:11:03,,"[7:55:13 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #J8V9PQJP9: 2 clanes (#GCRG8L00=0, #GQQPPJGR=1), suma de ataques 1"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #V9V9RQY9C: 2 clanes (#GQQPPJGR=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #2C982888C: 3 clanes (#GCRG8L00=4, #GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #JCUPQ88J: 3 clanes (#GCRG8L00=4, #GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #J8V9PQJP9: 2 clanes (#GCRG8L00=0, #GQQPPJGR=16), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #VUVC9P8VL: 4 clanes (#GCRG8L00=0, #GYCU9YRG=0, #GQQPPJGR=12, #GG99LCJY=0), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #V9L9V9YV0: 3 clanes (#GCRG8L00=0, #GYCU9YRG=0, #GQQPPJGR=12), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #UJY0PGPUV: 4 clanes (#GCRG8L00=0, #GYCU9YRG=0, #GQQPPJGR=10, #GG99LCJY=2), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #2C982888C: 3 clanes (#GCRG8L00=0, #GYCU9YRG=8, #GQQPPJGR=8), suma de ataques 16"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #V9V9RQY9C: 2 clanes (#GQQPPJGR=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #JCUPQ88J: 3 clanes (#GCRG8L00=12, #GYCU9YRG=0, #GQQPPJGR=0), suma de ataques 12"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #22C090RVJ: 3 clanes (#GCRG8L00=0, #GYCU9YRG=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 5 #20JPVQYL8Q: 2 clanes (#GYCU9YRG=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #22C090RVJ: 3 clanes (#GCRG8L00=4, #GYCU9YRG=0, #GG99LCJY=0), suma de ataques 4"
-2026-11-21 20:11:03,,"[7:55:14 p.m.]   ⚠ REVISAR A MANO (backend): T24 semana 4 #20JPVQYL8Q: 2 clanes (#GYCU9YRG=0, #GG99LCJY=0), suma de ataques 0"
-2026-11-21 20:11:03,,[7:55:15 p.m.] Procesando 1/18: asesinopro (#UPQGUPGRQ)
-2026-11-21 20:11:03,,"[7:55:18 p.m.]   → 86 semana(s) del perfil leídas (86 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[7:55:23 p.m.] Procesando 2/18: Ass/ D®OP l)3AD (#2C9V900P9)
-2026-11-21 20:11:03,,"[7:55:26 p.m.]   → 211 semana(s) del perfil leídas (211 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[7:55:30 p.m.] Procesando 3/18: MAESTRØ~JEAN[×] (#VU0LL990V)
-2026-11-21 20:11:03,,"[7:55:32 p.m.]   → 51 semana(s) del perfil leídas (51 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[7:55:36 p.m.] Procesando 4/18: mr_oñio (#RQJ9LGJV8)
-2026-11-21 20:11:03,,[7:55:38 p.m.]   → [HistorialGuerra] Enviando lote de 4 jugador(es)…
-2026-11-21 20:11:03,,"[7:55:38 p.m.]   → 124 semana(s) del perfil leídas (124 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,"[7:56:10 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 472 registro(s) de 4 jugador(es) (472 de clan que no es Terna, solo en el JSON individual) (total acumulado: 3520)."
-2026-11-21 20:11:03,,"[7:58:54 p.m.]   ✔ Backend actualizado: 348 corrección(es) aplicada(s), 124 sin cambios, 152 anterior(es) a T1 (total acumulado: 348)."
-2026-11-21 20:11:03,,[7:58:59 p.m.] Procesando 5/18: P3l2cY (#U90999PR9)
-2026-11-21 20:11:03,,"[7:59:01 p.m.]   → 78 semana(s) del perfil leídas (78 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[7:59:05 p.m.] Procesando 6/18: SAGUITARIO♡ (#CVQYCP9JP)
-2026-11-21 20:11:03,,"[7:59:08 p.m.]   → 28 semana(s) del perfil leídas (28 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[7:59:13 p.m.] Procesando 7/18: Alexj03 (#8UQRLJ9UV)
-2026-11-21 20:11:03,,"[7:59:16 p.m.]   → 262 semana(s) del perfil leídas (262 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[7:59:20 p.m.] Procesando 8/18: edwar (#UYQ8RGQQP)
-2026-11-21 20:11:03,,[7:59:23 p.m.]   → [HistorialGuerra] Enviando lote de 4 jugador(es)…
-2026-11-21 20:11:03,,"[7:59:23 p.m.]   → 138 semana(s) del perfil leídas (138 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,"[7:59:46 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 506 registro(s) de 4 jugador(es) (506 de clan que no es Terna, solo en el JSON individual) (total acumulado: 4026)."
-2026-11-21 20:11:03,,"[8:01:11 p.m.]   ✔ Backend actualizado: 0 corrección(es) aplicada(s), 506 sin cambios, 210 anterior(es) a T1 (total acumulado: 348)."
-2026-11-21 20:11:03,,[8:01:29 p.m.] Procesando 9/18: LuisitoEP (#JULYPGG0Q)
-2026-11-21 20:11:03,,"[8:01:33 p.m.]   → 104 semana(s) del perfil leídas (104 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[8:01:38 p.m.] Procesando 10/18: Noxx (#9UCYV889C)
-2026-11-21 20:11:03,,"[8:01:40 p.m.]   → 146 semana(s) del perfil leídas (146 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[8:01:44 p.m.] Procesando 11/18: SejuroNickolas (#92QY2P0CL)
-2026-11-21 20:11:03,,"[8:01:46 p.m.]   → 84 semana(s) del perfil leídas (84 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[8:01:50 p.m.] Procesando 12/18: vector (#CY9VPY0CQ)
-2026-11-21 20:11:03,,[8:01:53 p.m.]   → [HistorialGuerra] Enviando lote de 4 jugador(es)…
-2026-11-21 20:11:03,,"[8:01:53 p.m.]   → 113 semana(s) del perfil leídas (113 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,"[8:02:26 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 447 registro(s) de 4 jugador(es) (447 de clan que no es Terna, solo en el JSON individual) (total acumulado: 4473)."
-2026-11-21 20:11:03,,"[8:04:59 p.m.] ⚠ Error de red enviando correcciones: {""readyState"":0,""status"":0,""error"":""background shutdown"",""DONE"":4,""HEADERS_RECEIVED"":2,""LOADING"":3,""OPENED"":1,""UNSENT"":0,""RESPONSE_TYPE_TEXT"":""text"",""RESPONSE_TYPE_ARRAYBUFFER"":""arraybuffer"",""RESPONSE_TYPE_BLOB"":""blob"",""RESPONSE_TYPE_DOCUMENT"":""document"",""RESPONSE_TYPE_JSON"":""json"",""RESPONSE_TYPE_STREAM"":""stream""} (se reintentará junto al próximo lote)."
-2026-11-21 20:11:03,,[8:05:03 p.m.] Procesando 13/18: Brayan (#208UVGLV0Q)
-2026-11-21 20:11:03,,"[8:05:05 p.m.]   → 88 semana(s) del perfil leídas (77 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,"[8:06:29 p.m.]   ✔ Backend actualizado: 0 corrección(es) aplicada(s), 535 sin cambios, 156 anterior(es) a T1 (total acumulado: 348)."
-2026-11-21 20:11:03,,[8:06:32 p.m.] Procesando 14/18: ™CHINO (#VRJLY8LC8)
-2026-11-21 20:11:03,,"[8:06:34 p.m.]   → 112 semana(s) del perfil leídas (112 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[8:06:37 p.m.] Procesando 15/18: Sebastián (#C0U89RQQG)
-2026-11-21 20:11:03,,"[8:06:38 p.m.]   → 114 semana(s) del perfil leídas (114 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[8:06:42 p.m.] Procesando 16/18: AngeloGZ (#29GCUJP28)
-2026-11-21 20:11:03,,[8:06:44 p.m.]   → [HistorialGuerra] Enviando lote de 4 jugador(es)…
-2026-11-21 20:11:03,,"[8:06:44 p.m.]   → 76 semana(s) del perfil leídas (76 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,"[8:07:08 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 390 registro(s) de 4 jugador(es) (379 de clan que no es Terna, solo en el JSON individual) (total acumulado: 4863)."
-2026-11-21 20:11:03,,[8:07:10 p.m.] Procesando 17/18: CODE: KA (#VGJ0PPVRU)
-2026-11-21 20:11:03,,"[8:07:12 p.m.]   → 55 semana(s) del perfil leídas (55 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,[8:07:15 p.m.] Procesando 18/18: olimpus (#9PQ22YL8V)
-2026-11-21 20:11:03,,"[8:07:17 p.m.]   → 255 semana(s) del perfil leídas (255 de clan que no es Terna, por tag; el backend también decide por tag) — se envían todas y el backend conserva solo lo que cambia."
-2026-11-21 20:11:03,,"[8:10:29 p.m.]   ✔ Backend actualizado: 131 corrección(es) aplicada(s), 481 sin cambios, 192 anterior(es) a T1 (total acumulado: 479)."
-2026-11-21 20:11:03,,[8:10:31 p.m.]   → [HistorialGuerra] Enviando lote de 2 jugador(es) (cierre de fase)…
-2026-11-21 20:11:03,,"[8:10:58 p.m.]   ✔ [HistorialGuerra] Backend actualizado: 310 registro(s) de 2 jugador(es) (310 de clan que no es Terna, solo en el JSON individual) (total acumulado: 5173)."
-2026-11-21 20:11:03,,[8:10:59 p.m.] ✅ Corrección terminada. Total de correcciones aplicadas: 479.
