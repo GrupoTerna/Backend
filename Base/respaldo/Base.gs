@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 27/11/2026 16:25:39 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 27/11/2026 16:36:34 */
 
 
 
@@ -86046,7 +86046,7 @@ function _vcrrResumenJugadorSemana_(temporada, semana, tag) {
  *        -> _cmaNombreClanWeb_(), _cmaTotalesSemanaWeb_(), _cmaDiasApiPorSemana_(), _cmaFilasRespaldoWeb_() y _cmaMezclarFilasWeb_() (parte 3, puras)
  *        -> _cmaMedallasDiaHoja_(), _cmaFilasMedallasDia_() y _cmaMezclarFilasDia_() (parte 4, opción A, puras)
  *        -> _clrDiaDePagina_(), _clrResolverDia_(), _clrFilasLectura_() y _clrMezclarFilas_() (lecturas de la página River Race de RoyaleAPI, puras) -> _clrGuardarLecturas_() y _clrProcesarEnvio_() (escriben Lecturas_RiverRace.csv)
- *        -> _defensasTablaSumas_(), _defensasEvaluarPar_(), _defensasNumero_() y _defensasInformeFuentes_() (defensas del barco: validar un par y comparar la API con la web, puras)
+ *        -> _defensasTablaSumas_(), _defensasEvaluarPar_(), _defensasNumero_(), _defensasInformeFuentes_() y _defensasAnomaliasCruce_() (defensas del barco: validar un par, comparar la API con la web y avisar de lo que aparece después del cruce de la meta, puras)
  *        -> _cdlFilasClanes_() y _cdlMezclarFilas_() (bloque `Detail` por clan y día, puras) -> _cdlGuardar_() y _cdlProcesarEnvio_() (escriben Lecturas_RiverRace_Clanes.csv).
  *      Quien la llama: updateGuerraSheet() (17_GuerraSheet.gs), una vez por corrida, junto a la corrección automática del cierre del día.
  *
@@ -86172,7 +86172,8 @@ function informeMedallasPorDiaContraApi() {
  * NumOfDefensesRemaining y ProgressEarnedFromDefenses, más PointsEarned, ProgressEarned y EndOfDayRank) con las de la web (Lecturas_RiverRace_Clanes.csv, el bloque `Detail`
  * que lee Tampermonkey). Cuenta los pares (defensas en pie, premio de defensas) que no son una suma posible de los puntos por puesto 59 a 5 (_defensasEvaluarPar_), las
  * diferencias entre las dos fuentes (defensas, premio de defensas, fama del día, premio del puesto y puesto) y los totales de la web que no suman. La API manda siempre:
- * la comparación no corrige nada, solo avisa; un día de la API «Estimado» (domingo provisional) no se compara.
+ * la comparación no corrige nada, solo avisa; un día de la API «Estimado» (domingo provisional) no se compara. Además avisa de lo que no debería existir según el cruce de la
+ * meta (§PF585 puntos 6, 7 y 14): actividad en un día posterior al día en que el avance llegó a 10000 y domingos en 0 sin un cruce que los explique.
  */
 function informeDefensasContraFuentes() {
   var textoApi = _loadCSVFromDrive('Backup_Guerra_Logs.csv');
@@ -86189,6 +86190,12 @@ function informeDefensasContraFuentes() {
   Logger.log('[Defensas contra fuentes] Cruce API–web: ' + r.cruce.comparables + ' clan-día(s) comparables; coinciden ' + r.cruce.coinciden + ', difieren ' + r.cruce.difieren +
     ' (defensas ' + r.diferencias.defensas + ', premio de defensas ' + r.diferencias.premioDefensas + ', fama del día ' + r.diferencias.fama + ', premio del puesto ' + r.diferencias.premioPuesto +
     ', puesto ' + r.diferencias.puesto + '); sin fila en la API ' + r.cruce.sinFilaApi + '; con la API provisional o sin dato ' + r.cruce.apiSinDato + '.');
+  var c = _defensasAnomaliasCruce_(_parseCSV(textoApi));
+  if (c.ok) {
+    Logger.log('[Defensas contra fuentes] Cruce de la meta (API): ' + c.series + ' serie(s) clan-semana, ' + c.cruces + ' con el avance en 10000 o más; días posteriores al cruce con actividad: ' + c.posteriores +
+      '; domingos en 0: ' + c.domingosEn0 + ' (sin cruce que lo explique: ' + c.domingosEn0SinCruce + ').');
+    c.detalle.forEach(function (linea) { Logger.log('[Defensas contra fuentes] ' + linea); });
+  }
   r.detalle.forEach(function (linea) { Logger.log('[Defensas contra fuentes] ' + linea); });
   if (r.detalleOmitido > 0) Logger.log('[Defensas contra fuentes] … y ' + r.detalleOmitido + ' más que no se listan.');
 }
@@ -86991,6 +86998,56 @@ function _defensasInformeFuentes_(filasApi, filasWeb) {
     else cruce.coinciden++;
   }
   return { ok: true, error: '', api: api, web: web, identidad: identidad, cruce: cruce, diferencias: dif, detalle: detalle, detalleOmitido: omitidas };
+}
+
+/**
+ * _defensasAnomaliasCruce_(filasApi) — avisa de lo que no debería aparecer después de que un clan cruza la meta (§PF585 puntos 6, 7 y 14). Función pura: no usa Drive ni hojas.
+ * filasApi: filas ya leídas de Backup_Guerra_Logs.csv con su encabezado (columnas por nombre: Temporada, Semana, Día, Clan, Tag, PointsEarned, ProgressEndOfDay, EndOfDayRank,
+ * ProgressEarned, NumOfDefensesRemaining, ProgressEarnedFromDefenses, Estado). Por serie (temporada, semana y Tag) toma los días J, V, S y D en ese orden y no mira los de Estado
+ * «Estimado». El día del cruce es el primero cuyo ProgressEndOfDay es 10000 o más. Tras cruzar la API deja en 0 los puntos, el premio del puesto, las defensas y su premio, y
+ * el puesto en -1 (§PF585 punto 6): un día posterior con algo distinto es `posteriores` (anomalía). Un domingo con 0 puntos y puesto -1 es `domingosEn0`; lo explica un cruce
+ * real si algún día de la serie, el propio domingo incluido, termina con el avance en 10000 o más (criterio del punto 7); si no, entra en `domingosEn0SinCruce` (sospecha de captura).
+ * Devuelve { ok, error, series, cruces, posteriores, domingosEn0, domingosEn0SinCruce, detalle }; `detalle` trae hasta 10 líneas. No corrige ni descarta nada.
+ */
+function _defensasAnomaliasCruce_(filasApi) {
+  var limpiar = function (x) { return String(x === null || x === undefined ? '' : x).replace(/^\uFEFF/, '').trim(); };
+  var enc = ((filasApi && filasApi[0]) || []).map(limpiar), ix = {}, faltan = [];
+  ['Temporada', 'Semana', 'Día', 'Clan', 'Tag', 'PointsEarned', 'ProgressEndOfDay', 'EndOfDayRank', 'ProgressEarned', 'NumOfDefensesRemaining', 'ProgressEarnedFromDefenses', 'Estado']
+    .forEach(function (n) { ix[n] = enc.indexOf(n); if (ix[n] < 0) faltan.push(n); });
+  if (faltan.length) return { ok: false, error: 'Faltan columnas (' + faltan.join(', ') + ')' };
+  var series = {}, orden = ['J', 'V', 'S', 'D'];
+  for (var i = 1; i < (filasApi || []).length; i++) {
+    var f = filasApi[i];
+    if (!f || limpiar(f[ix['Temporada']]) === '') continue;
+    var dia = limpiar(f[ix['Día']]).toUpperCase();
+    if (orden.indexOf(dia) < 0 || limpiar(f[ix['Estado']]) === 'Estimado') continue;
+    var k = [limpiar(f[ix['Temporada']]), limpiar(f[ix['Semana']]), limpiar(f[ix['Tag']]).toUpperCase()].join('|');
+    if (!series[k]) series[k] = { clan: limpiar(f[ix['Clan']]), dias: {} };
+    series[k].dias[dia] = f;
+  }
+  var r = { ok: true, error: '', series: 0, cruces: 0, posteriores: 0, domingosEn0: 0, domingosEn0SinCruce: 0, detalle: [] };
+  var avisa = function (t) { if (r.detalle.length < 10) r.detalle.push(t); };
+  Object.keys(series).forEach(function (k) {
+    r.series++;
+    var d = series[k].dias, cruzo = false, hayCruce = false, etiqueta = 'T' + k.split('|')[0] + ' S' + k.split('|')[1] + ' ' + series[k].clan + ' (' + k.split('|')[2] + ')';
+    orden.forEach(function (dia) { var fin = d[dia] ? _defensasNumero_(d[dia][ix['ProgressEndOfDay']]) : null; if (fin !== null && fin >= 10000) hayCruce = true; });
+    orden.forEach(function (dia) {
+      var f = d[dia];
+      if (!f) return;
+      var pts = _defensasNumero_(f[ix['PointsEarned']]), rango = _defensasNumero_(f[ix['EndOfDayRank']]), pue = _defensasNumero_(f[ix['ProgressEarned']]),
+        nd = _defensasNumero_(f[ix['NumOfDefensesRemaining']]), pd = _defensasNumero_(f[ix['ProgressEarnedFromDefenses']]), fin = _defensasNumero_(f[ix['ProgressEndOfDay']]);
+      if (cruzo) {
+        var conActividad = [pts, pue, nd, pd].some(function (v) { return v !== null && v !== 0; }) || (rango !== null && rango !== -1);
+        if (conActividad) { r.posteriores++; avisa('Después del cruce, ' + etiqueta + ' ' + dia + ': puntos ' + pts + ', premio del puesto ' + pue + ', defensas ' + nd + ', premio de defensas ' + pd + ', puesto ' + rango + '.'); }
+      }
+      if (dia === 'D' && pts === 0 && rango === -1) {
+        r.domingosEn0++;
+        if (!hayCruce) { r.domingosEn0SinCruce++; avisa('Domingo en 0 sin cruce que lo explique, ' + etiqueta + ': ningún día de la serie llega a 10000 de avance (¿captura a medias?).'); }
+      }
+      if (fin !== null && fin >= 10000) { if (!cruzo) r.cruces++; cruzo = true; }
+    });
+  });
+  return r;
 }
 
 /**

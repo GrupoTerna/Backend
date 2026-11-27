@@ -1,7 +1,7 @@
 # Índice de funciones — Base
 
 Generado automáticamente por el Generador. No editar a mano.
-Código real: `Base/src/`. Total: 3231 nombres en 61 archivos .gs.
+Código real: `Base/src/`. Total: 3232 nombres en 61 archivos .gs.
 
 ## Por archivo
 
@@ -65,7 +65,7 @@ Código real: `Base/src/`. Total: 3231 nombres en 61 archivos .gs.
 - **57_ReconstruirSemanaPorDias.gs** (32 funciones): totalesSemanaPorDiasReiniciar, _totSemanaPorDias_, _rsAnalizarSeries_, _rsObjetivos, _rsObjetivosDeCache_, _rsObjetivosDeJson_, _rsObjetivosGuardarCache_, _rsTagDeClanSerie_, _rsClaveSerie_, _rsClavesHoja, _rsClaveSem_, _rsPlanificar, _rsDiasAnterioresAlIngreso_, _rsFilaEsDatoReal_, _rsAtaquesEnOtrosClanes_, _rsFilasPlan_, _rsCrrRestricciones, _rsResolver, _rsRegistros, _rsMapeos, _rsResolverNivel, _rsCatalogo, _rsMismoReparto_, _rsCatalogoSinFameDomingo, _rsTagDeClanNombre_, _rsSinFameDeSerie, _rsMenor, _rsContinuacionInforme_, _continuarTotalesSemanaInforme, _rsVigilanteInforme_, _rsCursorLeer_, _rsCursorGuardar_
 - **58_Docs_Administracion.gs** (23 funciones): _adminDocActualizar_, _adminDocNorm_, _adminDocLeerEquipo_, _adminDocCopasPorTag_, _adminDocNombresDeHojaClan_, _adminDocClaveAlfa_, _adminDocTagDeClan_, _adminDocOrdenNombres_, _adminDocAplicarClan_, _adminDocGrupo_, _adminDocBuscarGrupo_, _adminDocEncabezado_, _adminDocPrefEncabezados_, _adminDocPrefijo_, _adminDocSetTexto_, _adminDocQuitarVineta_, _adminDocLineas_, _adminDocCuentaAMostrar_, _adminDocMejorPorCopas_, _adminDocCuentaPrincipal_, _adminDocAdminsExtra_, _adminDocPersonaTieneCuenta_, _adminDocAplicarFamilia_
 - **59_Verificar_CRR_vs_Backup.gs** (101 funciones): verificarCrrVsBackupInforme, _continuarVerificarCrrVsBackupInforme, verificarCrrVsBackupAplicar, _continuarVerificarCrrVsBackupAplicar, verificarCrrVsBackupReiniciar, verificarCrrVsBackupOlvidarVerificados, descartarFilasClanEquivocadoInforme, descartarFilasClanEquivocadoAplicar, seriesCerosInicialesInforme, verificarCrrVsBackupRevertirInforme, verificarCrrVsBackupRevertirAplicar, corregirFilasPorListaInforme, corregirFilasPorListaAplicar, crearFilasPorListaInforme, crearFilasPorListaAplicar, _vcrrEjecutar_, _vcrrLeerEstado_, _vcrrGuardarEstado_, _vcrrSumar_, _vcrrLeerBackupGuerra_, _vcrrClaveNombreDeCarpeta_, _vcrrClanNorm_, _vcrrEncabezadoRapi_, _vcrrFilasRapiDeArchivo_, _vcrrIndiceRapi_, _vcrrFirmaRapi_, _vcrrLeerFilasRapi_, _vcrrIndiceRapiDeDrive_, _vcrrPasoRapi_, _vcrrPaso1_, _vcrrArchivosSemana_, _vcrrCapturasSemana_, _vcrrCapturasDeArchivos_, _vcrrSeriesDeSemana_, _vcrrCruzarRoyaleApi_, _vcrrTextoEstimado_, _vcrrAplicarConfirmadas_, _vcrrRangosDeConfirmada_, _vcrrRestriccionesSerie_, _vcrrFameLimitesPorAtaques_, _vcrrPropagar_, _vcrrEncabezadoRestricciones_, _vcrrFilaRestriccion_, _vcrrGuardarRestricciones_, _vcrrLeerRestricciones_, _vcrrSerieDeFila_, _vcrrEncabezadoVerificados_, _vcrrFilaVerificado_, _vcrrHuella_, _vcrrSemanaVerificada_, _vcrrLeerVerificados_, _vcrrGuardarVerificados_, _vcrrTagDeClan_, _vcrrClaveGrupoSerie_, _vcrrPaso2_, _vcrrListarSinResolver_, _vcrrLimpiarRevisionAntigua_, _vcrrCompararSerie_, _vcrrGuardarHallazgos_, _vcrrPaso3_, _vcrrEsArrastre_, _vcrrIndiceGruposPorJugador_, _vcrrDiasEnOtroClan_, _vcrrDiasImposibles_, _vcrrDiasQueFallan_, _vcrrOpsSerie_, _vcrrPlanSerie_, _vcrrVerificarAplicado_, _vcrrDescartarFilas_, _vcrrPlanDescartar_, _vcrrIdsHojaGuerra_, _vcrrVerificarDescarte_, _vcrrCerosIniciales_, _vcrrCerosInicialesSeries_, _vcrrOtrosClanesJson_, _vcrrCerosInicialesClasificar_, _vcrrLetrasDias_, _vcrrPlanRevertir_, _vcrrRevertirSubidas_, _vcrrCorregirLista_, _vcrrPlanCorregir_, _vcrrVerificarCorreccion_, _vcrrCrearLista_, _vcrrPlanCrear_, _vcrrCrearDiasInvalidos_, corregirDiaGuerraT22Informe, corregirDiaGuerraT22Aplicar, _vcrrFechaDMA_, _vcrrTextoDMA_, _vcrrPlanDiaGuerraT22_, _vcrrCorregirDiaGuerraT22_, _vcrrVerificarDiaGuerraT22_, _vcrrRangosJugadorClan_, _vcrrRapiSemanaParaCache_, _vcrrCacheSemana_, _vcrrSeriesDeTag_, _vcrrPisoSerie_, _vcrrAjustarPorOtrosClanes_, _vcrrRangosAjustadosJugadorClan_, _vcrrResumenDeSeries_, _vcrrResumenJugadorSemana_
-- **60_Control_Medallas_API.gs** (32 funciones): estadoControlMedallasApi, actualizarControlMedallasWeb, informeMedallasPorDiaContraApi, informeDefensasContraFuentes, _cmaControlClanes_, _cmaFilasDeControl_, _cmaMezclarFilas_, _cmaCierreSemana_, _cmaFilasDeCierre_, _cmaGuardarControlDeCorrida_, _cmaNombreClanWeb_, _cmaTotalesSemanaWeb_, _cmaDiasApiPorSemana_, _cmaFilasRespaldoWeb_, _cmaMezclarFilasWeb_, _cmaMedallasDiaHoja_, _cmaFilasMedallasDia_, _cmaMezclarFilasDia_, _clrDiaDePagina_, _clrResolverDia_, _clrFilasLectura_, _clrMezclarFilas_, _clrGuardarLecturas_, _clrProcesarEnvio_, _defensasTablaSumas_, _defensasEvaluarPar_, _defensasNumero_, _defensasInformeFuentes_, _cdlFilasClanes_, _cdlMezclarFilas_, _cdlGuardar_, _cdlProcesarEnvio_
+- **60_Control_Medallas_API.gs** (33 funciones): estadoControlMedallasApi, actualizarControlMedallasWeb, informeMedallasPorDiaContraApi, informeDefensasContraFuentes, _cmaControlClanes_, _cmaFilasDeControl_, _cmaMezclarFilas_, _cmaCierreSemana_, _cmaFilasDeCierre_, _cmaGuardarControlDeCorrida_, _cmaNombreClanWeb_, _cmaTotalesSemanaWeb_, _cmaDiasApiPorSemana_, _cmaFilasRespaldoWeb_, _cmaMezclarFilasWeb_, _cmaMedallasDiaHoja_, _cmaFilasMedallasDia_, _cmaMezclarFilasDia_, _clrDiaDePagina_, _clrResolverDia_, _clrFilasLectura_, _clrMezclarFilas_, _clrGuardarLecturas_, _clrProcesarEnvio_, _defensasTablaSumas_, _defensasEvaluarPar_, _defensasNumero_, _defensasInformeFuentes_, _defensasAnomaliasCruce_, _cdlFilasClanes_, _cdlMezclarFilas_, _cdlGuardar_, _cdlProcesarEnvio_
 
 ## Nombres repetidos (en Apps Script el último que carga pisa a los demás)
 
@@ -436,10 +436,10 @@ Ninguno.
 | `_cdjNormalizarClan_` | función | 18_CorreccionGuerra.gs | 7167 | Contexto_Base_Web.md §PF123 |
 | `_cdjProcesarSemana_` | función | 18_CorreccionGuerra.gs | 7284 | Contexto_Base_Web.md §PF123 |
 | `_cdjRepartirSerieMenos_` | función | 18_CorreccionGuerra.gs | 7506 | Contexto_Base_Web.md §PF123 |
-| `_cdlFilasClanes_` | función | 60_Control_Medallas_API.gs | 971 |  |
-| `_cdlGuardar_` | función | 60_Control_Medallas_API.gs | 1031 |  |
-| `_cdlMezclarFilas_` | función | 60_Control_Medallas_API.gs | 1001 |  |
-| `_cdlProcesarEnvio_` | función | 60_Control_Medallas_API.gs | 1064 |  |
+| `_cdlFilasClanes_` | función | 60_Control_Medallas_API.gs | 1028 |  |
+| `_cdlGuardar_` | función | 60_Control_Medallas_API.gs | 1088 |  |
+| `_cdlMezclarFilas_` | función | 60_Control_Medallas_API.gs | 1058 |  |
+| `_cdlProcesarEnvio_` | función | 60_Control_Medallas_API.gs | 1121 |  |
 | `_celdaVaciaGuerra_` | función | 17_GuerraSheet.gs | 6772 |  |
 | `_cerradosDesdeJsonGuerra_` | función | 17_GuerraSheet.gs | 3590 | Contexto_Base_Web.md §17B137 |
 | `_cerrarDomingoConCapturaLunes_` | función | 17_GuerraSheet.gs | 2892 | Contexto_Base_Web.md §PF430 |
@@ -546,27 +546,27 @@ Ninguno.
 | `_clLiga` | función | 33_CaminoLeyendas.gs | 199 |  |
 | `_clNumero` | función | 33_CaminoLeyendas.gs | 180 |  |
 | `_clonarCtxParaTemporada` | función | 22_ControlCalendario.gs | 835 | Contexto_Base_Web.md §22B037 |
-| `_clrDiaDePagina_` | función | 60_Control_Medallas_API.gs | 657 |  |
-| `_clrFilasLectura_` | función | 60_Control_Medallas_API.gs | 698 |  |
-| `_clrGuardarLecturas_` | función | 60_Control_Medallas_API.gs | 764 |  |
-| `_clrMezclarFilas_` | función | 60_Control_Medallas_API.gs | 733 |  |
-| `_clrProcesarEnvio_` | función | 60_Control_Medallas_API.gs | 795 |  |
-| `_clrResolverDia_` | función | 60_Control_Medallas_API.gs | 676 |  |
+| `_clrDiaDePagina_` | función | 60_Control_Medallas_API.gs | 664 |  |
+| `_clrFilasLectura_` | función | 60_Control_Medallas_API.gs | 705 |  |
+| `_clrGuardarLecturas_` | función | 60_Control_Medallas_API.gs | 771 |  |
+| `_clrMezclarFilas_` | función | 60_Control_Medallas_API.gs | 740 |  |
+| `_clrProcesarEnvio_` | función | 60_Control_Medallas_API.gs | 802 |  |
+| `_clrResolverDia_` | función | 60_Control_Medallas_API.gs | 683 |  |
 | `_clTemporada` | función | 33_CaminoLeyendas.gs | 189 |  |
-| `_cmaCierreSemana_` | función | 60_Control_Medallas_API.gs | 310 |  |
-| `_cmaControlClanes_` | función | 60_Control_Medallas_API.gs | 186 |  |
-| `_cmaDiasApiPorSemana_` | función | 60_Control_Medallas_API.gs | 452 |  |
-| `_cmaFilasDeCierre_` | función | 60_Control_Medallas_API.gs | 349 |  |
-| `_cmaFilasDeControl_` | función | 60_Control_Medallas_API.gs | 241 |  |
-| `_cmaFilasMedallasDia_` | función | 60_Control_Medallas_API.gs | 600 |  |
-| `_cmaFilasRespaldoWeb_` | función | 60_Control_Medallas_API.gs | 480 |  |
-| `_cmaGuardarControlDeCorrida_` | función | 60_Control_Medallas_API.gs | 378 |  |
-| `_cmaMedallasDiaHoja_` | función | 60_Control_Medallas_API.gs | 550 |  |
-| `_cmaMezclarFilas_` | función | 60_Control_Medallas_API.gs | 271 |  |
-| `_cmaMezclarFilasDia_` | función | 60_Control_Medallas_API.gs | 628 |  |
-| `_cmaMezclarFilasWeb_` | función | 60_Control_Medallas_API.gs | 515 |  |
-| `_cmaNombreClanWeb_` | función | 60_Control_Medallas_API.gs | 409 |  |
-| `_cmaTotalesSemanaWeb_` | función | 60_Control_Medallas_API.gs | 421 |  |
+| `_cmaCierreSemana_` | función | 60_Control_Medallas_API.gs | 317 |  |
+| `_cmaControlClanes_` | función | 60_Control_Medallas_API.gs | 193 |  |
+| `_cmaDiasApiPorSemana_` | función | 60_Control_Medallas_API.gs | 459 |  |
+| `_cmaFilasDeCierre_` | función | 60_Control_Medallas_API.gs | 356 |  |
+| `_cmaFilasDeControl_` | función | 60_Control_Medallas_API.gs | 248 |  |
+| `_cmaFilasMedallasDia_` | función | 60_Control_Medallas_API.gs | 607 |  |
+| `_cmaFilasRespaldoWeb_` | función | 60_Control_Medallas_API.gs | 487 |  |
+| `_cmaGuardarControlDeCorrida_` | función | 60_Control_Medallas_API.gs | 385 |  |
+| `_cmaMedallasDiaHoja_` | función | 60_Control_Medallas_API.gs | 557 |  |
+| `_cmaMezclarFilas_` | función | 60_Control_Medallas_API.gs | 278 |  |
+| `_cmaMezclarFilasDia_` | función | 60_Control_Medallas_API.gs | 635 |  |
+| `_cmaMezclarFilasWeb_` | función | 60_Control_Medallas_API.gs | 522 |  |
+| `_cmaNombreClanWeb_` | función | 60_Control_Medallas_API.gs | 416 |  |
+| `_cmaTotalesSemanaWeb_` | función | 60_Control_Medallas_API.gs | 428 |  |
 | `_cmpSemanaClan_` | función | 15_DeteccionInfiltrados.gs | 1444 |  |
 | `_cnvCompararNuevosConGuerra_` | función | 18_CorreccionGuerra.gs | 3449 |  |
 | `_coberturaGuerraCacheGet_` | función | 18_CorreccionGuerra.gs | 4720 | Contexto_Base_Web.md §PF042 |
@@ -757,10 +757,11 @@ Ninguno.
 | `_decidirNuevosDeFilas_` | función | 14_Nuevos_RoyaleAPI.gs | 2310 |  |
 | `_decidirPropuestaCRRealizada_` | función | 24_Historial_Ascensos.gs | 1641 | Contexto_Base_Web.md §PF286 |
 | `_decidirRellamadaPaso_` | función | 00_Main.gs | 2384 | Contexto_Base_Web.md §PF292 |
-| `_defensasEvaluarPar_` | función | 60_Control_Medallas_API.gs | 837 |  |
-| `_defensasInformeFuentes_` | función | 60_Control_Medallas_API.gs | 875 |  |
-| `_defensasNumero_` | función | 60_Control_Medallas_API.gs | 856 |  |
-| `_defensasTablaSumas_` | función | 60_Control_Medallas_API.gs | 817 |  |
+| `_defensasAnomaliasCruce_` | función | 60_Control_Medallas_API.gs | 976 |  |
+| `_defensasEvaluarPar_` | función | 60_Control_Medallas_API.gs | 844 |  |
+| `_defensasInformeFuentes_` | función | 60_Control_Medallas_API.gs | 882 |  |
+| `_defensasNumero_` | función | 60_Control_Medallas_API.gs | 863 |  |
+| `_defensasTablaSumas_` | función | 60_Control_Medallas_API.gs | 824 |  |
 | `_definicionNotasColumnas_` | función | 02_Setup_Hojas.gs | 1180 | Contexto_Base_Web.md §PF286 |
 | `_derivarClanClanTagDesdeTagOrg` | función | 26_Torneos_Core.gs | 1632 | Contexto_Base_Web.md §26B194 |
 | `_desactivarGridlines` | función | 01_Config_Global.gs | 1434 |  |
@@ -2433,10 +2434,10 @@ Ninguno.
 | `CLR_CSV` | global | 60_Control_Medallas_API.gs | 37 | Contexto_Base_Web.md §PF584 punto 13 |
 | `CLR_ENCABEZADOS` | global | 60_Control_Medallas_API.gs | 38 |  |
 | `CMA_CSV` | global | 60_Control_Medallas_API.gs | 21 |  |
-| `CMA_DIAS_GUERRA_POR_SEMANA` | global | 60_Control_Medallas_API.gs | 166 |  |
+| `CMA_DIAS_GUERRA_POR_SEMANA` | global | 60_Control_Medallas_API.gs | 173 |  |
 | `CMA_ENCABEZADOS` | global | 60_Control_Medallas_API.gs | 23 |  |
 | `CMA_LETRAS_DIAS` | global | 60_Control_Medallas_API.gs | 22 |  |
-| `CMA_PRIMER_DIA_GUERRA_OFFSET` | global | 60_Control_Medallas_API.gs | 165 |  |
+| `CMA_PRIMER_DIA_GUERRA_OFFSET` | global | 60_Control_Medallas_API.gs | 172 |  |
 | `CMC` | global | 11_DirectorioSheet.gs | 75 | Contexto_Base_Web.md §11B006 |
 | `CMD_CSV` | global | 60_Control_Medallas_API.gs | 32 | Contexto_Base_Web.md §PF584 |
 | `CMD_ENCABEZADOS` | global | 60_Control_Medallas_API.gs | 33 |  |
@@ -2772,7 +2773,7 @@ Ninguno.
 | `informeAnomaliasAtaquesSemana` | función | 48_Herramientas_Debug.gs | 698 |  |
 | `informeBattlelogContraGuerra` | función | 18_CorreccionGuerra.gs | 525 | Contexto_Base_Web.md §18B058 |
 | `informeCorreccionConClanTag` | función | 18_CorreccionGuerra.gs | 355 | Contexto_Base_Web.md §18B027 |
-| `informeDefensasContraFuentes` | función | 60_Control_Medallas_API.gs | 141 | Contexto_Base_Web.md §PF585 punto 13 |
+| `informeDefensasContraFuentes` | función | 60_Control_Medallas_API.gs | 142 | Contexto_Base_Web.md §PF585 punto 13 |
 | `informeFameCurrentRiverRace52` | función | 55_Reparar_DiasConExceso.gs | 134 |  |
 | `informeFilasEnCeroFueraDelClanGuerra` | función | 17_GuerraSheet.gs | 5000 | Contexto_Base_Web.md §PF567 |
 | `informeHojaContraCorrecciones` | función | 18_CorreccionGuerra.gs | 414 | Contexto_Base_Web.md §18B124 |
