@@ -5162,6 +5162,95 @@ function _borrarFilasA2ListaFijaGuerra_(aplicar) {
 }
 
 /**
+ * FILAS_N2A_LISTA_FIJA_ [→ Contexto_Base_Web.md §PF587]
+ * Las 27 filas en cero de las 18 series «N2a» de §PF586: ese día el jugador tiene en la hoja una fila NO reconstruida, con ataques, barcos o fame, en otro clan, para todos los días en cero de la serie (el único nivel de evidencia que §PF586 recomendó borrar). La fila se identifica por tag + clanTag + fecha (dd/mm/aaaa); n es el N° de Backup_Guerra.csv del 27-nov-2026 y es SOLO informativo (el N° cambia al borrar o renumerar; §PF570 punto 4). nivel 2 = ese mismo día el jugador atacó en otro clan.
+ */
+var FILAS_N2A_LISTA_FIJA_ = [
+  { n: '17805', tag: '#8YCLY8CRU', clanTag: '#GYCU9YRG', fecha: '11/06/2026', nivel: 2 },
+  { n: '17810', tag: '#JCUPQ88J', clanTag: '#GCRG8L00', fecha: '11/06/2026', nivel: 2 },
+  { n: '17807', tag: '#QRQULCCV8', clanTag: '#GYCU9YRG', fecha: '11/06/2026', nivel: 2 },
+  { n: '17808', tag: '#QRQULCCV8', clanTag: '#GYCU9YRG', fecha: '12/06/2026', nivel: 2 },
+  { n: '27986', tag: '#UYU0PGUYJ', clanTag: '#GYCU9YRG', fecha: '11/06/2026', nivel: 2 },
+  { n: '17818', tag: '#Y8CVG9VYL', clanTag: '#GCRG8L00', fecha: '11/06/2026', nivel: 2 },
+  { n: '17843', tag: '#LRQ8YJRCU', clanTag: '#GQQPPJGR', fecha: '02/07/2026', nivel: 2 },
+  { n: '27999', tag: '#JVVG9YUG0', clanTag: '#GYCU9YRG', fecha: '16/07/2026', nivel: 2 },
+  { n: '28000', tag: '#JVVG9YUG0', clanTag: '#GYCU9YRG', fecha: '17/07/2026', nivel: 2 },
+  { n: '28011', tag: '#QRQULCCV8', clanTag: '#GCRG8L00', fecha: '23/07/2026', nivel: 2 },
+  { n: '18156', tag: '#RR8CRJPUV', clanTag: '#GCRG8L00', fecha: '30/07/2026', nivel: 2 },
+  { n: '28022', tag: '#V9L9V9YV0', clanTag: '#GCRG8L00', fecha: '06/08/2026', nivel: 2 },
+  { n: '18170', tag: '#8YCLY8CRU', clanTag: '#GYCU9YRG', fecha: '13/08/2026', nivel: 2 },
+  { n: '18177', tag: '#J8V9PQJP9', clanTag: '#GQQPPJGR', fecha: '13/08/2026', nivel: 2 },
+  { n: '18178', tag: '#J8V9PQJP9', clanTag: '#GQQPPJGR', fecha: '14/08/2026', nivel: 2 },
+  { n: '18183', tag: '#JCUPQ88J', clanTag: '#GCRG8L00', fecha: '13/08/2026', nivel: 2 },
+  { n: '28530', tag: '#Y8CVG9VYL', clanTag: '#GCRG8L00', fecha: '20/08/2026', nivel: 2 },
+  { n: '28531', tag: '#Y8CVG9VYL', clanTag: '#GCRG8L00', fecha: '21/08/2026', nivel: 2 },
+  { n: '28532', tag: '#Y8CVG9VYL', clanTag: '#GCRG8L00', fecha: '22/08/2026', nivel: 2 },
+  { n: '18267', tag: '#JR9J0JCQ9', clanTag: '#GCRG8L00', fecha: '27/08/2026', nivel: 2 },
+  { n: '18268', tag: '#JR9J0JCQ9', clanTag: '#GCRG8L00', fecha: '28/08/2026', nivel: 2 },
+  { n: '18269', tag: '#JR9J0JCQ9', clanTag: '#GCRG8L00', fecha: '29/08/2026', nivel: 2 },
+  { n: '30745', tag: '#8VU0Y9LJ0', clanTag: '#GYCU9YRG', fecha: '15/10/2026', nivel: 2 },
+  { n: '30746', tag: '#8VU0Y9LJ0', clanTag: '#GYCU9YRG', fecha: '16/10/2026', nivel: 2 },
+  { n: '30747', tag: '#8VU0Y9LJ0', clanTag: '#GYCU9YRG', fecha: '17/10/2026', nivel: 2 },
+  { n: '30950', tag: '#U8G029GUQ', clanTag: '#GYCU9YRG', fecha: '22/10/2026', nivel: 2 },
+  { n: '30953', tag: '#UYU0PGUYJ', clanTag: '#GYCU9YRG', fecha: '22/10/2026', nivel: 2 }
+];
+
+/**
+ * borrarFilasN2aListaFijaGuerraInforme() [→ Contexto_Base_Web.md §PF587]
+ * SOLO INFORMA: deja en Drive «Borrar_Filas_N2a_Lista_Fija_Guerra <fecha> (informe).csv» con lo que se borraría de las 27 filas de FILAS_N2A_LISTA_FIJA_. No cambia Backup_Guerra.csv.
+ */
+function borrarFilasN2aListaFijaGuerraInforme() { _borrarFilasN2aListaFijaGuerra_(false); }
+
+/**
+ * borrarFilasN2aListaFijaGuerraAplicar() [→ Contexto_Base_Web.md §PF587]
+ * Borra de Backup_Guerra.csv las filas de FILAS_N2A_LISTA_FIJA_ que sigan coincidiendo (decisión de la usuaria del 27-nov-2026 tras §PF586). Misma guarda que borrarFilasA2ListaFijaGuerraAplicar(): respaldo previo «Backup_Guerra ANTES de borrar lista fija N2a <fecha>.csv», candado de script y tope (no puede borrar más de las 27 de la lista). No renumera N°. Después correr generarGuerraDesglose().
+ */
+function borrarFilasN2aListaFijaGuerraAplicar() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('[FilasN2aListaFija] Hay otra ejecucion en curso; se cancela para no pisar datos. Reintentar en unos minutos.'); return; }
+  try { _borrarFilasN2aListaFijaGuerra_(true); } finally { lock.releaseLock(); }
+}
+
+/**
+ * _borrarFilasN2aListaFijaGuerra_(aplicar) [→ Contexto_Base_Web.md §PF587]
+ * Mismo motor que _borrarFilasA2ListaFijaGuerra_() (§PF570), con la lista de N2a. Reutiliza _filasA2ListaFijaPlan_() (función pura, genérica en la lista): busca cada fila por Tag + Clan_Tag + día de Fecha y la borra solo si aparece UNA vez, es etapa Guerra, Origen «Reconstruido…», AtaquesHoy, Barcos y Fame en 0, y no es de la temporada más reciente.
+ */
+function _borrarFilasN2aListaFijaGuerra_(aplicar) {
+  var marca = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH.mm.ss');
+  var csvText = _loadCSVFromDrive('Backup_Guerra.csv');
+  if (!csvText) { Logger.log('[FilasN2aListaFija] Backup_Guerra.csv no existe o esta vacio; no se hace nada.'); return; }
+  var parsed = _parseCSV(csvText);
+  if (!parsed || parsed.length < 2) { Logger.log('[FilasN2aListaFija] Backup_Guerra.csv no tiene filas de datos; no se hace nada.'); return; }
+  var encabezado = parsed[0], filas = parsed.slice(1);
+  if (String(encabezado[GC.NUM - 1] || '').trim() !== 'N°' || String(encabezado[GC.TAG - 1] || '').trim() !== 'Tag' || String(encabezado[GC.ORIGEN - 1] || '').trim() !== 'Origen' || String(encabezado[GC.CLAN_TAG - 1] || '').trim() !== 'Clan_Tag' || String(encabezado[GC.ETAPA - 1] || '').trim() !== 'Etapa') {
+    Logger.log('[FilasN2aListaFija] El encabezado de Backup_Guerra.csv no tiene el orden actual de columnas; no se toca nada.');
+    return;
+  }
+  for (var a = 0; a < filas.length; a++) { while (filas[a].length < GUERRA_TOTAL_COLS) filas[a].push(''); }
+  var maxTemp = 0;
+  filas.forEach(function (f) { var t = Number(String(f[GC.TEMPORADA - 1]).trim()); if (!isNaN(t) && t > maxTemp) maxTemp = t; });
+  var plan = _filasA2ListaFijaPlan_(filas, FILAS_N2A_LISTA_FIJA_, maxTemp);
+  var informe = [['Estado', 'N°', 'Fecha', 'Dia', 'Temporada', 'Semana', 'PeriodIndex', 'Tag', 'Nombre', 'Clan_Tag', 'Detalle']];
+  var noBorra = 0;
+  plan.detalle.forEach(function (d) {
+    if (d[0] !== 'BORRAR') noBorra++;
+    var f = d[1] >= 0 ? filas[d[1]] : null;
+    informe.push([d[0] === 'BORRAR' && aplicar ? 'BORRADA' : d[0], f ? f[GC.NUM - 1] : d[3].n, f ? f[GC.FECHA - 1] : d[3].fecha, f ? f[GC.DIA - 1] : '', f ? f[GC.TEMPORADA - 1] : '', f ? f[GC.SEMANA - 1] : '', f ? f[GC.PERIOD_IDX - 1] : '', d[3].tag, f ? f[GC.NOMBRE - 1] : '', d[3].clanTag, d[2]]);
+  });
+  var hecho = false;
+  if (aplicar && plan.borrar.length) {
+    _saveCSVToDrive('Backup_Guerra ANTES de borrar lista fija N2a ' + marca + '.csv', csvText);
+    var quitar = {};
+    plan.borrar.forEach(function (i) { quitar[i] = true; });
+    _saveCSVToDrive('Backup_Guerra.csv', _encodeCSV([encabezado].concat(filas.filter(function (f, i) { return !quitar[i]; }))));
+    hecho = true;
+  }
+  var nombreInforme = 'Borrar_Filas_N2a_Lista_Fija_Guerra ' + marca + ' (' + (aplicar ? 'aplicado' : 'informe') + ').csv';
+  _saveCSVToDrive(nombreInforme, _encodeCSVInforme(informe));
+  Logger.log('[FilasN2aListaFija] ' + (aplicar ? 'APLICAR' : 'SOLO INFORMAR') + '. En la lista: ' + FILAS_N2A_LISTA_FIJA_.length + '. A borrar: ' + plan.borrar.length + (hecho ? ' (borradas)' : '') + '. No se borran: ' + noBorra + '. ' + (aplicar ? (hecho ? 'Falta correr generarGuerraDesglose(). ' : '') : 'No se escribio nada; para borrar correr borrarFilasN2aListaFijaGuerraAplicar(). ') + 'Detalle en Drive: ' + nombreInforme + '.');
+}
+
+/**
  * _clanTagPlanInactivos_(inact, fuentes) [→ Contexto_Base_Web.md §PF423]
  * Función pura (no toca Drive ni hojas). inact: filas parseadas de Backup_Inactivos.csv CON encabezado. fuentes: [{ nombre, filas }], cada una con encabezado y con columnas Tag y ClanTag (o Clan_Tag).
  * Una fila de Inactivos entra al plan solo si trae Clan y ClanTag vacíos. «Confirmada»: dos o más fuentes distintas coinciden en UN solo Tag. «Probable» (no se aplicaría): una sola fuente con UN Tag.
