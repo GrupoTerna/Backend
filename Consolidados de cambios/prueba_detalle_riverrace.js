@@ -71,4 +71,56 @@ assert.strictEqual(mala.incoherentesDetalle[0], '#GCRG8L00 S1 V: 330 (13) no es 
 const muchas = _cdlFilasClanes_(Array.from({ length: 8 }, (_, i) => c('#GCRG8L00', 'T', 1, 1 + (i % 4), 1, 3000, 1000 + i, 434, 14, 3434 + i)).map((x, i) => Object.assign(x, { semana: 1 + Math.floor(i / 4) })), 39, 9, 'x');
 assert.strictEqual(muchas.incoherentes, 8); assert.strictEqual(muchas.incoherentesDetalle.length, 5, 'el detalle se limita a 5');
 
+// 5) Informe de defensas, API contra web (_defensasInformeFuentes_, §PF585 punto 13). Valores reales de Grupo乂Terna™ y la famila royal, temporada 39, semana 2 y 3.
+const encApi = ['Temporada', 'Semana', 'Día', 'Clan', 'Tag', 'PointsEarned', 'ProgressStartOfDay', 'ProgressEndOfDay', 'EndOfDayRank', 'ProgressEarned', 'NumOfDefensesRemaining', 'ProgressEarnedFromDefenses', 'Estado'];
+const ra = (t, s, d, clan, tag, pts, ini, fin, rango, puesto, n, p, estado) => [t, s, d, clan, tag, pts, ini, fin, rango, puesto, n, p, estado];
+const encWeb = CDL_ENCABEZADOS.slice();
+const rw = (t, s, d, tag, clan, puesto, fame, premioPuesto, premioDef, n, total) => [t, s, d, tag, clan, puesto, fame, premioPuesto, premioDef, n, total, 'x'];
+const apiOk = [encApi,
+  ra(39, 2, 'J', 'Grupo乂Terna™', '#GCRG8L00', 32050, 0, 3435, 0, 3000, 15, 435, 'Leído'),
+  ra(39, 2, 'V', 'Grupo乂Terna™', '#GCRG8L00', 26250, 3435, 4358, 3, 600, 13, 323, 'Leído'),
+  ra(39, 3, 'D', 'Grupo乂Terna™', '#GCRG8L00', 0, 10034, 10034, -1, 0, 0, 0, 'Leído'),            // ya cruzó: -1 en la API y 0 en la web
+  ra(39, 3, 'D', 'la famila royal', '#YQUUCQQ0', 27150, 0, 1365, 2, 1000, 13, 365, 'Leído'),
+  ra(39, 4, 'D', 'Rival', '#AAA', 5000, 0, 0, 0, 0, '', '', 'Estimado')];                           // domingo provisional: sin defensas
+const webOk = [encWeb,
+  rw(39, 2, 'J', '#GCRG8L00', 'Grupo乂Terna™', 1, 32050, 3000, 435, 15, 3435),
+  rw(39, 2, 'V', '#GCRG8L00', 'Grupo乂Terna™', 4, 26250, 600, 323, 13, 923),
+  rw(39, 3, 'D', '#GCRG8L00', 'Grupo乂Terna™', 0, 0, 0, 0, 0, 0),
+  rw(39, 3, 'D', '#YQUUCQQ0', 'la famila royal', 3, 27150, 1000, 365, 13, 1365)];
+let inf = _defensasInformeFuentes_(apiOk, webOk);
+assert.strictEqual(inf.ok, true);
+assert.deepStrictEqual([inf.api.filas, inf.api.validos, inf.api.invalidos, inf.api.vacios, inf.api.provisionales], [5, 4, 0, 1, 1]);
+assert.deepStrictEqual([inf.web.filas, inf.web.validos, inf.web.invalidos, inf.web.totalesNoSuman], [4, 4, 0, 0]);
+assert.deepStrictEqual([inf.cruce.comparables, inf.cruce.coinciden, inf.cruce.difieren, inf.cruce.sinFilaApi, inf.cruce.apiSinDato], [4, 4, 0, 0, 0]);
+assert.deepStrictEqual(inf.identidad, { cumple: 4, tope: 0, falla: 0 }, 'las 4 filas leídas cumplen; la provisional «Estimado» no se mira');
+assert.deepStrictEqual(inf.detalle, [], 'sin diferencias no hay líneas de detalle');
+// Un clan que ya cruzó (avance 10000 al inicio y al fin, 0 de premios) cumple la identidad; el que llega a 10000 con premios de más queda como tope
+const apiTope2 = [encApi, ra(39, 3, 'D', 'X', '#GCRG8L00', 0, 9000, 10000, -1, 600, 0, 0, 'Leído')];
+assert.deepStrictEqual(_defensasInformeFuentes_(apiTope2, [encWeb]).identidad, { cumple: 0, tope: 1, falla: 0 }, 'avance topado en 10000');
+const apiFalla = [encApi, ra(39, 3, 'S', 'X', '#GCRG8L00', 0, 1000, 5000, 1, 600, 14, 376, 'Leído')];
+const fa = _defensasInformeFuentes_(apiFalla, [encWeb]);
+assert.deepStrictEqual(fa.identidad, { cumple: 0, tope: 0, falla: 1 }); assert.ok(/Identidad del avance, T39 S3 S X/.test(fa.detalle[0]));
+// Diferencias entre fuentes: se cuentan por campo y se listan; la API no se corrige
+const webMal = [encWeb, rw(39, 2, 'J', '#GCRG8L00', 'Grupo乂Terna™', 2, 32000, 1800, 376, 14, 2176)];
+inf = _defensasInformeFuentes_(apiOk, webMal);
+assert.deepStrictEqual([inf.cruce.comparables, inf.cruce.coinciden, inf.cruce.difieren], [1, 0, 1]);
+assert.deepStrictEqual(inf.diferencias, { defensas: 1, premioDefensas: 1, fama: 1, premioPuesto: 1, puesto: 1 });
+assert.ok(inf.detalle.some(l => /^Difieren, T39 S2 J Grupo乂Terna™ \(#GCRG8L00\): defensas \(API 15, web 14\)/.test(l)));
+// Pares incoherentes en cada fuente, total de la web que no suma, fila sin API y API provisional o sin dato
+const apiMala = [encApi, ra(39, 2, 'J', 'A', '#AAA', 100, 0, 1, 0, 600, 14, 380, 'Leído')];
+assert.deepStrictEqual([_defensasInformeFuentes_(apiMala, [encWeb]).api.invalidos, _defensasInformeFuentes_(apiMala, [encWeb]).api.validos], [1, 0]);
+const webMala = [encWeb, rw(39, 2, 'J', '#BBB', 'B', 3, 100, 1000, 330, 13, 1330), rw(39, 2, 'V', '#CCC', 'C', 3, 100, 1000, 276, 12, 9999), rw(39, 4, 'D', '#AAA', 'A', 1, 1, 1, 1, 1, 2)];
+inf = _defensasInformeFuentes_([encApi, ra(39, 4, 'D', 'A', '#AAA', 1, 0, 0, 0, 0, '', '', 'Estimado')], webMala);
+assert.deepStrictEqual([inf.web.invalidos, inf.web.totalesNoSuman, inf.cruce.sinFilaApi, inf.cruce.apiSinDato, inf.cruce.comparables], [2, 1, 2, 1, 0]);
+// La comparación no depende de mayúsculas del Tag ni de espacios, ni de un BOM en el encabezado
+const encBom = encWeb.slice(); encBom[0] = '\uFEFF' + encBom[0];
+assert.strictEqual(_defensasInformeFuentes_(apiOk, [encBom, rw(' 39', '2 ', 'j', '#gcrg8l00 ', 'x', 1, 32050, 3000, 435, 15, 3435)]).cruce.coinciden, 1);
+// Faltan columnas: no se inventa nada
+const sinCol = _defensasInformeFuentes_([['Temporada']], webOk); assert.strictEqual(sinCol.ok, false); assert.ok(/Faltan columnas/.test(sinCol.error));
+assert.strictEqual(_defensasInformeFuentes_(null, null).ok, false);
+// El detalle se limita a 20 líneas y se cuenta lo que no se lista
+const muchasW = [encWeb].concat(Array.from({ length: 25 }, (_, i) => rw(39, 1, 'J', '#M' + i, 'M', 1, 1, 3000, 330, 14, 3330)));
+const lim = _defensasInformeFuentes_([encApi], muchasW); assert.strictEqual(lim.detalle.length, 20); assert.strictEqual(lim.detalleOmitido, 5);
+assert.strictEqual(_defensasNumero_(''), null); assert.strictEqual(_defensasNumero_(' 12 '), 12); assert.strictEqual(_defensasNumero_('x'), null); assert.strictEqual(_defensasNumero_(null), null);
+
 console.log('OK: prueba_detalle_riverrace');

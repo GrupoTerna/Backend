@@ -3,13 +3,14 @@
  *
  * Índice del orden (criterios de 0.9 de la skill):
  *   1. Funciones que la usuaria corre a mano: estadoControlMedallasApi() (solo lectura; parte 2), actualizarControlMedallasWeb() (parte 3, escribe Control_Medallas_Web.csv; también la dispara el activador semanal de 08_Activadores.gs)
- *      e informeMedallasPorDiaContraApi() (parte 4, opción A: solo informa; escribe Control_Medallas_Dia.csv).
+ *      informeMedallasPorDiaContraApi() (parte 4, opción A: solo informa; escribe Control_Medallas_Dia.csv) e informeDefensasContraFuentes() (§PF585 punto 13: solo informa; no escribe nada).
  *   2. No manuales, tema «control de medallas», en el orden en que se usan:
  *        _cmaControlClanes_() (parte 1, pura) -> _cmaFilasDeControl_() y _cmaMezclarFilas_() (parte 2, puras) -> _cmaCierreSemana_() y _cmaFilasDeCierre_() (cierre del domingo en el lunes, puras)
  *        -> _cmaGuardarControlDeCorrida_() (parte 2, escribe el CSV)
  *        -> _cmaNombreClanWeb_(), _cmaTotalesSemanaWeb_(), _cmaDiasApiPorSemana_(), _cmaFilasRespaldoWeb_() y _cmaMezclarFilasWeb_() (parte 3, puras)
  *        -> _cmaMedallasDiaHoja_(), _cmaFilasMedallasDia_() y _cmaMezclarFilasDia_() (parte 4, opción A, puras)
  *        -> _clrDiaDePagina_(), _clrResolverDia_(), _clrFilasLectura_() y _clrMezclarFilas_() (lecturas de la página River Race de RoyaleAPI, puras) -> _clrGuardarLecturas_() y _clrProcesarEnvio_() (escriben Lecturas_RiverRace.csv)
+ *        -> _defensasTablaSumas_(), _defensasEvaluarPar_(), _defensasNumero_() y _defensasInformeFuentes_() (defensas del barco: validar un par y comparar la API con la web, puras)
  *        -> _cdlFilasClanes_() y _cdlMezclarFilas_() (bloque `Detail` por clan y día, puras) -> _cdlGuardar_() y _cdlProcesarEnvio_() (escriben Lecturas_RiverRace_Clanes.csv).
  *      Quien la llama: updateGuerraSheet() (17_GuerraSheet.gs), una vez por corrida, junto a la corrección automática del cierre del día.
  *
@@ -127,6 +128,33 @@ function informeMedallasPorDiaContraApi() {
   Logger.log('[Control medallas día] ' + filas.length + ' clan-día(s) de clanes Terna; por estado: ' + JSON.stringify(porEstado) + '; ' + m.nuevas + ' fila(s) nueva(s), ' +
     m.actualizadas + ' actualizada(s)' + ((m.nuevas + m.actualizadas) ? '.' : '; sin cambios, no se escribió.') +
     (mayores.length ? ' Mayores residuos: ' + mayores.join(' | ') : ' Ningún día difiere.'));
+}
+
+/**
+ * informeDefensasContraFuentes() [→ Contexto_Base_Web.md §PF585 punto 13]
+ * Manual (proyecto Base): SOLO INFORMA; no escribe en hojas ni en Drive. Compara, por clan y día de guerra, las defensas del barco que da la API (Backup_Guerra_Logs.csv:
+ * NumOfDefensesRemaining y ProgressEarnedFromDefenses, más PointsEarned, ProgressEarned y EndOfDayRank) con las de la web (Lecturas_RiverRace_Clanes.csv, el bloque `Detail`
+ * que lee Tampermonkey). Cuenta los pares (defensas en pie, premio de defensas) que no son una suma posible de los puntos por puesto 59 a 5 (_defensasEvaluarPar_), las
+ * diferencias entre las dos fuentes (defensas, premio de defensas, fama del día, premio del puesto y puesto) y los totales de la web que no suman. La API manda siempre:
+ * la comparación no corrige nada, solo avisa; un día de la API «Estimado» (domingo provisional) no se compara.
+ */
+function informeDefensasContraFuentes() {
+  var textoApi = _loadCSVFromDrive('Backup_Guerra_Logs.csv');
+  if (!textoApi) { Logger.log('[Defensas contra fuentes] No se encontró Backup_Guerra_Logs.csv; no se hizo nada.'); return; }
+  var textoWeb = _loadCSVFromDrive(CDL_CSV);
+  if (!textoWeb) { Logger.log('[Defensas contra fuentes] Todavía no existe ' + CDL_CSV + ' (lo crea Tampermonkey al leer el bloque `Detail`); no hay web con la que comparar.'); return; }
+  var r = _defensasInformeFuentes_(_parseCSV(textoApi), _parseCSV(textoWeb));
+  if (!r.ok) { Logger.log('[Defensas contra fuentes] AVISO: ' + r.error + '. No se hizo nada.'); return; }
+  Logger.log('[Defensas contra fuentes] API (Backup_Guerra_Logs.csv): ' + r.api.filas + ' fila(s); con defensas ' + (r.api.validos + r.api.invalidos) + ' (' + r.api.validos + ' válidas, ' +
+    r.api.invalidos + ' incoherentes); sin dato ' + r.api.vacios + ' (de ellas ' + r.api.provisionales + ' domingos provisionales «Estimado»). Identidad del avance (fin = inicio + puesto + defensas): cumple ' +
+    r.identidad.cumple + ', tope de 10000 ' + r.identidad.tope + ', no cumple ' + r.identidad.falla + '.');
+  Logger.log('[Defensas contra fuentes] Web (' + CDL_CSV + '): ' + r.web.filas + ' clan-día(s); con defensas ' + (r.web.validos + r.web.invalidos) + ' (' + r.web.validos + ' válidas, ' +
+    r.web.invalidos + ' incoherentes); sin dato ' + r.web.vacios + '; totales que no suman: ' + r.web.totalesNoSuman + '.');
+  Logger.log('[Defensas contra fuentes] Cruce API–web: ' + r.cruce.comparables + ' clan-día(s) comparables; coinciden ' + r.cruce.coinciden + ', difieren ' + r.cruce.difieren +
+    ' (defensas ' + r.diferencias.defensas + ', premio de defensas ' + r.diferencias.premioDefensas + ', fama del día ' + r.diferencias.fama + ', premio del puesto ' + r.diferencias.premioPuesto +
+    ', puesto ' + r.diferencias.puesto + '); sin fila en la API ' + r.cruce.sinFilaApi + '; con la API provisional o sin dato ' + r.cruce.apiSinDato + '.');
+  r.detalle.forEach(function (linea) { Logger.log('[Defensas contra fuentes] ' + linea); });
+  if (r.detalleOmitido > 0) Logger.log('[Defensas contra fuentes] … y ' + r.detalleOmitido + ' más que no se listan.');
 }
 
 // =============================================================================
@@ -820,6 +848,113 @@ function _defensasEvaluarPar_(restantes, puntos) {
   if (!_defensasTablaSumas_()[n][p]) { r.motivo = 'no es suma de n puestos distintos'; return r; }
   r.valido = true;
   return r;
+}
+
+/**
+ * _defensasNumero_(v) — número de una celda de CSV, o null si está vacía o no es numérica. Función pura.
+ */
+function _defensasNumero_(v) {
+  if (v === null || v === undefined) return null;
+  var t = String(v).trim();
+  if (t === '') return null;
+  var n = Number(t);
+  return isNaN(n) ? null : n;
+}
+
+/**
+ * _defensasInformeFuentes_(filasApi, filasWeb) — compara las defensas del barco de la API con las de la web (§PF585 punto 13). Función pura: no usa Drive ni hojas.
+ * filasApi: filas ya leídas de Backup_Guerra_Logs.csv con su encabezado en la primera (columnas por nombre: Temporada, Semana, Día, Clan, Tag, PointsEarned, ProgressStartOfDay,
+ * ProgressEndOfDay, EndOfDayRank, ProgressEarned, NumOfDefensesRemaining, ProgressEarnedFromDefenses, Estado). filasWeb: lo mismo de Lecturas_RiverRace_Clanes.csv (Temporada, Semana,
+ * Dia, Clan_Tag, Clan, Puesto, FameDia, PremioPuesto, PremioDefensas, DefensasEnPie, Total). La clave del cruce es temporada, semana, día (J, V, S, D) y Tag del clan.
+ * Equivalencias que se comprueban (verificadas con 60 clan-días en §PF585 punto 11): DefensasEnPie = NumOfDefensesRemaining, PremioDefensas = ProgressEarnedFromDefenses,
+ * FameDia = PointsEarned, PremioPuesto = ProgressEarned y Puesto = EndOfDayRank + 1 (el clan que ya cruzó: -1 en la API y 0 en la web). Un día de la API con Estado «Estimado»
+ * (domingo provisional) o sin defensas no se compara (`apiSinDato`). La identidad del avance (fin = inicio + puesto + defensas) falla en los días con el avance topado en 10000, que
+ * se cuentan aparte (`tope`).
+ * Devuelve { ok, error, api, web, identidad, cruce, diferencias, detalle, detalleOmitido }; `detalle` trae hasta 20 líneas de texto. No corrige ni descarta nada.
+ */
+function _defensasInformeFuentes_(filasApi, filasWeb) {
+  var limpiar = function (x) { return String(x === null || x === undefined ? '' : x).replace(/^\uFEFF/, '').trim(); };
+  var indices = function (filas, nombres, etiqueta, faltan) {
+    var enc = ((filas && filas[0]) || []).map(limpiar), ix = {};
+    nombres.forEach(function (n) { ix[n] = enc.indexOf(n); if (ix[n] < 0) faltan.push(etiqueta + ':' + n); });
+    return ix;
+  };
+  var faltan = [];
+  var A = indices(filasApi, ['Temporada', 'Semana', 'Día', 'Clan', 'Tag', 'PointsEarned', 'ProgressStartOfDay', 'ProgressEndOfDay', 'EndOfDayRank', 'ProgressEarned',
+    'NumOfDefensesRemaining', 'ProgressEarnedFromDefenses', 'Estado'], 'API', faltan);
+  var W = indices(filasWeb, ['Temporada', 'Semana', 'Dia', 'Clan_Tag', 'Clan', 'Puesto', 'FameDia', 'PremioPuesto', 'PremioDefensas', 'DefensasEnPie', 'Total'], 'web', faltan);
+  if (faltan.length) return { ok: false, error: 'Faltan columnas (' + faltan.join(', ') + ')' };
+  var celda = function (f, i) { return i < f.length ? f[i] : ''; };
+  var clave = function (t, s, d, tag) { return [limpiar(t), limpiar(s), limpiar(d).toUpperCase(), limpiar(tag).toUpperCase()].join('|'); };
+  var detalle = [], omitidas = 0;
+  var avisa = function (texto) { if (detalle.length < 20) detalle.push(texto); else omitidas++; };
+  var api = { filas: 0, validos: 0, invalidos: 0, vacios: 0, provisionales: 0 };
+  var identidad = { cumple: 0, tope: 0, falla: 0 };
+  var porClave = {};
+  for (var i = 1; i < (filasApi || []).length; i++) {
+    var f = filasApi[i];
+    if (!f || limpiar(celda(f, A['Temporada'])) === '') continue;
+    api.filas++;
+    var estimado = limpiar(celda(f, A['Estado'])) === 'Estimado';
+    var nA = celda(f, A['NumOfDefensesRemaining']), pA = celda(f, A['ProgressEarnedFromDefenses']);
+    var etiquetaA = 'T' + limpiar(celda(f, A['Temporada'])) + ' S' + limpiar(celda(f, A['Semana'])) + ' ' + limpiar(celda(f, A['Día'])) + ' ' + limpiar(celda(f, A['Clan'])) + ' (' + limpiar(celda(f, A['Tag'])) + ')';
+    porClave[clave(celda(f, A['Temporada']), celda(f, A['Semana']), celda(f, A['Día']), celda(f, A['Tag']))] = { fila: f, estimado: estimado };
+    if (_defensasNumero_(nA) === null && _defensasNumero_(pA) === null) {
+      api.vacios++;
+      if (estimado) api.provisionales++;
+    } else {
+      var ev = _defensasEvaluarPar_(_defensasNumero_(nA), _defensasNumero_(pA));
+      if (ev.valido) api.validos++;
+      else { api.invalidos++; avisa('API incoherente, ' + etiquetaA + ': ' + nA + ' defensas y ' + pA + ' puntos (' + ev.motivo + ').'); }
+    }
+    var ini = _defensasNumero_(celda(f, A['ProgressStartOfDay'])), fin = _defensasNumero_(celda(f, A['ProgressEndOfDay'])), pue = _defensasNumero_(celda(f, A['ProgressEarned'])), def = _defensasNumero_(pA);
+    if (!estimado && ini !== null && fin !== null && pue !== null && def !== null) {
+      if (fin === ini + pue + def) identidad.cumple++;
+      else if (fin === 10000) identidad.tope++;
+      else { identidad.falla++; avisa('Identidad del avance, ' + etiquetaA + ': fin ' + fin + ' y inicio + puesto + defensas ' + (ini + pue + def) + '.'); }
+    }
+  }
+  var web = { filas: 0, validos: 0, invalidos: 0, vacios: 0, totalesNoSuman: 0 };
+  var cruce = { comparables: 0, coinciden: 0, difieren: 0, sinFilaApi: 0, apiSinDato: 0 };
+  var dif = { defensas: 0, premioDefensas: 0, fama: 0, premioPuesto: 0, puesto: 0 };
+  for (var j = 1; j < (filasWeb || []).length; j++) {
+    var w = filasWeb[j];
+    if (!w || limpiar(celda(w, W['Temporada'])) === '') continue;
+    web.filas++;
+    var etiquetaW = 'T' + limpiar(celda(w, W['Temporada'])) + ' S' + limpiar(celda(w, W['Semana'])) + ' ' + limpiar(celda(w, W['Dia'])) + ' ' + limpiar(celda(w, W['Clan'])) + ' (' + limpiar(celda(w, W['Clan_Tag'])) + ')';
+    var nW = _defensasNumero_(celda(w, W['DefensasEnPie'])), pW = _defensasNumero_(celda(w, W['PremioDefensas']));
+    if (nW === null && pW === null) web.vacios++;
+    else {
+      var evW = _defensasEvaluarPar_(nW, pW);
+      if (evW.valido) web.validos++;
+      else { web.invalidos++; avisa('Web incoherente, ' + etiquetaW + ': ' + celda(w, W['DefensasEnPie']) + ' defensas y ' + celda(w, W['PremioDefensas']) + ' puntos (' + evW.motivo + ').'); }
+    }
+    var premioPuestoW = _defensasNumero_(celda(w, W['PremioPuesto'])), totalW = _defensasNumero_(celda(w, W['Total']));
+    if (premioPuestoW !== null && pW !== null && totalW !== null && premioPuestoW + pW !== totalW) {
+      web.totalesNoSuman++;
+      avisa('Total de la web que no suma, ' + etiquetaW + ': ' + premioPuestoW + ' + ' + pW + ' y el total dice ' + totalW + '.');
+    }
+    var par = porClave[clave(celda(w, W['Temporada']), celda(w, W['Semana']), celda(w, W['Dia']), celda(w, W['Clan_Tag']))];
+    if (!par) { cruce.sinFilaApi++; continue; }
+    var fa = par.fila;
+    if (par.estimado || (_defensasNumero_(celda(fa, A['NumOfDefensesRemaining'])) === null && _defensasNumero_(celda(fa, A['ProgressEarnedFromDefenses'])) === null)) { cruce.apiSinDato++; continue; }
+    cruce.comparables++;
+    var rangoApi = _defensasNumero_(celda(fa, A['EndOfDayRank'])), puestoW = _defensasNumero_(celda(w, W['Puesto']));
+    var pares = [
+      ['defensas', 'defensas', _defensasNumero_(celda(fa, A['NumOfDefensesRemaining'])), nW],
+      ['premioDefensas', 'premio de defensas', _defensasNumero_(celda(fa, A['ProgressEarnedFromDefenses'])), pW],
+      ['fama', 'fama del día', _defensasNumero_(celda(fa, A['PointsEarned'])), _defensasNumero_(celda(w, W['FameDia']))],
+      ['premioPuesto', 'premio del puesto', _defensasNumero_(celda(fa, A['ProgressEarned'])), premioPuestoW],
+      ['puesto', 'puesto', rangoApi === null ? null : rangoApi + 1, puestoW]
+    ];
+    var distintos = [];
+    pares.forEach(function (x) {
+      if (x[2] !== x[3]) { dif[x[0]]++; distintos.push(x[1] + ' (API ' + (x[2] === null ? 'sin dato' : x[2]) + ', web ' + (x[3] === null ? 'sin dato' : x[3]) + ')'); }
+    });
+    if (distintos.length) { cruce.difieren++; avisa('Difieren, ' + etiquetaW + ': ' + distintos.join('; ') + '.'); }
+    else cruce.coinciden++;
+  }
+  return { ok: true, error: '', api: api, web: web, identidad: identidad, cruce: cruce, diferencias: dif, detalle: detalle, detalleOmitido: omitidas };
 }
 
 /**
