@@ -123,4 +123,32 @@ const muchasW = [encWeb].concat(Array.from({ length: 25 }, (_, i) => rw(39, 1, '
 const lim = _defensasInformeFuentes_([encApi], muchasW); assert.strictEqual(lim.detalle.length, 20); assert.strictEqual(lim.detalleOmitido, 5);
 assert.strictEqual(_defensasNumero_(''), null); assert.strictEqual(_defensasNumero_(' 12 '), 12); assert.strictEqual(_defensasNumero_('x'), null); assert.strictEqual(_defensasNumero_(null), null);
 
+// 6) Avisos del cruce de la meta (_defensasAnomaliasCruce_, §PF585 punto 14). Valores reales de Grupo乂Terna™, T39 semana 3: cruza el sábado (10000) y el domingo queda en 0 y -1.
+const encCr = ['Temporada', 'Semana', 'Día', 'Clan', 'Tag', 'PointsEarned', 'ProgressStartOfDay', 'ProgressEndOfDay', 'EndOfDayRank', 'ProgressEarned', 'NumOfDefensesRemaining', 'ProgressEarnedFromDefenses', 'Estado'];
+const rc = (s, d, pts, ini, fin, rango, pue, n, p, estado = 'Leído', tag = '#GCRG8L00') => [39, s, d, 'Grupo乂Terna™', tag, pts, ini, fin, rango, pue, n, p, estado];
+const real = [encCr, rc(3, 'J', 31050, 0, 3435, 0, 3000, 15, 435), rc(3, 'V', 31750, 3435, 6758, 0, 3000, 13, 323), rc(3, 'S', 31350, 6758, 10000, 0, 3000, 12, 276), rc(3, 'D', 0, 10034, 10034, -1, 0, 0, 0)];
+let cr = _defensasAnomaliasCruce_(real);
+assert.deepStrictEqual([cr.ok, cr.series, cr.cruces, cr.posteriores, cr.domingosEn0, cr.domingosEn0SinCruce], [true, 1, 1, 0, 1, 0], 'el caso real no da ninguna anomalía');
+assert.deepStrictEqual(cr.detalle, []);
+// Actividad después del cruce: el domingo trae puntos y defensas
+cr = _defensasAnomaliasCruce_([encCr, ...real.slice(1, 4), rc(3, 'D', 500, 10000, 10000, 2, 600, 12, 276)]);
+assert.strictEqual(cr.posteriores, 1); assert.ok(/^Después del cruce, T39 S3 Grupo乂Terna™ \(#GCRG8L00\) D: puntos 500/.test(cr.detalle[0])); assert.strictEqual(cr.domingosEn0, 0);
+// Un puesto distinto de -1 después del cruce también cuenta, aunque lo demás esté en 0
+assert.strictEqual(_defensasAnomaliasCruce_([encCr, ...real.slice(1, 4), rc(3, 'D', 0, 10000, 10000, 1, 0, 0, 0)]).posteriores, 1);
+// Domingo en 0 sin ningún día que llegue a 10000: sospecha de captura a medias
+cr = _defensasAnomaliasCruce_([encCr, rc(2, 'J', 30000, 0, 3000, 0, 3000, 15, 435), rc(2, 'D', 0, 3000, 3000, -1, 0, 0, 0)]);
+assert.deepStrictEqual([cr.cruces, cr.domingosEn0, cr.domingosEn0SinCruce], [0, 1, 1]); assert.ok(/^Domingo en 0 sin cruce que lo explique, T39 S2/.test(cr.detalle[0]));
+// Un domingo con el avance propio en 10000 o más (aunque falten los días previos del log) lo explica un cruce real
+cr = _defensasAnomaliasCruce_([encCr, rc(1, 'D', 0, 10208, 10208, -1, 0, 0, 0, 'Leído', '#Q02LPPQV')]);
+assert.deepStrictEqual([cr.cruces, cr.domingosEn0, cr.domingosEn0SinCruce], [1, 1, 0]);
+// El día «Estimado» no se mira, un clan que no cruza no tiene anomalías y las series se separan por Tag y semana
+cr = _defensasAnomaliasCruce_([encCr, ...real.slice(1, 4), rc(3, 'D', 500, 10000, 10000, 2, 600, 12, 276, 'Estimado'), rc(3, 'J', 100, 0, 100, 3, 400, 15, 435, 'Leído', '#OTRO'), rc(3, 'V', 100, 100, 200, 3, 400, 15, 435, 'Leído', '#OTRO')]);
+assert.deepStrictEqual([cr.series, cr.cruces, cr.posteriores, cr.domingosEn0], [2, 1, 0, 0]);
+// Días fuera de J a D, filas vacías y valores faltantes no rompen; faltan columnas: se avisa
+assert.strictEqual(_defensasAnomaliasCruce_([encCr, null, ['', ''], rc(3, 'L', 1, 0, 1, 1, 1, 1, 1)]).series, 0);
+const sc = _defensasAnomaliasCruce_([['Temporada']]); assert.strictEqual(sc.ok, false); assert.ok(/Faltan columnas/.test(sc.error)); assert.strictEqual(_defensasAnomaliasCruce_(null).ok, false);
+// El detalle se limita a 10 líneas
+const muchos = [encCr]; for (let i = 0; i < 12; i++) muchos.push(rc(2, 'J', 1, 0, 1, 0, 0, 0, 0, 'Leído', '#X' + i), rc(2, 'D', 0, 1, 1, -1, 0, 0, 0, 'Leído', '#X' + i));
+cr = _defensasAnomaliasCruce_(muchos); assert.strictEqual(cr.domingosEn0SinCruce, 12); assert.strictEqual(cr.detalle.length, 10);
+
 console.log('OK: prueba_detalle_riverrace');
