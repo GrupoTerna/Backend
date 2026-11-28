@@ -36,7 +36,7 @@ AVISO PARA CUALQUIER IA O PERSONA QUE EDITE ESTE PROYECTO:
    y es más difícil de manejar en archivos largos.
 */
 
-/* CÓDIGO CONSOLIDADO GENERADO EL 27/11/2026 20:41:32 */
+/* CÓDIGO CONSOLIDADO GENERADO EL 27/11/2026 21:06:24 */
 
 
 
@@ -86818,7 +86818,7 @@ function _cmaMezclarFilasDia_(existentes, nuevas) {
 // ----- Lecturas de la página River Race de RoyaleAPI, incluidos los ex-miembros (§PF584 punto 13) -----
 
 /**
- * _clrDiaDePagina_(participantes) — día de la semana que la página de RoyaleAPI marcaba al leerla (`diaPagina`, 1 a 7; §PF584 punto 13). Tampermonkey lo manda en cada
+ * _clrDiaDePagina_(participantes) — día de la semana que la página de RoyaleAPI marcaba al leerla (`diaPagina`, 1 a 7; §PF584 puntos 13 y 17: la página numera 1 a 3 el entrenamiento y 1 a 4 la guerra, así que solo es informativo). Tampermonkey lo manda en cada
  * fila. Devuelve el número si todas las filas que lo traen coinciden; null si ninguna lo trae (Tampermonkey anterior a la v3.42, o la página no lo mostró) o si no coinciden.
  */
 function _clrDiaDePagina_(participantes) {
@@ -86834,24 +86834,22 @@ function _clrDiaDePagina_(participantes) {
 }
 
 /**
- * _clrResolverDia_(diaPagina, offDiaBackend, enVentana) — decide a qué día de guerra pertenece una lectura (§PF584 punto 13). Función pura.
- * Si la página dijo el día (1 a 7) manda ella, porque es el día de los números que muestra: 1 a 3 es entrenamiento (los números semanales vuelven a 0, no se guarda) y
- * 4 a 7 es jueves a domingo (offDia 0 a 3), también dentro de la ventana de 04:00 a 05:00. Si no lo dijo, se usa el del backend (offDiaBackend, 0 a 3) y nada se guarda
- * en la ventana de cambio de día ni fuera de día de guerra. Devuelve { offDia (0 a 3 o null si no se guarda), fuente: 'pagina' o 'backend', motivo (por qué no se guarda),
- * aviso (si la página y el backend no coinciden; se guarda igual con el día de la página) }.
+ * _clrResolverDia_(diaPagina, offDiaBackend, enVentana) — decide a qué día de guerra pertenece una lectura (§PF584 punto 13; corregida en §PF584 punto 17). Función pura.
+ * MANDA EL CALENDARIO DEL BACKEND (offDiaBackend, 0 a 3 = jueves a domingo; fuera de jueves a domingo no es día de guerra). El «Day N» de la página YA NO decide:
+ * la v3.42 suponía que iba de 1 a 7 (1 a 3 entrenamiento, 4 a 7 jueves a domingo) y el 26 y 27-nov-2026, en plena guerra (jueves y viernes), marcó «Day 1» y «Day 2»,
+ * con lo que no se guardó nada; con ese supuesto, además, un «Day 4» en domingo se habría guardado como jueves. Dentro de la ventana de 04:00 a 05:00 (Lima) no se
+ * guarda nada. diaPagina solo sirve para avisar: si trae un número de 1 a 7 que no es ni offDia + 1 ni offDia + 4, se anota en `aviso` (se guarda igual con el del backend).
+ * Devuelve { offDia (0 a 3 o null si no se guarda), fuente: 'backend', motivo (por qué no se guarda), aviso }.
  */
 function _clrResolverDia_(diaPagina, offDiaBackend, enVentana) {
   var hayBackend = typeof offDiaBackend === 'number' && offDiaBackend >= 0 && offDiaBackend <= 3;
-  var d = Number(diaPagina);
-  if (diaPagina !== null && diaPagina !== undefined && diaPagina !== '' && d >= 1 && d <= 7) {
-    if (d <= 3) return { offDia: null, fuente: 'pagina', motivo: 'la página marca el día ' + d + ' (entrenamiento: los números semanales vuelven a 0)', aviso: '' };
-    var off = d - 4;
-    return { offDia: off, fuente: 'pagina', motivo: '',
-      aviso: (hayBackend && off !== offDiaBackend) ? 'la página marca el día ' + d + ' (' + CMA_LETRAS_DIAS.charAt(off) + ') y el backend calcula ' + CMA_LETRAS_DIAS.charAt(offDiaBackend) + '; se usó el de la página' : '' };
-  }
   if (!hayBackend) return { offDia: null, fuente: 'backend', motivo: 'no es día de guerra', aviso: '' };
-  if (enVentana) return { offDia: null, fuente: 'backend', motivo: 'ventana de cambio de día (04:00 a 05:00 de Lima) y la página no indicó el día', aviso: '' };
-  return { offDia: offDiaBackend, fuente: 'backend', motivo: '', aviso: '' };
+  if (enVentana) return { offDia: null, fuente: 'backend', motivo: 'ventana de cambio de día (04:00 a 05:00 de Lima)', aviso: '' };
+  var d = Number(diaPagina), aviso = '';
+  if (diaPagina !== null && diaPagina !== undefined && diaPagina !== '' && d >= 1 && d <= 7 && d !== offDiaBackend + 1 && d !== offDiaBackend + 4) {
+    aviso = 'la página marca el día ' + d + ' y el backend calcula ' + CMA_LETRAS_DIAS.charAt(offDiaBackend) + '; se usó el del backend';
+  }
+  return { offDia: offDiaBackend, fuente: 'backend', motivo: '', aviso: aviso };
 }
 
 /**
@@ -86956,7 +86954,7 @@ function _clrGuardarLecturas_(participantes, temporada, semana, offDia) {
 
 /**
  * _clrProcesarEnvio_(participantes) — endpoint `lecturasRiverRace` (Tampermonkey, fase `riverrace` del flujo de corrección; §PF584 punto 13). Calcula el día de guerra de hoy
- * con el mismo contexto que _procesarVerificacionRiverRace() y guarda las lecturas con _clrGuardarLecturas_(). El día lo dice la página (`diaPagina`, _clrResolverDia_()); si no lo trajo,
+ * con el mismo contexto que _procesarVerificacionRiverRace() y guarda las lecturas con _clrGuardarLecturas_(). El día lo decide el calendario del backend (_clrResolverDia_(), §PF584 punto 17);
  * solo se guarda en día de guerra y fuera de la ventana de cambio de día (04:00 a 05:00 de Lima), porque entonces no se sabe a qué día pertenece lo leído. Devuelve { ok, ... } o { ok: false, error }.
  */
 function _clrProcesarEnvio_(participantes) {
