@@ -53,12 +53,14 @@ assert.strictEqual(_clrDiaDePagina_([{ diaPagina: 3 }, { diaPagina: '3' }, {}]),
 assert.strictEqual(_clrDiaDePagina_([{ diaPagina: 3 }, { diaPagina: 5 }]), null, 'si no coinciden, no se confía');
 assert.strictEqual(_clrDiaDePagina_([{}, { diaPagina: null }]), null);
 assert.strictEqual(_clrDiaDePagina_([{ diaPagina: 9 }]), null); assert.strictEqual(_clrDiaDePagina_([{ diaPagina: 2.5 }]), null); assert.strictEqual(_clrDiaDePagina_(null), null);
-let d = _clrResolverDia_(3, 1, false);
-assert.strictEqual(d.offDia, null); assert.ok(d.motivo.indexOf('entrenamiento') >= 0, 'Day 3 = miércoles: no se guarda');
-d = _clrResolverDia_(5, 1, false); assert.strictEqual(d.offDia, 1); assert.strictEqual(d.aviso, '', 'Day 5 = viernes (V), igual que el backend');
-d = _clrResolverDia_(5, 0, false); assert.strictEqual(d.offDia, 1); assert.ok(d.aviso.indexOf('V') >= 0 && d.aviso.indexOf('J') >= 0, 'no coinciden: manda la página y se avisa');
-d = _clrResolverDia_(4, 0, true); assert.strictEqual(d.offDia, 0, 'dentro de la ventana, si la página dice el día, se guarda');
-d = _clrResolverDia_(7, NaN, false); assert.strictEqual(d.offDia, 3, 'Day 7 = domingo (D)');
+// §PF584 punto 17: manda el calendario del backend; el «Day N» de la página no decide (el 26 y 27-nov-2026, jueves y viernes de guerra, marcó Day 1 y Day 2).
+let d = _clrResolverDia_(1, 0, false); assert.strictEqual(d.offDia, 0, 'jueves con «Day 1» en la página: se guarda como J'); assert.strictEqual(d.aviso, '');
+d = _clrResolverDia_(2, 1, false); assert.strictEqual(d.offDia, 1, 'viernes con «Day 2»: se guarda como V');
+d = _clrResolverDia_(4, 3, false); assert.strictEqual(d.offDia, 3, 'domingo con «Day 4»: D y no J'); assert.strictEqual(d.aviso, '');
+d = _clrResolverDia_(7, 3, false); assert.strictEqual(d.offDia, 3, 'domingo con «Day 7»: D'); assert.strictEqual(d.aviso, '');
+d = _clrResolverDia_(3, -1, false); assert.strictEqual(d.offDia, null, 'miércoles (entrenamiento): no se guarda'); assert.strictEqual(d.motivo, 'no es día de guerra');
+d = _clrResolverDia_(3, 0, true); assert.strictEqual(d.offDia, null); assert.ok(d.motivo.indexOf('ventana') >= 0, 'dentro de la ventana no se guarda');
+d = _clrResolverDia_(6, 0, false); assert.strictEqual(d.offDia, 0); assert.ok(d.aviso.indexOf('6') >= 0 && d.aviso.indexOf('J') >= 0, 'la página no cuadra con ninguna lectura: se guarda con el backend y se avisa');
 d = _clrResolverDia_(null, 2, false); assert.strictEqual(d.offDia, 2); assert.strictEqual(d.fuente, 'backend');
 d = _clrResolverDia_(null, 2, true); assert.strictEqual(d.offDia, null); assert.ok(d.motivo.indexOf('ventana') >= 0);
 d = _clrResolverDia_(undefined, -1, false); assert.strictEqual(d.offDia, null); assert.strictEqual(d.motivo, 'no es día de guerra');
